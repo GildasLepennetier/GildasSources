@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#killing processes by name (in this example we kill the process given in arg to the script):
+if [ $# -gt 0 ]; then
+    echo "$1 search with ps aux return"
+    ps -e | grep "$1" | awk '{print $1 "\t" $4}'
+    echo "Give PID(s): "
+    read PIDS
+    for id in $PIDS;do
+        echo "kill -s SIGTERM $id (y/n)?"
+        read answer
+        if [ $answer == "y" ];then
+			kill -s SIGTERM $id
+		else
+			echo "operation cancelled"
+		fi
+    done
+else
+    echo "Error, please give a name of daemon to kill"
+fi

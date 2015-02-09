@@ -1,0 +1,83 @@
+#!/usr/bin/python
+import sys,re,os,argparse,datetime
+parser = argparse.ArgumentParser(description='Find motif (pattern) in a csv-like file. Choose -action count to have the number of match OR -action position to get the coordinate (base 1) where the motif start',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file')
+parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 12-17-2014')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('-sequence',type=int,required=True,help='column number for sequence')
+parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have a header')
+parser.add_argument('-pattern',type=str,required=True,help='pattern to search for (ex: CG for CpG). Handle regular expression, exemple. A[AT]A for AAA or ATA.')
+parser.add_argument('-separated',default=False,action='store_true',required=False,help='add this flag to get an output with only the result (default: add column in the file)')
+parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. this put also one flag --verbose')
+parser.add_argument('-action',default="count",type=str,help='which function to use? [ count ; position ]')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+args=vars(parser.parse_args())
+if args['author']:
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
+if args['copy']:
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
+if args['action'] not in ['count','position']:
+    sys.stderr.write("Error: bad keyword. Please select [ count ; position ]")
+    exit()
+VERB_LVL=args['verbose']
+IN=args['in']
+OUT=args['out']
+sep=args['sep']
+PATTERN=args['pattern']
+NOTINFILE=args['separated']
+seq_index=int(args['sequence'])-1
+#### function to count pattern in string
+def countPatternREGEXP(string,pattern):
+    nb=0
+    for m in re.finditer(pattern,string):
+        nb+=1
+    return nb
+def posiStartPatternREGEXP(string,pattern):
+    LIST=[]
+    for m in re.finditer(pattern,string): #(m.start(), m.end(), m.group(0)) #position start, position end, object matched
+        LIST.append( m.start() +1 ) #need to add 1 in the position match because start at 0
+    return LIST
+def posiEndPatternREGEXP(string,pattern):
+    LIST=[]
+    for m in re.finditer(pattern,string):
+        LIST.append( m.end() +1 ) #need to add 1 in the position match because start at 0
+    return LIST
+# MAIN #
+Lines = IN.readlines()
+if args['header']:
+    FirtLineNameCol=Lines[0].split(args['endline'])[0].split(sep)[seq_index] #get first line: extract name of the column (remove spaces)
+    if NOTINFILE:
+        OUT.write("%s_%s_%s"%(FirtLineNameCol,PATTERN,args['action']) + args['endline'])
+    else:
+        OUT.write( sep.join( Lines[0].split(args['endline'])[0].split(sep) + ["%s_%s_%s"%(FirtLineNameCol,PATTERN,args['action'])]) + args['endline'] )
+    Lines=Lines[1:] #skip first line
+kk=0
+nbTot=len(Lines)
+for line in Lines:
+    kk+=1
+    if kk % 100 == 0 and args['progress']:
+        sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    if kk == nbTot and args['progress']:
+        sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
+    ###################
+    SEQ=line.split(args['endline'])[0].split(sep)[seq_index]
+    if args['action'] == "count":
+        OUTVALUE=str(countPatternREGEXP(SEQ,PATTERN))
+    if args['action'] == "position":
+        SepReturn=","
+        POSITIONS=posiStartPatternREGEXP(SEQ,PATTERN) #using only the start, but possible to search also for the end, can then return the middle etc.
+        OUTVALUE=SepReturn.join([str(el) for el in POSITIONS]) #no need to add 1 at the coordinates: already done
+    if not OUTVALUE:
+        OUTVALUE=""#Fail ? can be a problem for Mac ?
+    ###################
+    if NOTINFILE:
+        OUT.write( str(OUTVALUE) + args['endline'])
+    else:
+        OUT.write( sep.join( line.split(args['endline'])[0].split(sep) + [str(OUTVALUE)]) + args['endline'])
+

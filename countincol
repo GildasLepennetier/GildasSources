@@ -1,0 +1,23 @@
+#!/bin/bash
+USAGE="usage: $(basename $0) [column] [filename or| - for stdin]\
+\n\n\tReturn count of occurrences\
+\n\nCopyright 2014 LEPENNETIER Gildas\
+\nAuthor: Gildas Lepennetier - gildas.lepennetier@hotmail.fr\
+\nCareful, using awk: multiple spaces taken as on\
+\nIn adition, use of /dev/stdin -> not in the POSIX standard"
+
+[[ $# -eq 0 ]] && echo "Error: please give a filename or - if stdin should be read" && echo -e $USAGE && exit 1
+
+# if read from stdin
+if [ "$2" == "-" ];then
+	awk "{count[\$$1]++} END{for(j in count) print count[j] \"\t\" j }" /dev/stdin
+	exit 0
+fi
+#if filename given
+if [ -e "$2" ];then
+	awk "{count[\$$1]++} END{for(j in count) print count[j] \"\t\" j }" $2
+	exit 0
+fi
+
+
+

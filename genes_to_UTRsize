@@ -1,0 +1,87 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import sys,re,os,argparse
+parser = argparse.ArgumentParser(description='Extract feature from .genes file.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='first file name given is the input file')
+parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='second file name given is the output file')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 04-30-2014')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('-strand',default=4,type=int,required=False,help='column number for strand (default=4)')
+parser.add_argument('-starts',default=5,type=int,required=False,help='column number for start of exons (coma-separated) (default=5)')
+parser.add_argument('-ends',default=6,type=int,required=False,help='column number for ends of exons (coma-separated) (default=6)')
+parser.add_argument('-CDSstart',default=7,type=int,required=False,help='column number for start CDS. Basically start of start codon (default=7)')
+parser.add_argument('-CDSend',default=8,type=int,required=False,help='column number for ends of CDS. Basically end of stop codon (default=8)')
+#parser.add_argument('-CDSstartstart',default=9,type=int,required=False,help='column number for start CDS. Basically start of start codon (default=9)')
+#parser.add_argument('-CDSendstart',default=10,type=int,required=False,help='column number for ends of CDS. Basically end of stop codon (default=10)')
+parser.add_argument('-EndByComa',action='store_true',default=False,help='add this flag if last element in starts/ends is a coma')
+parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header (first line with names of columns)')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+args=vars(parser.parse_args())
+if args['author']:
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
+if args['copy']:
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
+VERB_LVL=args['verbose']
+IN=args['in']
+OUT=args['out']
+sep=args['sep']
+strand_index=int(args['strand'])-1
+starts_index=int(args['starts'])-1
+ends_index  =int(args['ends']  )-1
+CDS_start_index    =int(args['CDSstart']) -1
+CDS_end_index      =int(args['CDSend'])   -1
+CURRENT_LINE=0
+#######################     MAIN        ##############
+Lines = IN.readlines()
+COLUMN_NAMES=["UTR5size","UTR3size"]
+if args['header']:
+    LISTE= Lines[0].split(args['endline'])[0].split(sep) + COLUMN_NAMES
+    OUT.write(sep.join( LISTE ) + args['endline'])
+    Lines=Lines[1:]
+    CURRENT_LINE+=1
+else:
+    LISTE=[ "" for el in range(0,len(Lines[0].split(args['endline'])[0].split(sep)))] + COLUMN_NAMES
+    OUT.write(sep.join( str(el) for el in LISTE ) + args['endline'])
+#for each line
+for line in Lines:
+    CURRENT_LINE+=1
+    if VERB_LVL > 2:
+        sys.stderr.write("current line: %s%s"%(CURRENT_LINE,args['endline']))
+    lineSplit=line.split(args['endline'])[0].split(sep)
+    strand  =lineSplit[strand_index]
+    starts  =lineSplit[starts_index].split(',')
+    ends    =lineSplit[ends_index].split(',')
+    if lineSplit[CDS_start_index] != '':
+        CDS_start = int(lineSplit[CDS_start_index])
+    else:
+        OUT.write(sep.join( str(el) for el in lineSplit + [ "" for el in COLUMN_NAMES] ) + args['endline'])
+        continue
+    if lineSplit[CDS_end_index] != '':
+        CDS_end   = int(lineSplit[CDS_end_index])
+    else:
+        OUT.write(sep.join( str(el) for el in lineSplit + [ "" for el in COLUMN_NAMES] ) + args['endline'])
+        continue
+    if args['EndByComa']: #if the list end with a coma, the last element is empty after the split, we remove it
+        starts=starts[:-1]
+        ends=ends[:-1]
+    if len(starts) != len(ends):
+        print("WARNING: gene %s (line %s) have not a correct number of starts and ends of exons"%(parent,nbLines))
+        continue
+    ################################################
+    starts=[int(el) for el in starts]#exonic starts
+    ends  =[int(el) for el in ends]
+    starts.sort()
+    ends.sort()
+    if strand == "+":
+        UTR5SIZE= CDS_start - starts[0] +1 # +1 when computing sizes
+        UTR3SIZE= ends[-1]  - CDS_end   +1
+    else:
+        UTR5SIZE= ends[-1]  - CDS_end   +1
+        UTR3SIZE= CDS_start - starts[0] +1
+    LISTE=[ UTR5SIZE,UTR3SIZE ]
+    OUT.write(sep.join( str(el) for el in lineSplit + LISTE ) + args['endline'])

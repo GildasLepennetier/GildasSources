@@ -1,0 +1,129 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import sys,re,os,argparse,datetime
+parser = argparse.ArgumentParser(description='Match the coordinates of a request file on a reference file. Files should be in a csv-like format. Output: [[ Request line,matching Statut,Reference Line Matched ]]',epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')
+parser.add_argument('-req', required=True, type=argparse.FileType('r'),help='request file (list of elements to match)')
+parser.add_argument('-ref', required=True, type=argparse.FileType('r'),help='reference file (where to search for)')
+parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 17-08-2014')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('-optionWhere',type=str,default='> <',required=False,help='more option where to search. Req_start > Ref_start and Req_end < Ref_end. Choices: ["> <"(default), "> <=", ">= <", ">= <="] ')
+parser.add_argument('-optionStrand',type=str,default='same',required=False,help='more option where to search related to the strand. Choices: ["same","opposite","both"]')
+parser.add_argument('-ref_chr',default=1,type=int,required=False,help='column number for starts (default=1)')
+parser.add_argument('-ref_strand',default=2,type=int,required=False,help='column number for starts (default=2)')
+parser.add_argument('-ref_start',default=3,type=int,required=False,help='column number for starts (default=3)')
+parser.add_argument('-ref_end',default=4,type=int,required=False,help='column number for starts (default=4)')
+parser.add_argument('-req_chr',default=1,type=int,required=False,help='column number for starts (default=1)')
+parser.add_argument('-req_strand',default=2,type=int,required=False,help='column number for starts (default=2)')
+parser.add_argument('-req_start',default=3,type=int,required=False,help='column number for starts (default=3)')
+parser.add_argument('-req_end',default=4,type=int,required=False,help='column number for starts (default=4)')
+parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. this put also one flag --verbose')
+parser.add_argument('-ref_header',action='store_true',default=False,help='add this flag if reference file have a header (first line with names). If no header in input, no header in output')
+parser.add_argument('-req_header',action='store_true',default=False,help='add this flag if request file have a header (first line with names)')
+parser.add_argument('-onlymatch',action='store_true',default=False,help='add this flag if you whant only the matched elements')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+args=vars(parser.parse_args())
+if args['author']:
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
+if args['copy']:
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
+Ref_chr_index   = int(args['ref_chr']) -1
+Ref_strand_index   = int(args['ref_strand']) -1
+Ref_start_index = int(args['ref_start']) -1
+Ref_end_index   = int(args['ref_end']) -1
+Req_chr_index   = int(args['req_chr']) -1
+Req_strand_index   = int(args['req_strand']) -1
+Req_start_index = int(args['req_start']) -1
+Req_end_index   = int(args['req_end']) -1
+if args['optionWhere'] not in ['> <','> <=','>= <','>= <=']:
+        sys.stderr.write('Error: optionWhere should be in ["> <","> <=",">= <",">= <="] %s'%args['endline'])
+        exit()
+if args['optionStrand'] not in ['same','opposite','both']:
+        sys.stderr.write('Error: optionStrand should be in ["same","opposite","both"] %s'%args['endline'])
+        exit()
+LINES_REF=args['ref'].readlines()
+LINES_REQ=args['req'].readlines()
+firstline1=""
+firstline2=""
+if args['ref_header']:
+	firstline_ref=LINES_REF[0].split(args['endline'])[0]
+	LINES_REF=LINES_REF[1:]
+else:
+	firstline_ref=args['sep'].join([ "." for el in LINES_REF[0].split(args['endline'])[0].split(args['sep']) ])
+if args['req_header']:
+	firstline_req=LINES_REQ[0].split(args['endline'])[0]
+	LINES_REQ=LINES_REQ[1:]
+else:
+	firstline_req=args['sep'].join([ "." for el in LINES_REQ[0].split(args['endline'])[0].split(args['sep']) ])
+if args['ref_header'] or args['req_header']:
+	args['out'].write(args['sep'].join([firstline_req,"matching_statut",firstline_ref]) + args['endline'])
+#Feed the dictionnary with lines of the reference file
+REFERENCE_dico={}
+for rline in LINES_REF: #open GFF lines
+    
+    line=rline.split(args['endline'])[0].split(args['sep']) #lines are pre-splited
+    CHR_id=line[Ref_chr_index].split(" ")[0] #extract reference: split in case of spaces
+    
+    if CHR_id in REFERENCE_dico:
+        REFERENCE_dico[ CHR_id ].append(line)
+    else:
+        REFERENCE_dico[ CHR_id ]=[line]
+######################
+kk=0
+nbTot=len(LINES_REQ)
+if args['progress'] or args['verbose']>0:
+    sys.stderr.write("Loading...%s"%args['endline'])
+for rline_req in LINES_REQ:
+    kk+=1
+    if kk % 100 == 0 and args['progress']:
+        sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    if kk == nbTot and args['progress']:
+        sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
+    ReqLine  =rline_req.split(args['endline'])[0].split(args['sep'])
+    Req_Chr   =ReqLine[Ref_chr_index].split(" ")[0] #extract request: split in case of spaces
+    Req_strand=ReqLine[Req_strand_index]
+    Req_start =int(ReqLine[Req_start_index])
+    Req_end   =int(ReqLine[Req_end_index])
+    MATCHED=False
+    try:
+        for RefLine in REFERENCE_dico[Req_Chr]:#extract only the interesting chr/scaffold in the reference file
+            Ref_strand=RefLine[Ref_strand_index]
+            Ref_start=int(RefLine[Ref_start_index])
+            Ref_end  =int(RefLine[Ref_end_index])
+                
+            if args['optionStrand']=='same':
+                if Req_strand != Ref_strand:
+                    continue
+            elif args['optionStrand']=='opposite':
+                if Req_strand == Ref_strand:
+                    continue
+            if args['optionWhere'] == '> <':
+                if Req_start > Ref_start and Req_end < Ref_end:
+                    MATCHED=True
+                    args['out'].write ( args['sep'].join( [ str(el) for el in ReqLine+['match']+RefLine ])+args['endline'] )
+            elif args['optionWhere'] == '> <=':
+                if Req_start > Ref_start and Req_end <= Ref_end:
+                    MATCHED=True
+                    args['out'].write ( args['sep'].join( [ str(el) for el in ReqLine+['match']+RefLine ])+args['endline'] )
+            elif args['optionWhere'] == '>= <':
+                if Req_start >= Ref_start and Req_end < Ref_end:
+                    MATCHED=True
+                    args['out'].write ( args['sep'].join( [ str(el) for el in ReqLine+['match']+RefLine ])+args['endline'] )
+            elif args['optionWhere'] == '>= <=':
+                if Req_start >= Ref_start and Req_end <= Ref_end:
+                    MATCHED=True
+                    args['out'].write ( args['sep'].join( [ str(el) for el in ReqLine+['match']+RefLine ])+args['endline'] )
+        if not MATCHED:
+            if not args['onlymatch']: 
+                args['out'].write ( args['sep'].join( [ str(el) for el in ReqLine+["nomatch_inElement"]  ])+args['endline'] )
+    except KeyError:
+        if not args['onlymatch']: 
+            args['out'].write ( args['sep'].join( [ str(el) for el in ReqLine+["nomatch_keyError"]  ])+args['endline'] )
+
+        if args['verbose'] > 0:
+            sys.stderr.write("%s not found in reference file%s"%(Req_Chr,args['endlline']))

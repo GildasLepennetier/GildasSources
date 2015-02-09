@@ -1,0 +1,134 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import sys, os
+
+USAGE="Use: [freq|count] genome.fa\
+\nUse this function to extract the nucleotid content (background frequency).\
+\nThe output is:\
+\nNAME.fasta A C G T nb OTHERS\
+\nauthor: Gildas Lepennetier - gildas.lepennetier@hotmail.fr\
+\n#\
+\n# Copyright 2015 LEPENNETIER Gildas\
+\n#"
+if len(sys.argv) != 3:
+    print (USAGE)
+    exit()
+if sys.argv[1] not in ["freq","count"]:
+    print("Error, please select: frequency or count of nucleotide ?")
+    print (USAGE)
+    exit()
+# Load a fasta file
+# -just give the path of the file
+# -handle empty lines, but be careful if line= <space>
+# -return list of dictonnary
+def loadFasta_Dico(path):
+    #print ("loading fasta")
+    listDico=[]
+    index=-1
+    F1=open(path,'r')
+    LINES= F1.readlines()
+    F1.close()
+    for line in LINES:
+        if line[0]=='>':
+            index+=1
+            ID=line.split('\n')[0]
+            listDico.append({ID:''})#put a dict in the list, empty seq
+        else:
+            if line not in ['\n','']: #if the line is empty:end
+                listDico[index][ID]=''.join([listDico[index][ID],line.split('\n')[0]]) #join the curent line to the string
+    return listDico
+# LOAD FASTA BIOPYTHON
+# parsing (loading) of fasta file, return Bio.SeqRecord
+def loadFasta_biopythonDico(adresse, nb=None):  # ne retourne plus une liste de records de biopython
+    try:
+        from Bio import SeqIO
+    except ImportError:
+        print ("Error in loadFasta_biopythonDico: Bio from BioPython not available")
+        exit()
+    List = list()
+    for seq_record in SeqIO.parse(adresse, 'fasta'): # supported formats:http://biopython.org/wiki/SeqIO
+        #repr(seq_record.seq) affiche une représentation
+        # record biopython : http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc35
+        dico={}
+        dico['line']=str(seq_record.description)
+        dico['seq']=str(seq_record.seq) #attention, sans ce seq(), on obtient une classe BioSeq
+        List.append(dico)
+    return List # list of [ dico {'line': ,'seq', }, ... ]
+# LOAD FASTA BIOPYTHON
+def loadFasta(adresse):
+    from Bio import SeqIO
+    dico={}
+    for seq_record in SeqIO.parse(adresse, 'fasta'):
+        ID=str(seq_record.description)
+        SEQ=str(seq_record.seq)
+        if ID not in dico.keys():
+            dico[ID]=SEQ
+        else:
+            print("ERROR: %s already exist as key!"%ID)
+    return dico
+# COUNT OF LETTER 
+# return dico of frequency for each letter in letter list
+# on peut lui donner une liste ou bien une sequence
+def countLetters(string, case=False, freq=True, removeNn=False):
+    #dico={}
+    dico={'A':0,'C':0,'G':0,'T':0}
+    if string:
+        nb_letters=float(0)
+        for letter in string:
+            nb_letters+=1
+            if removeNn:
+                if letter in ['n','N']:
+                    nb_letters -=1
+                    continue
+            if not case: #no matter the case
+                if letter.upper() in dico.keys():
+                    dico[letter.upper()]+=1
+                else:
+                    dico[letter.upper()]=1
+            else: #count upper and lower case
+                if letter in dico.keys():
+                    dico[letter]+=1
+                else:
+                    dico[letter]=1        
+        # return number or frequency
+        dico['nb']=nb_letters
+        if freq:
+            for key in dico.keys():
+                if key not in ['nb']:
+                    dico[key] = dico[key]/nb_letters
+            return dico
+        else:
+            return dico
+PATHGenome   =str(sys.argv[2])
+try:
+    #LISTChrom = loadFasta_biopythonDico(PATHGenome)
+    LISTChrom =loadFasta(PATHGenome)
+except:
+    sys.stderr.write("You don't have biopython, this will take time\n")
+    LISTChrom = loadFasta_Dico(PATHGenome)
+
+if not LISTChrom:
+    print USAGE
+    exit()
+#print (LISTChrom[0].__class__)
+SEQUENCE=''.join([str(el) for el in LISTChrom.itervalues()])
+#error with empty sequence: return empty column
+if SEQUENCE == '':
+    print ("\t".join( ["","","","",""] ))
+    exit()
+if sys.argv[1] == "freq":
+    LETTERS=countLetters(SEQUENCE, case=False, freq=True, removeNn=False)
+elif sys.argv[1] == "count":
+    LETTERS=countLetters(SEQUENCE, case=False, freq=False, removeNn=False)
+else:
+    print("Error in %s"%(sys.argv[0]))
+    print("Please give a function : count or freq")
+    exit()
+L1=[PATHGenome]
+for k in ['A','C','G','T']: # for the usual nucleotides
+    L1.append(str(LETTERS[k]))
+L2=[]
+for k in LETTERS.keys(): # for the other nt : in column 5. nb= nbumber of letters
+    if k not in 'ACGT':
+        L2.append("%s:%s"%(k,LETTERS[k]))
+print ("\t".join( L1 ) + "\t" + ";".join(L2) )

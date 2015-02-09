@@ -1,0 +1,3 @@
+#!/bin/bash -e
+if [ $2 ];then len=$2;else len=80; fi
+if [ -e "$1" ];then fold $1 -w $len -s;else echo "usage: $(basename $0) filename charPerLine";fi

@@ -1,0 +1,166 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import sys,argparse,datetime
+parser = argparse.ArgumentParser(description='Extract sequences from .fasta using .csv file. Default output is a fasta file. Add the flag append to add the sequence in a column',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin,help='input file')
+parser.add_argument('-fasta',required=True,type=str, help='fasta file')
+parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 06-18-2014')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('-starts',type=int,required=True,help='column number for start of exons (coma-separated)')
+parser.add_argument('-ends',type=int,required=True,help='column number for ends of exons (coma-separated)')
+parser.add_argument('-chr',type=int,required=True,help='column number for chromosome name')
+parser.add_argument('-strand',type=int,required=True,help='column number for strand')
+parser.add_argument('-SeqName',type=str,required=False,help='Name to give to the column. default: concatenation of start-end names')
+parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header (fist line with names of columns)')
+parser.add_argument('-append',action='store_true',default=False,help='add this flag if you want to append the sequence in the file')
+parser.add_argument('-printFasta',action='store_true',default=False,help='add this flag if you want your sequence to be printed fasta-like (80 characteres per line for the sequence). Ignored if -append is activated')
+parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. this put also one flag --verbose')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+args=vars(parser.parse_args())
+if args['author']:
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
+if args['copy']:
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
+VERB_LVL=args['verbose']
+IN=args['in']
+FASTA=args['fasta']
+sep=args['sep']
+chr_index   =int(args['chr']   )-1
+starts_index=int(args['starts'])-1
+ends_index  =int(args['ends']  )-1
+strand_index=int(args['strand'])-1
+# Load a fasta file
+#### manual FASTA ####
+# Load a fasta file - rough
+def Fasta_To_Dico(path,idtag='>',endline="\n"):
+    with open(path,'r') as file:
+        dico={}
+        for line in file:
+            line=line.split(endline)[0]
+            if line[0]==idtag:
+                ID=line[1:].split(' ')[0] #this to avoid full name #avoid '>' in IDs
+                dico[ID]='' 
+            else:
+                dico[ID]+=line
+    return dico
+#### LOAD FASTA BIOPYTHON ####
+def loadFasta(adresse,endline="\n"):
+    from Bio import SeqIO
+    dico={}
+    for seq_record in SeqIO.parse(adresse, 'fasta'):
+        ID=str(seq_record.description.split(' ')[0] )#this to avoid full name
+        SEQ=str( seq_record.seq.split(endline)[0] )
+        if ID not in dico.keys():
+            dico[ID]=SEQ
+        else:
+            print("ERROR: %s already exist as key!"%ID)
+    return dico
+#### Give the reverse complement of a DNA sequence, change also if iupac nucleotide ####
+def revCompl_DNA(seq):
+    #Return reverse complement of dna, but does not change in case of N, Y, ...
+    reverse = []
+    if seq:
+        for letter in seq: #remplir avec le complementaire
+            CORRESPONDANCE={"A":"T","a":"t","C":"G","c":"g","G":"C","g":"c","T":"A","t":"a",#usual ACGT
+                            "R":"Y","r":"y","Y":"R","y":"r",#iupac R=A/G, Y=C/T
+                            "S":"W","s":"w","W":"S","w":"s",#S=G/C, W=A/T
+                            "K":"M","k":"m","M":"K","m":"k",#K=G/T, M=A/C
+                            "B":"V","b":"v","V":"B","v":"b",# B=C/G/T, V=A/C/G
+                            "D":"H","d":"h","H":"D","h":"d"}# D=A/G/T, H=A/C/T
+            if letter in CORRESPONDANCE.keys():
+                reverse.append(CORRESPONDANCE[letter])
+            elif letter in ['u','U']:
+                print 'error, must work on DNA, and I found nome U or u'
+            else:
+                reverse.append(letter)
+        return ''.join(reverse[::-1]) #inverser
+    else:
+        return ""
+
+def insert_in_string(string,insert="\n",each=80):
+    string2=""
+    ii=0
+    for letter in string:
+        ii+=1
+        if ii % each == 0 :
+            string2=string2+letter
+            string2=string2+insert
+        else:
+            string2=string2+letter
+    return string2
+################ MAIN ################
+try:
+    DICOChrom = loadFasta(FASTA,endline=args['endline'])
+except:
+    if VERB_LVL > 1:
+        sys.stderr.write("Fasta loading using Biopython failled, using personnal function")
+    DICOChrom = Fasta_To_Dico(FASTA,endline=args['endline'])
+if VERB_LVL > 0:
+    sys.stderr.write("Loaded %s genes"%(len(DICOChrom)))
+lineNB=0
+LINES=IN.readlines()
+FIRSTLINE=LINES[0].split(args['endline'])[0].split(sep)
+if not args['printFasta']:
+    SEQNAME="%s_%s_seq"%(FIRSTLINE[starts_index],FIRSTLINE[ends_index] )
+    if args['SeqName']:
+        SEQNAME=args['SeqName']
+            
+    if args['header']:
+        lineNB+=1
+        LINES=LINES[1:]
+        
+        if args['append']:
+            args['out'].write( sep.join( [str(el) for el in FIRSTLINE + [SEQNAME] ] ) + args['endline'])
+        else:
+            args['out'].write( sep.join( [str(el) for el in [SEQNAME] ] ) + args['endline'])
+kk=0
+nbTot=len(LINES)
+if len(LINES) < 2:
+    sys.stderr.write("WARNING: not a lot of lines loaded !")
+for rline in LINES:
+    kk+=1
+    if kk % 100 == 0 and args['progress']:
+        sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    if kk == nbTot and args['progress']:
+        sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
+
+    lineNB+=1
+    line=rline.split(args['endline'])[0].split(sep)
+    try:
+	Chr    = line[chr_index]
+    	Start  = int(line[starts_index]) -1 #python list start at 0. List[0:10] extract from position 0 to 9, then from 1 to 10.
+    	End    = int(line[ends_index])
+	Strand = line[strand_index]
+    except: # ValueError =string, empty or not, instead of int in column
+	if VERB_LVL > 0:
+            sys.stderr.write("WARNING: Failed line %s%s"%(lineNB,args['endline']))
+
+        if not args['printFasta']:
+            if args['append']:
+                args['out'].write( sep.join( line+[""] )+ args['endline']) #put empty if no sequence to extract
+            else:
+                args['out'].write( args['endline'] ) #put empty if no sequence to extract
+                continue
+    try:
+	SEQ = DICOChrom[Chr][Start:End]
+	if Strand == "-":
+	    SEQ = revCompl_DNA( SEQ )
+
+	if args['append']:
+    	    args['out'].write( sep.join( line+[SEQ] )+ args['endline'] )
+    	else:
+            #fasta-like
+            if args['printFasta']:
+                args['out'].write(">%s:%s-%s %s%s%s%s"%(Chr,Start,End,Strand,args['endline'],insert_in_string(SEQ,insert=args['endline'],each=80),args['endline']))#using function conversion to fasta
+            else:
+                args['out'].write("%s%s"%(SEQ,args['endline']))
+    except KeyError:
+        if VERB_LVL > 0:
+            sys.stderr.write("WARNING: line %s : no record in fasta for %s%s"%(lineNB,Chr,args['endline']))
+	    continue

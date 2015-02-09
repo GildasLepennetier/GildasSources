@@ -1,0 +1,235 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys,re,os,argparse,datetime
+parser = argparse.ArgumentParser(description='Extract features from .genes file.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file')
+parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s old_ see genes_to_SS')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('-fa', required=True, type=str, help='address to the fasta file')
+parser.add_argument('-istarts',type=int,required=True,help='column number for start of intron')
+parser.add_argument('-iends',type=int,required=True,help='column number for end of intron')
+parser.add_argument('-chr',type=int,required=True,help='column number for chromosome name')
+parser.add_argument('-strand',type=int,required=True,help='column number for strand')
+parser.add_argument('-b5',type=int,required=False,default=3,help ="before 5' splice site [default=3]")
+parser.add_argument('-a5',type=int,required=False,default=6,help ="after  5' splice site [default=6]")
+parser.add_argument('-b3',type=int,required=False,default=20,help="before 3' splice site [default=20]")
+parser.add_argument('-a3',type=int,required=False,default=3,help ="after  3' splice site [default=2]")
+parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have an header')
+parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. This also put verbosity to 1')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+args=vars(parser.parse_args())
+if args['author']:
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
+if args['copy']:
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
+VERB_LVL=args['verbose']
+IN=args['in']
+OUT=args['out']
+FA=args['fa']
+sep=args['sep']
+starts_index=int(args['istarts'])-1
+ends_index  =int(args['iends']  )-1
+chr_index   =int(args['chr']   )-1
+strand_index=int(args['strand'])-1
+b5=int(args['b5'])
+a5=int(args['a5'])
+b3=int(args['b3'])
+a3=int(args['a3'])
+#MAKE a .SpliceSite from a .genes
+#awk '{system("python genes_to_SpliceSite2.py -in "$1" -out "$1".SpliceSite -header -chr 1 -strand 4 -istart 7 -iend 8 -fa "$2";")}' listspecies 
+### -1 to the start of element : python list start at 0, so nucleotid 1 = 0.
+### [end was not touched, again python extract 1 less than given so already done]
+
+### function
+# Load a fasta file
+def Fasta_To_Dico(path,idtag='>',endline="\n"):
+    with open(path,'r') as file:
+        dico={}
+        for line in file:
+            line=line.split(endline)[0]
+            if line[0]==idtag:
+                ID=line[1:] #avoid '>' in IDs
+                dico[ID]='' 
+            else:
+                dico[ID]+=line
+    return dico
+# LOAD FASTA BIOPYTHON
+def loadFasta(adresse):
+    from Bio import SeqIO
+    dico={}
+    for seq_record in SeqIO.parse(adresse, 'fasta'):
+        ID=str(seq_record.description)
+        SEQ=str(seq_record.seq)
+        if ID not in dico.keys():
+            dico[ID]=SEQ
+        else:
+            print("ERROR: %s already exist as key!"%ID)
+    return dico
+
+# COUNT OF LETTER 
+# return dico of frequency for each letter in letter list
+# on peut lui donner une liste ou bien une sequence
+def countLetters(string, case=False, freq=True, removeNn=False):
+    #dico={}
+    dico={'A':0,'C':0,'G':0,'T':0}
+    if string:
+        nb_letters=float(0)
+        for letter in string:
+            nb_letters+=1
+            if removeNn:
+                if letter in ['n','N']:
+                    nb_letters -=1
+                    continue
+            if not case: #no matter the case
+                if letter.upper() in dico.keys():
+                    dico[letter.upper()]+=1
+                else:
+                    dico[letter.upper()]=1
+            else: #count upper and lower case
+                if letter in dico.keys():
+                    dico[letter]+=1
+                else:
+                    dico[letter]=1        
+        # return number or frequency
+        dico['nb']=nb_letters
+        if freq:
+            for key in dico.keys():
+                if key not in ['nb']:
+                    if dico[key] != 0:
+                        dico[key] = dico[key]/nb_letters
+            return dico
+        else:
+            return dico
+    else:
+        print "Error in countLetters : letters empty"
+### Give the reverse complement of a DNA sequence, change also if iupac nucleotide
+def revCompl_DNA(seq):
+    #Return reverse complement of dna, but does not change in case of N, Y, ...
+    reverse = []
+    if seq:
+        for letter in seq: #remplir avec le complementaire
+            CORRESPONDANCE={"A":"T","a":"t","C":"G","c":"g","G":"C","g":"c","T":"A","t":"a",#usual ACGT
+                            "R":"Y","r":"y","Y":"R","y":"r",#iupac R=A/G, Y=C/T
+                            "S":"W","s":"w","W":"S","w":"s",#S=G/C, W=A/T
+                            "K":"M","k":"m","M":"K","m":"k",#K=G/T, M=A/C
+                            "B":"V","b":"v","V":"B","v":"b",# B=C/G/T, V=A/C/G
+                            "D":"H","d":"h","H":"D","h":"d"}# D=A/G/T, H=A/C/T
+            if letter in CORRESPONDANCE.keys():
+                reverse.append(CORRESPONDANCE[letter])
+            elif letter in ['u','U']:
+                print 'error, must work on DNA, and I found nome U or u'
+            else:
+                reverse.append(letter)
+        return ''.join(reverse[::-1]) #inverser
+    else: #-peut etre temporairement desactivé
+        #print 'no seq given to revCompl_DNA in GGExtraction'
+        return ""
+######## load fasta file
+if args['progress'] or VERB_LVL > 0:
+	sys.stderr.write("Loading fasta...")
+try:
+    DICO=loadFasta(FA)
+except:
+    print("WARNING: Biopython load of fasta failed")
+    DICO=Fasta_To_Dico(FA,idtag='>')
+if VERB_LVL >0:
+    print len(DICO.keys()), "loaded keys"
+    print 'exemple: keys[0] ',DICO.keys()[0]," : ", len(DICO[DICO.keys()[0]])," nt"
+######## print for each line line
+Lines = IN.readlines()
+if len(Lines) <2:
+    if VERB_LVL > 0:
+        print ("WARNING: less than 2 lines in the file")
+if args['header']: #skip first line
+    if VERB_LVL > 0:
+        print ("skipping first line")
+    FirstLine=Lines[0]
+    OUT.write( sep.join( FirstLine.split(args['endline'])[0].split(sep) +['five','three','SS5','SS3',"iA","iC","iG","iT","intron"] ) + args['endline'])
+    Lines=Lines[1:]
+else:#need to give space
+    OUT.write( sep.join( FirstLine.split(args['endline'])[0].split(sep) +['five','three','SS5','SS3',"iA","iC","iG","iT","intron"] ) + args['endline'])
+######## print first line
+kk=0
+nbTot=len(Lines)
+
+for line in Lines:
+    kk+=1
+    if kk % 100 == 0 and args['progress']:
+        sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    if kk == nbTot and args['progress']:
+        sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
+    lineSplit=line.split(args['endline'])[0].split(sep)
+    #careful: order in list
+    chro  =lineSplit[chr_index]
+    strand=lineSplit[strand_index]
+    start =int(lineSplit[starts_index]) -1 #here ici : -1 because of python string
+    end   =int(lineSplit[ends_index])
+    if chro in DICO:
+        SEQ=DICO[chro]
+    else:
+        for key in DICO.keys():
+            if chro in key:
+                if VERB_LVL > 1:
+                    print ("WARNING: chro '%s' and key '%s' are same ? (here, consider as same, because chro not in the keys)"%(chro, key))
+                SEQ=DICO[key]
+                break#one founded, stop
+
+    if VERB_LVL > 0:
+        print "current:",chro
+    IntronSeq=SEQ[start:end]
+    if 'N' in IntronSeq:
+        if VERB_LVL > 0:
+            print ("WARNING: removing intron which contain N")
+        continue
+    if 'n' in IntronSeq:
+        if VERB_LVL > 0:
+            print ("WARNING: removing intron which contain n")
+        continue
+    if len(IntronSeq) <= a5+b3:
+        if VERB_LVL > 0:
+            print ("WARNING: intron too short to extract splice site for %s"%(line))
+        continue
+    NTC=countLetters(IntronSeq, case=False, freq=True, removeNn=True)
+    if strand == '+':
+        #Extract sequence
+        SS5=SEQ[start-b5:start+a5]
+        SS3=SEQ[end-b3:end+a3]
+    elif strand == '-': #here ici : can be mistake in coordinates
+        SS5=SEQ[end-a5:end+b5]
+        SS3=SEQ[start-a3:start+b3]
+        ###reverse complement
+        SS5=revCompl_DNA(SS5)
+        SS3=revCompl_DNA(SS3)
+        IntronSeq=revCompl_DNA(IntronSeq)
+    else:
+        if VERB_LVL > 0:
+            print ("WARNING: no +/- strand for\n%s"%s(line))
+    if SS5 == '' or SS3 == '':
+        if VERB_LVL > 0:
+            print ("WARNING: empty splice site (skipped)(%s %s-%s)"%(chro,start,end))
+        continue
+    if 'n' in SS5 or 'N' in SS5:
+        if VERB_LVL > 0:
+            print ("WARNING: N or n present in 5' splice site (skipped)(%s %s-%s)"%(chro,start,end))
+        continue
+    if 'n' in SS3 or 'N' in SS3:
+        if VERB_LVL > 0:
+            print ("WARNING: empty splice site (skipped)(%s %s-%s)"%(chro,start,end))
+        continue
+    if len(SS5) != b5+a5:
+        if VERB_LVL > 0:
+            print ("WARNING: extraction of 5' splice site failed: size != %s"%(b5+a5))
+        continue
+    if len(SS3) != b3+a3:
+        if VERB_LVL > 0:
+            print ("WARNING: extraction of 3' splice site failed: size != %s"%(b3+a3))
+        continue    
+    LISTE=lineSplit+[IntronSeq[:2],IntronSeq[-2:],SS5,SS3,NTC['A'],NTC['C'],NTC['G'],NTC['T'],IntronSeq]
+    OUT.write( sep.join( [str(el) for el in LISTE] )+'\n' )

@@ -1,0 +1,119 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import sys,argparse
+parser = argparse.ArgumentParser(description='Extract feature from .introns file.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file')
+parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 04-30-2014')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('-chr',default=1,type=int,required=False,help='index chromosome name (default=1)')
+parser.add_argument('-id',default=2,type=int,required=False,help='index identifiant (default=2)')
+parser.add_argument('-parent',default=3,type=int,required=False,help='index parent (default=3)')
+parser.add_argument('-strand',default=4,type=int,required=False,help='index strand (default=4)')
+parser.add_argument('-intronsStarts',default=5,type=int,required=False,help='index start of introns (coma-separated) (default=5)')
+parser.add_argument('-intronEnds',default=6,type=int,required=False,help='index ends of introns (coma-separated) (default=6)')
+parser.add_argument('-EndByComa',action='store_true',default=False,help='add this flag if last element in starts/ends is a coma')
+parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header (fist line with names of columns)')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+args=vars(parser.parse_args())
+if args['author']:
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
+if args['copy']:
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
+VERB_LVL=args['verbose']
+IN=args['in']
+OUT=args['out']
+sep=args['sep']
+starts_index=int(args['intronsStarts'])-1
+ends_index  =int(args['intronEnds']  )-1
+chr_index   =int(args['chr']   )-1
+strand_index=int(args['strand'])-1
+id_index    =int(args['id'])    -1
+parent_index=int(args['parent'])-1
+Lines = IN.readlines()
+
+if args['header']: #skip first line
+    Lines=Lines[1:]
+#gathering genes
+if VERB_LVL > 0:
+    sys.stderr.write("Loading...")
+GENOME={}
+for rline in Lines:#for each line in the input file
+    line=rline.split(args['endline'])[0].split(sep)
+    PARENT = line[parent_index]
+    ID     = line[id_index]
+    try:
+        GENOME[PARENT][ID].append(line)#try to append : case of duplicated isoforms ids
+        sys.stderr.write("WARNING: %s %s have duplicated isoforms [keep only the first one]"%(PARENT,ID))
+    except:
+	try:#new isoform
+		GENOME[PARENT][ID]=[line]
+	except:
+		GENOME[PARENT]={} #create gene
+		GENOME[PARENT][ID]=[line] #create gene--isoform--line[]
+
+if VERB_LVL > 0:
+    sys.stderr.write("Loaded: %s genes"%len(GENOME))
+
+LIST=["chr","parent","strand","nb_iso","junctionType","position","score"]
+OUT.write(sep.join(LIST)+ args['endline'])
+
+Gene_ids=sorted(GENOME.keys())
+for Gene_id in Gene_ids:
+	positionsFIVE={}
+	positionsTHREE={}
+	nb_iso=len(GENOME[Gene_id])
+	
+	if True:
+	#if nb_iso > 1:
+		Iso_ids=sorted(GENOME[Gene_id].keys())
+		for Iso_id in Iso_ids:
+			line=GENOME[Gene_id][Iso_id][0] #if more than one line with same isoform id: keep only the first one, index=0
+			try: #NOT VERY NICE: if no introns but several isoform, skip the isoform without intron
+				STARTS=line[starts_index].split(",")   #[1:] #remove first start= not a splice junction
+				for pos in STARTS:
+					try:
+						positionsFIVE[pos]+=1
+					except KeyError:
+						positionsFIVE[pos]=1
+			except IndexError:
+				continue
+			
+			try:
+				ENDS  =line[ends_index].split(",")   #[:-1] #remove last end= not a splice junction
+				for pos in ENDS:
+					try:
+						positionsTHREE[pos]+=1
+					except KeyError:
+						positionsTHREE[pos]=1
+			except IndexError:
+				continue
+	
+		if len(positionsFIVE.keys())>0:
+			FIVES=sorted(positionsFIVE.keys())
+			for position in FIVES:
+				LISTOUT=[line[chr_index],line[parent_index],line[strand_index],nb_iso,"five",position,float(positionsFIVE[position])/nb_iso ]
+				OUT.write(sep.join([str(el) for el in LISTOUT])+args['endline'])
+		else: #nothing: put a blank
+			LISTOUT=[line[chr_index],line[parent_index],line[strand_index],nb_iso,"five","","" ]
+			OUT.write(sep.join([str(el) for el in LISTOUT])+ args['endline'])
+		
+		if len(positionsTHREE.keys())>0:
+			THREES=sorted(positionsTHREE.keys())
+			for position in THREES:
+				LISTOUT=[line[chr_index],line[parent_index],line[strand_index],nb_iso,"three",position,float(positionsTHREE[position])/nb_iso ]
+				OUT.write(sep.join([str(el) for el in LISTOUT])+ args['endline'])
+		else:#nothing: put a blank
+			LISTOUT=[line[chr_index],line[parent_index],line[strand_index],nb_iso,"three","","" ]
+			OUT.write(sep.join([str(el) for el in LISTOUT])+ args['endline'])
+	
+	#else: #just print two emty  
+	#	LISTOUT=[line[chr_index],line[parent_index],line[strand_index],nb_iso,"five","","" ]
+	#	OUT.write(sep.join([str(el) for el in LISTOUT])+args['endline'])
+	#	LISTOUT=[line[chr_index],line[parent_index],line[strand_index],nb_iso,"three","","" ]
+	#	OUT.write(sep.join([str(el) for el in LISTOUT])+args['endline'])

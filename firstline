@@ -1,0 +1,26 @@
+#!/bin/bash
+USAGE="usage: $(basename $0) file.csv [-h] [filename or - for stdin]\
+\n\n\tReturn column number and column name from a file\
+\n\nCopyright 2014 LEPENNETIER Gildas\
+\nAuthor: Gildas Lepennetier - gildas.lepennetier@hotmail.fr\
+\nCareful, using awk: multiple spaces taken as on\
+\nIn adition, use of /dev/stdin -> not in the POSIX standard"
+[[ $1 == "-h" ]] && echo -e $USAGE && exit 0
+[[ $# -eq 0 ]] && echo "Error: please give a filename or - if stdin should be read" && echo -e $USAGE && exit 1
+# if read from stdin
+if [ $1 == "-" ];then
+	File=$(cat /dev/stdin | head -n 1)
+	X=$(echo $File | wc -w)
+	for i in $(seq 1 $X); do
+		echo $File | awk "{print \"$i\" \"\t\" \$$i}" #tab separated
+	done
+	exit 0
+fi
+#if filename given
+if [ -e $1 ];then
+	X=$(head -n 1 $1 | wc -w)
+	for i in $(seq 1 $X); do
+		head -n 1 $1 | awk "{print \"$i\" \"\t\" \$$i}" #tab separated
+	done
+	exit 0
+fi

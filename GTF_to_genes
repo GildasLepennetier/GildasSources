@@ -1,0 +1,90 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import sys,argparse,re
+parser = argparse.ArgumentParser(description='Extract start and ends from GTF file for an element.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in',required=False, type=argparse.FileType('r'),default=sys.stdin, help='input file')
+parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser.add_argument('-sep',type=str,default='\t',nargs='?',help='separator (default: \\t)')
+parser.add_argument('--version', action='version', version='%(prog)s v04-03-2014')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('-element',type=str,default='exon',required=False,help='name for the element, default: exon')
+parser.add_argument('-isoIDpattern',type=str,default=".*transcript_id \"([\w.-]*)\";.*",required=False,help='pattern for the isoform ID (default:Ensembl) .*transcript_id \"([\w.-]*)\";.*')
+parser.add_argument('-geneIDpattern',type=str,default=".*gene_id \"([\w.-]*)\";.*",required=False,help='pattern for the gene ID (default:Ensembl) .*gene_id \"([\w.-]*)\";.*')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+    #Ensembl:
+#isoIDpattern = ".*transcript_id \"([\w.-]*)\";.*"
+#geneIDpattern = ".*gene_id \"([\w.-]*)\";.*"
+
+    #Flybase
+#isoIDpattern = 
+#geneIDpattern = ".*Parent=([\w.-]*);.*"
+args=vars(parser.parse_args())
+if args['author']:
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
+if args['copy']:
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
+VERB_LVL=args['verbose']
+IN=args['in']
+OUT=args['out']
+sep=args['sep']
+ELEMENT=args['element']
+isoIDpattern= args['isoIDpattern'] #str() ??
+geneIDpattern=args['geneIDpattern']
+Lines = IN.readlines()
+index_gff={'seqid':0,'source':1,'type':2,'start':3,'end':4,'score':5,'strand':6,'frame':7,'attribute':8}
+GENOME={}
+if VERB_LVL > 0:
+    print("Loading the dictionnary : genes, isoforms...")
+DICO={}
+for line in Lines:
+    if line[0] in ["#","\n"]:
+        continue
+    TYPE= line.split(sep)[index_gff['type']]
+    if TYPE != ELEMENT:
+        continue
+    ID     =re.search(isoIDpattern, line.split(sep)[index_gff['attribute']]).group(1)
+    PARENT =re.search(geneIDpattern, line.split(sep)[index_gff['attribute']]).group(1)
+    START  =line.split(sep)[index_gff['start']]
+    END    =line.split(sep)[index_gff['end']]
+    STRAND =line.split(sep)[index_gff['strand']]
+    CHROM  =line.split(sep)[index_gff['seqid']]
+    #ATTRI  =line.split(sep)[index_gff['attribute']]
+    EXON_INFOS   =[START,END,STRAND,CHROM]
+    try:
+        GENOME[PARENT][ID].append(EXON_INFOS)
+    except:
+        try:#new isoform
+            GENOME[PARENT][ID]=[EXON_INFOS]
+        except:
+            GENOME[PARENT]={} #create gene
+            GENOME[PARENT][ID]=[EXON_INFOS]
+if VERB_LVL > 0:
+    print ("%s keys in genome"%(len(GENOME.keys())))
+#first line
+OUT.write(sep.join(['Chr','iso_id','gene_id','strand','%sStarts'%ELEMENT,'%sEnds'%ELEMENT])+"\n")
+mykeys=GENOME.keys()
+mykeys.sort()
+for gene_id in mykeys:
+    GENE=GENOME[gene_id]
+    for iso_id in GENE.keys():
+        ISOFORME=GENE[iso_id]
+        exons_start=[]
+        exons_end=[]
+        strand=None
+        chrom=None
+        for tupl in ISOFORME:
+            exons_start.append(int(tupl[0]))
+            exons_end.append(int(tupl[1]))
+            strand=tupl[2]
+            chrom=tupl[3]
+            if strand not in ["+","-"]:
+                print ('ERROR: exon with bad strand [geneID isoID strand start end]: %s - %s - %s - %s'%(gene_id,iso_id,tupl[2],tupl[0],tupl[1]))
+        exons_start.sort()
+        exons_end.sort()
+        exons_s=','.join([str(el) for el in exons_start])
+        exons_e=','.join([str(el) for el in exons_end])
+        LISTE=[chrom, iso_id, gene_id, strand, exons_s, exons_e]
+        OUT.write(sep.join([str(el) for el in LISTE])+"\n")
