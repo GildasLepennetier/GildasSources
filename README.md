@@ -10,7 +10,7 @@ A selection of useful functions related to bioinformatic studies and linux tools
 
 
 
-INSTALALATION
+INSTALLATION
 
 GildasSources does not require an installation. Just add the directory in the PATH, and give the execution rights.
 Exemple of commandes:
