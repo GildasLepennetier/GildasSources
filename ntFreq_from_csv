@@ -20,10 +20,10 @@ if args['copy']:
 	print ("Copyright 2014 LEPENNETIER Gildas")
 	exit()
 VERB_LVL=args['verbose']
-IN=args['in']
-OUT=args['out']
 sep=args['sep']
+
 seq_index=int(args['sequence'])-1
+
 # COUNT OF LETTER 
 # return dico of frequency for each letter in letter list
 def countLetters(string, case=False, freq=True, removeNn=False):
@@ -31,53 +31,55 @@ def countLetters(string, case=False, freq=True, removeNn=False):
     dico={'A':0.0,'C':0.0,'G':0.0,'T':0.0}
     if string:
 	nb_letters=float(0)
+
 	for letter in string:
 	    nb_letters+=1
+
 	    if removeNn:
 		if letter in ['n','N']:
 		    nb_letters -=1
 		    continue
-		if not case: #no matter the case
-                    if letter.upper() in dico.keys():
-			dico[letter.upper()]+=1
-		    else:
-			dico[letter.upper()]=1
-		else: #count upper and lower case
-		    if letter in dico.keys():
-			dico[letter]+=1
-		    else:
-			dico[letter]=1        
+	    if not case: #no matter the case
+                if letter.upper() in dico.keys():
+		    dico[letter.upper()]+=1
+		else:
+		    dico[letter.upper()]=1
+	    else: #count upper and lower case
+		if letter in dico.keys():
+		    dico[letter]+=1
+		else:
+		    dico[letter]=1        
 	# return number or frequency
 	dico['nb']=nb_letters
+
 	if freq:
 	    for key in dico.keys():
 		if key not in ['nb']:
 		    if dico[key] != 0:
-			dico[key] = dico[key]/nb_letters
-                return dico
-	else:
-	    return dico
+			dico[key] = dico[key]/dico['nb']
+	return dico
     else:
 	return {}
 #######################     MAIN        ##############
-Lines = IN.readlines()
+Lines = args['in'].readlines()
+
 if args['header']: #skip first line
     #LineName=Lines[0].split(args['endline'])[0].split(sep)[seq_index]#strip if last one
     FL=Lines[0].split(args['endline'])[0].split(sep)
     if args['append']:
-	OUT.write(sep.join( FL + [ "%s_A"%FL[seq_index],"%s_C"%FL[seq_index],"%s_G"%FL[seq_index],"%s_T"%FL[seq_index] ] ) + args['endline'])
+	args['out'].write(sep.join( FL + [ "%s_A"%FL[seq_index],"%s_C"%FL[seq_index],"%s_G"%FL[seq_index],"%s_T"%FL[seq_index] ] ) + args['endline'])
     else:
-	OUT.write( sep.join( [ "%s_A"%FL[seq_index],"%s_C"%FL[seq_index],"%s_G"%FL[seq_index],"%s_T"%FL[seq_index] ] ) + args['endline'])
+	args['out'].write( sep.join( [ "%s_A"%FL[seq_index],"%s_C"%FL[seq_index],"%s_G"%FL[seq_index],"%s_T"%FL[seq_index] ] ) + args['endline'])
     Lines=Lines[1:]
 for rline in Lines:
     line=rline.split(args['endline'])[0].split(sep)
     SEQ=line[seq_index]
+
     DICO=countLetters(SEQ, case=False, freq=True, removeNn=False)
-    if DICO == {}:
-        LINE= [ "","","","" ]
-    else:
-        LINE= [ str(DICO['A']) , str(DICO['C']) , str(DICO['G']) , str(DICO['T']) ]
+    
+    LINE= [ str(DICO['A']) , str(DICO['C']) , str(DICO['G']) , str(DICO['T']) ]
+
     if args['append']:
-        OUT.write(sep.join( line + LINE ) + args['endline'])
+        args['out'].write(sep.join( line + LINE ) + args['endline'])
     else:
-        OUT.write( sep.join( LINE ) + args['endline'])        
+        args['out'].write( sep.join( LINE ) + args['endline'])        
