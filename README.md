@@ -27,3 +27,4 @@ INSTALLATION
 <li>Exemple:</li>
 <li>myfunction -h</li>
 </ul>
+<p>I am also trying to make them pipeble, fo they can take the stdin from a previous function redirected with a pipe ( | ). In some cases, it's not avalable, in other case not possible, and sometime you will have to give the option ( - )</p>
