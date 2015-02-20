@@ -14,6 +14,9 @@ parser.add_argument('--version', action='version', version='%(prog)s 04-28-2014'
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+
+parser.add_argument('--quiet',action='store_true',help='to remove the error messages')
+
 args=vars(parser.parse_args())
 if args['author']:
 	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
@@ -29,7 +32,8 @@ try:
 	COL1s=[int(el)-1 for el in args['c1'].split(",")]
 	COL2s=[int(el)-1 for el in args['c2'].split(",")]
 	if len(COL1s) != len(COL2s):
-		print("Error: You have to provide the same number of columns !")
+                if not args['quiet']:
+                        print("Error: You have to provide the same number of columns !")
 		exit()
 except ValueError:
 	print("Error: Bad format for the column number\n\
@@ -69,7 +73,8 @@ for line2 in lines_file2:
 	if REF_ID not in DICO:
                 DICO[REF_ID]=lineRef
 	else:
-		sys.stderr.write("Error: duplicated ID in Ref file, line omited: %s%s"%(lineRef,args['endline']))
+                if not args['quiet']:
+                        sys.stderr.write("Error: duplicated ID in Ref file, line omited: %s%s"%(lineRef,args['endline']))
 for line1 in lines_file1:
 	cur_line=line1.split(args['endline'])[0].split(sep)
 	try:
