@@ -16,6 +16,7 @@ ARGS="$4"
 STEPS=$(( $2 / $3 ))
 echo "run $FUN during $DUR s, wait $WAIT"
 for e in $(seq 1 $STEPS);do
+	echo "$e / §STEPS - $date"
 	$1
 	sleep $WAIT
 done
