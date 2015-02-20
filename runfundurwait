@@ -1,0 +1,26 @@
+#!bin/bash
+if [ $# -ne 3 ] | [ $# -ne 4 ];then
+echo -e "\
+Usage: $(basename $0) FUN DUR WAIT [ARGS]\
+\n\
+\n\tFUN:\tname of the function/script\
+\n\tDUR:\tin seconde, for how long\
+\n\tWAIT:\tin secondes, sleep between each repetition\
+\n\tARGS:\tin a string, arguments to pass to the script\
+\n\
+Author: Gildas Lepennetier"
+exit
+fi
+
+FUN=$1
+DUR=$2
+WAIT=$3
+ARGS="$4"
+STEPS=$(( $2 / $3 ))
+
+read -p "run $FUN during $DUR s wait $WAIT = $STEPS repetition? (ENTER to run, Ctrl+C to cancel)"
+
+for e in $(seq 1 $STEPS);do
+	"$1 $ARGS"
+	sleep $WAIT
+done
