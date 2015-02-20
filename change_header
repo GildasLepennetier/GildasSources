@@ -1,0 +1,21 @@
+#!/usr/bin/python
+import sys,argparse
+parser = argparse.ArgumentParser(description='Change the header of a file.',epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')
+parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='input file')
+parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 07-14-2014')#version display
+parser.add_argument('-col',type=int,required=True,help='column number')
+parser.add_argument('-new',type=str,required=True,help='new text')
+args=vars(parser.parse_args())
+index_col=int(args['col'])-1
+k=0
+for rline in args['in'].readlines():
+    k+=1
+    if k == 1:
+        line = rline.split(args['endline'])[0].split(args['sep'])
+	line[ index_col ] = str(args['new'])
+        args['out'].write( args['sep'].join( [str(el) for el in line] )+args['endline'] )
+    else:
+        args['out'].write(rline)
