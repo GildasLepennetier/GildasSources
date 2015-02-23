@@ -9,11 +9,9 @@ MaxEntScript="$HOME/MaxEnt/"
 MAXENTSCRIPTS="http://genes.mit.edu/burgelab/maxent/download/fordownload.tar.gz"
 SEP="\t"
 ############################ define usage / help function
-
 usage()
 {
 cat << EOF
-
 usage: $(basename $0) -in path/to/file [options]
 
 DESCRIPTION
@@ -37,14 +35,14 @@ ADVICE:
 
 ARGUMENTS:
 
-	OBLIGATOIRES
+	OBLIGATORILY
 	
 	-i		Input file name
 	-d		Donor splice site sequence index in the input file (first column = column 1)
 	-a		Acceptor splice site sequence index in the input file
 	-f keep|skip		Skip or not the first line in file (useful for name of columns)
 	
-	OPTIONNELS
+	OPTIONALS
 
 	-o		Output file name			(default: <infile>.MaxEnt)
 	-V		Display version
@@ -86,9 +84,6 @@ while getopts "i:d:a:o:f:t:VAh" OPTION; do
 	esac
 done
 
-
-
-
 ######## tests before run
 # input file exist
 if [ ! -e $IN ];then
@@ -99,7 +94,6 @@ fi
 if [ ! $OUT ];then
 	OUT="$IN.MaxEnt"
 fi
-
 
 #check for index
 if [ $indexCol5ss ];then
@@ -129,10 +123,6 @@ if [ ! -d $MaxEntScript ];then
 	mv "fordownload" "$HOME/MaxEnt"
 	MaxEntScript="$HOME/MaxEnt"
 fi
-
-
-
-
 
 ####################### MAIN #########################################
 if [ $TODO == "donor" ];then
