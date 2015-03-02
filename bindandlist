@@ -16,17 +16,17 @@ FBgn0000009	FA_02
 
 (here, sep2 is ';')
 """
-parser = argparse.ArgumentParser(description='Bin depending on a column ("-gatherColIndex") and extract a list of elements ("-binColIndex"). This function is order-preserving.',epilog='Author: Gildas Lepennetier: glepe_01@uni-muenster.de')
+parser = argparse.ArgumentParser(description='Bin depending on a column ("-gatherColIndex") and extract a list of elements on one other column ("-binColIndex"). This function is order-preserving.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 #INPUT AND OUTPUT
 parser.add_argument('-in',  required=False, type=argparse.FileType('r'),help='input file name - default stdin')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file name - default stdout')
 parser.add_argument('-sep', type=str,default='\t',required=False,help='separator of the input file (default: \\t )')
 parser.add_argument('-sep2',type=str,default=',',required=False,help='separator for the bins (default: , )')
 parser.add_argument('--version', action='version', version='%(prog)s 26 Sep 2014')#version display
-parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity. 1: print time 2:print each step')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity.')
 parser.add_argument('-header', action='store_true',default=False,help='add this flag if you have an header')
 parser.add_argument('-gatherColIndex',type=int,default=1,required=False,help='index of the id column (uniq applied) (default: 1)')
-parser.add_argument('-binColIndex',   type=int,default=2,required=False,help='index of the column to count (default: 2)')
+parser.add_argument('-binColIndex',type=int,default=2,required=False,help='index of the column to count (default: 2)')
 parser.add_argument('-exemple', action='store_true',default=False,help='Do you want an exemple?')
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
