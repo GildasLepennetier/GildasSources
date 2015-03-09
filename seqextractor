@@ -119,8 +119,6 @@ if not args['printFasta']:
             args['out'].write( sep.join( [str(el) for el in [SEQNAME] ] ) + args['endline'])
 kk=0
 nbTot=len(LINES)
-if len(LINES) < 2:
-    sys.stderr.write("WARNING: not a lot of lines loaded !")
 for rline in LINES:
     kk+=1
     if kk % 100 == 0 and args['progress']:
