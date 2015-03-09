@@ -24,6 +24,8 @@ usage: $(basename $0) [jfodrp] [h]
 DESCRIPTION
 	
 	Print your current IP, as displayed in a website in a file.
+	Under development: copy of this file in a distant computer,
+	or update of a database of ip.
 	
 	Default server that display your ip: 
 		$server_get
@@ -104,5 +106,4 @@ done
 echo $(getip) > "$OUT/$file_name"
 if [ ! -z "$var" ]; then
 	scp -P "$server_port" "$OUT/$file_name" "$server_cp"
-	exit 0
 fi
