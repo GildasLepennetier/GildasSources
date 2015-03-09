@@ -101,8 +101,6 @@ except:
     if VERB_LVL > 1:
         sys.stderr.write("Fasta loading using Biopython failled, using personnal function")
     DICOChrom = Fasta_To_Dico(FASTA,endline=args['endline'])
-if VERB_LVL > 0:
-    sys.stderr.write("Loaded %s genes"%(len(DICOChrom)))
 lineNB=0
 LINES=IN.readlines()
 FIRSTLINE=LINES[0].split(args['endline'])[0].split(sep)
