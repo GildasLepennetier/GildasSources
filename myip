@@ -1,0 +1,50 @@
+#!/bin/bash
+#coding: utf-8
+#================================================
+# default values
+VERSION="1.0"
+AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
+COPY="Copyright 2015 LEPENNETIER Gildas"
+CREATION="23 Feb 2015"
+#================================================
+# functions
+
+#server_get="http://gildas.idi-informatique.fr/ip.php"
+#getip(){ echo $(wget $1 -qO- | grep -Po '((25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)');}
+
+#server_get="checkip.dyndns.org"
+#getip(){ echo $(curl -s $1 | sed -e 's/.*Current IP Address: //' -e 's/<.*$//');}
+
+#server_get="http://ipecho.net/plain"
+#getip(){ echo $( wget -qO- $1 ; echo);}
+
+#server_get="ifconfig.me/ip"
+server_get="ipv4.icanhazip.com"
+#### server_get="ipv6.icanhazip.com"
+getip(){ curl $1;}
+#getip(){wget -qO- $1;}
+
+
+usage()
+{
+cat << EOF
+usage: $(basename $0) [address] [-h]
+
+DESCRIPTION
+
+	Print your current IP, as displayed in a website.
+
+	Any argument other than -h will be taken as a server address.
+
+
+-----------------------
+	$AUTHOR
+	Version $VERSION - Creation $CREATION
+	$COPY
+EOF
+}
+
+#================================================
+if [ "$1" == "-h" ];then usage; exit; fi
+if [ $1 ];then server_get="$1"; fi
+getip "$server_get"

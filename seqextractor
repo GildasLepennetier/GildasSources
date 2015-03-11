@@ -9,8 +9,8 @@ parser.add_argument('-sep',type=str,default='\t',required=False,help='separator 
 parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s 06-18-2014')#version display
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
-parser.add_argument('-starts',type=int,required=True,help='column number for start of exons (coma-separated)')
-parser.add_argument('-ends',type=int,required=True,help='column number for ends of exons (coma-separated)')
+parser.add_argument('-starts',type=int,required=True,help='column number for start of sequence')
+parser.add_argument('-ends',type=int,required=True,help='column number for end of sequence')
 parser.add_argument('-chr',type=int,required=True,help='column number for chromosome name')
 parser.add_argument('-strand',type=int,required=True,help='column number for strand')
 parser.add_argument('-SeqName',type=str,required=False,help='Name to give to the column. default: concatenation of start-end names')
@@ -101,8 +101,6 @@ except:
     if VERB_LVL > 1:
         sys.stderr.write("Fasta loading using Biopython failled, using personnal function")
     DICOChrom = Fasta_To_Dico(FASTA,endline=args['endline'])
-if VERB_LVL > 0:
-    sys.stderr.write("Loaded %s genes"%(len(DICOChrom)))
 lineNB=0
 LINES=IN.readlines()
 FIRSTLINE=LINES[0].split(args['endline'])[0].split(sep)
@@ -110,19 +108,15 @@ if not args['printFasta']:
     SEQNAME="%s_%s_seq"%(FIRSTLINE[starts_index],FIRSTLINE[ends_index] )
     if args['SeqName']:
         SEQNAME=args['SeqName']
-            
     if args['header']:
         lineNB+=1
         LINES=LINES[1:]
-        
         if args['append']:
             args['out'].write( sep.join( [str(el) for el in FIRSTLINE + [SEQNAME] ] ) + args['endline'])
         else:
             args['out'].write( sep.join( [str(el) for el in [SEQNAME] ] ) + args['endline'])
 kk=0
 nbTot=len(LINES)
-if len(LINES) < 2:
-    sys.stderr.write("WARNING: not a lot of lines loaded !")
 for rline in LINES:
     kk+=1
     if kk % 100 == 0 and args['progress']:
@@ -140,7 +134,6 @@ for rline in LINES:
     except: # ValueError =string, empty or not, instead of int in column
 	if VERB_LVL > 0:
             sys.stderr.write("WARNING: Failed line %s%s"%(lineNB,args['endline']))
-
         if not args['printFasta']:
             if args['append']:
                 args['out'].write( sep.join( line+[""] )+ args['endline']) #put empty if no sequence to extract
@@ -148,18 +141,26 @@ for rline in LINES:
                 args['out'].write( args['endline'] ) #put empty if no sequence to extract
                 continue
     try:
-	SEQ = DICOChrom[Chr][Start:End]
-	if Strand == "-":
-	    SEQ = revCompl_DNA( SEQ )
-
-	if args['append']:
-    	    args['out'].write( sep.join( line+[SEQ] )+ args['endline'] )
-    	else:
-            #fasta-like
-            if args['printFasta']:
-                args['out'].write(">%s:%s-%s %s%s%s%s"%(Chr,Start,End,Strand,args['endline'],insert_in_string(SEQ,insert=args['endline'],each=80),args['endline']))#using function conversion to fasta
-            else:
-                args['out'].write("%s%s"%(SEQ,args['endline']))
+        SEQ = DICOChrom[Chr][Start:End]
+	if SEQ:
+                if Strand == "-":
+                    SEQ = revCompl_DNA( SEQ )
+                if args['append']:
+                    args['out'].write( sep.join( line+[SEQ] )+ args['endline'] )
+                else:
+                    if args['printFasta']: #fasta-like
+                        args['out'].write(">%s:%s-%s %s%s%s%s"%(Chr,Start,End,Strand,args['endline'],insert_in_string(SEQ,insert=args['endline'],each=80),args['endline']))#using function conversion to fasta
+                    else:
+                        args['out'].write("%s%s"%(SEQ,args['endline']))
+        else:
+                sys.stderr.write("WARNING: Failed line %s - %s %s %s\n"%(lineNB,Chr,Start,End))
+                if args['append']:
+                    args['out'].write( sep.join( line+["Error_during_extraction"] )+ args['endline'] )
+                else:
+                    if args['printFasta']: #fasta-like
+                        args['out'].write(">%s:%s-%s %s%s%s%s"%(Chr,Start,End,Strand,args['endline'],"Error_during_extraction",args['endline']))#using function conversion to fasta
+                    else:
+                        args['out'].write("%s%s"%("Error_during_extraction",args['endline']))
     except KeyError:
         if VERB_LVL > 0:
             sys.stderr.write("WARNING: line %s : no record in fasta for %s%s"%(lineNB,Chr,args['endline']))
