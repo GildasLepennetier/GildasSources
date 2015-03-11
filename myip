@@ -1,0 +1,34 @@
+#!/bin/bash
+#coding: utf-8
+#================================================
+# default values
+VERSION="1.0"
+AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
+COPY="Copyright 2015 LEPENNETIER Gildas"
+CREATION="23 Feb 2015"
+#================================================
+# functions
+
+server_get="http://gildas.idi-informatique.fr/ip.php"
+
+getip(){ echo $(wget $1 -q -O - | grep -Po '((25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)'); }
+
+usage()
+{
+cat << EOF
+usage: $(basename $0) [jfodrp] [h]
+
+DESCRIPTION
+
+	Print your current IP, as displayed in a website.
+
+-----------------------
+	$AUTHOR
+	Version $VERSION - Creation $CREATION
+	$COPY
+EOF
+}
+
+#================================================
+
+getip $server_get
