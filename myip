@@ -7,7 +7,7 @@ AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
 COPY="Copyright 2015 LEPENNETIER Gildas"
 CREATION="23 Feb 2015"
 #================================================
-# functions
+#server_get="http://mire.ipadsl.net/"
 
 #server_get="http://gildas.idi-informatique.fr/ip.php"
 #getip(){ echo $(wget $1 -qO- | grep -Po '((25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)');}
@@ -21,8 +21,8 @@ CREATION="23 Feb 2015"
 #server_get="ifconfig.me/ip"
 server_get="ipv4.icanhazip.com"
 #### server_get="ipv6.icanhazip.com"
-getip(){ curl $1;}
-#getip(){wget -qO- $1;}
+#getip(){ curl -s $1;}
+getip(){ wget -qO- $1;}
 
 
 usage()
