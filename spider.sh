@@ -12,7 +12,7 @@ CREATION="13 March 2015"
 mydb="domains_db.txt"
 todo="domains_todo.txt"
 explored="domains_explored.txt"
-DEPTH=3
+DEPTH=1
 if [ $DEPTH -gt 1 ];then buffer1=$(mktemp -p $(pwd)); fi
 keep_tmp_in_todo=true
 maxtime=600 #default: 10 minutes
@@ -75,19 +75,21 @@ urlExists(){ curl --output /dev/null --silent --head --fail "$1";}
 # select 1 random lines from a file, file is $1
 getRandom(){ sort -R "$1"|head -n 1;}
 
-
-
 #==============================
 #	MAIN
 #==============================
 #print usage is asked
 if [ "$1" == "-h" ];then usage;exit;fi
 
-# initialization databases if not existing
-if [ ! -e "$mydb" ];then echo "init $mydb"; echo -e "url\tepoch" > "$mydb" ;fi
+url=$1
 
 #check given url, if ok add to todo list
-if urlExists "$1"; then echo "$1" >> "$todo"; fi
+if urlExists "$url"; then echo "$url" >> "$todo"; else echo -e "No url / Bad url\nPlease give an url as first argument, of -h for help"; exit 1; fi
+
+if [ $(cat "$todo" | wc -l) -eq 0 ];then echo -e "Nothing in todo file ($todo)\nend: $(date)"; exit 1; fi
+
+# initialization databases if not existing
+if [ ! -e "$mydb" ];then echo "init $mydb"; echo -e "url\tepoch" > "$mydb" ;fi
 
 # need to create a file of explored links, to grep in something
 if [ ! -e "$explored" ];then touch "$explored";fi
@@ -103,10 +105,17 @@ while [ 0 ]; do
 	total=$(cat "$todo" | wc -l) #nb of lines in todo file
 	for k in $(seq 1 $total) #for each line
 	do
-		if [ $(date +%s) -gt  $endtime ];then echo -e "\nend of time ($maxtime s)"; echo -e "\nend: $(date)"; exit 1; fi #stop if take too long
+		if [ $(date +%s) -gt  $endtime ];then 
+			if [ "$keep_tmp_in_todo" == "true" ];then cat "$buffer1" >> "$todo";fi
+			rm -f "$buffer1"
+			echo -e "\nend of time ($maxtime s) $(date)"
+			echo -e "\nend: $(date)"
+			exit 1
+		fi #stop if take too long
+		
 		currentLink=$(head -n 1 "$todo")
 		if ! grep -q "$currentLink" "$explored";then 
-			currentDomain=$(getBaseDomain "$currentLink"); echo -en "\r$k / $total\t- spider on $currentLink - depth=$DEPTH\033[0K"
+			currentDomain=$(getBaseDomain "$currentLink"); echo -en "\r$k / $total - spider on $currentLink - depth=$DEPTH\033[0K"
 			links_all=$(getLinksFromURL "$currentLink")
 			#get links on the page
 			echo "$links_all" | getInternalLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$todo" #links to page / internals
@@ -118,9 +127,9 @@ while [ 0 ]; do
 			#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e".bmp" -e".gif" -e".png" -e".jpg" -e".jpeg" -e".tiff" #pictures
 			#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e"xml" #feeds
 			echo "$currentLink" >> "$explored"
-			tail -n +2 "$todo" | sort | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # once exploration finished, remove from todo list / avoid duplicates
+			tail -n +2 "$todo" | sort -R | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # once exploration finished, remove from todo list / avoid duplicates
 		else
-			tail -n +2 "$todo" | sort | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # if already visited, remove from todo list / avoid duplicates
+			tail -n +2 "$todo" | sort -R | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # if already visited, remove from todo list / avoid duplicates
 		fi
 	done
 	if [ $DEPTH -gt 1 ];then 
@@ -128,8 +137,7 @@ while [ 0 ]; do
 		rm "$buffer1"
 		DEPTH=$(($DEPTH-1)) #reduce depth, since already explored
 	fi #links to pages / external
-	total=$(cat "$todo" | wc -l) #nb of lines in todo file
-	if [ $total -eq 0 ];then echo -e "\nend: $(date)"; exit; fi
+	if [ $(cat "$todo" | wc -l) -eq 0 ];then echo -e "\nend: $(date)"; exit; fi
 done
 if [ "$keep_tmp_in_todo" == "true" ];then cat "$buffer1" >> "$todo";fi
 rm -f "$buffer1"
