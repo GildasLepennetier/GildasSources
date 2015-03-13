@@ -84,7 +84,7 @@ if [ "$1" == "-h" ];then usage;exit;fi
 url=$1
 
 #check given url, if ok add to todo list
-if urlExists "$url"; then echo "$url" >> "$todo"; else echo -e "No url / Bad url\nPlease give an url as first argument, of -h for help"; exit 1; fi
+if urlExists "$url"; then echo "$url" >> "$todo"; else echo -e "No url / Bad url\nPlease give an url as first argument, of -h for help"; fi
 
 if [ $(cat "$todo" | wc -l) -eq 0 ];then echo -e "Nothing in todo file ($todo)\nend: $(date)"; exit 1; fi
 
@@ -97,8 +97,6 @@ if [ ! -e "$explored" ];then touch "$explored";fi
 starttime=$(date +%s)
 echo "start: $(date)"
 endtime=$(($starttime + $maxtime))
-
-DEPTH=$(($DEPTH+1)) #need to increase, so we really make two round
 
 # explore until run out of time
 while [ 0 ]; do
