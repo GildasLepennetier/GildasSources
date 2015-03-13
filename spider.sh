@@ -12,8 +12,9 @@ CREATION="13 March 2015"
 mydb="domains_db.txt"
 todo="domains_todo.txt"
 explored="domains_explored.txt"
-DEPTH=1
+DEPTH=3
 if [ $DEPTH -gt 1 ];then buffer1=$(mktemp -p $(pwd)); fi
+keep_tmp_in_todo=true
 maxtime=600 #default: 10 minutes
 
 #==============================
@@ -95,39 +96,40 @@ starttime=$(date +%s)
 echo "start: $(date)"
 endtime=$(($starttime + $maxtime))
 
+DEPTH=$(($DEPTH+1)) #need to increase, so we really make two round
+
 # explore until run out of time
-if [ 0 ];then
+while [ 0 ]; do
 	total=$(cat "$todo" | wc -l) #nb of lines in todo file
-	while [ $total -gt 0 ]; do
-		total=$(cat "$todo" | wc -l) #nb of lines in todo file
-		for k in $(seq 1 $total) #for each line
-		do
-			if [ $(date +%s) -gt  $endtime ];then echo -e "\nend of time ($maxtime s)"; echo -e "\nend: $(date)"; exit 1; fi #stop if take too long
-			currentLink=$(head -n 1 "$todo")
-			if ! grep -q "$currentLink" "$explored";then 
-				currentDomain=$(getBaseDomain "$currentLink"); echo -en "\r$k / $total\t- spider on $currentLink - depth=$DEPTH\033[0K"
-				links_all=$(getLinksFromURL "$currentLink")
-				#get links on the page
-				echo "$links_all" | getInternalLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$todo" #links to page / internals
-				if [ $DEPTH -gt 1 ];then echo "$links_all" | getExternLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$buffer1"; fi #links to pages / external
-				#if domain is new, added in db
-				if ! grep -q "$currentDomain" "$mydb";then
-					echo -e "$currentDomain\t$(date +%s)" >> "$mydb"
-				fi
-				#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e".bmp" -e".gif" -e".png" -e".jpg" -e".jpeg" -e".tiff" #pictures
-				#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e"xml" #feeds
-				echo "$currentLink" >> "$explored"
-				tail -n +2 "$todo" | sort | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # once exploration finished, remove from todo list / avoid duplicates
-			else
-				tail -n +2 "$todo" | sort | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # if already visited, remove from todo list / avoid duplicates
+	for k in $(seq 1 $total) #for each line
+	do
+		if [ $(date +%s) -gt  $endtime ];then echo -e "\nend of time ($maxtime s)"; echo -e "\nend: $(date)"; exit 1; fi #stop if take too long
+		currentLink=$(head -n 1 "$todo")
+		if ! grep -q "$currentLink" "$explored";then 
+			currentDomain=$(getBaseDomain "$currentLink"); echo -en "\r$k / $total\t- spider on $currentLink - depth=$DEPTH\033[0K"
+			links_all=$(getLinksFromURL "$currentLink")
+			#get links on the page
+			echo "$links_all" | getInternalLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$todo" #links to page / internals
+			if [ $DEPTH -gt 1 ];then echo "$links_all" | getExternLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$buffer1"; fi #links to pages / external
+			#if domain is new, added in db
+			if ! grep -q "$currentDomain" "$mydb";then
+				echo -e "$currentDomain\t$(date +%s)" >> "$mydb"
 			fi
-		done
+			#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e".bmp" -e".gif" -e".png" -e".jpg" -e".jpeg" -e".tiff" #pictures
+			#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e"xml" #feeds
+			echo "$currentLink" >> "$explored"
+			tail -n +2 "$todo" | sort | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # once exploration finished, remove from todo list / avoid duplicates
+		else
+			tail -n +2 "$todo" | sort | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # if already visited, remove from todo list / avoid duplicates
+		fi
 	done
 	if [ $DEPTH -gt 1 ];then 
 		cat "$buffer1" >> "$todo" #add the discovered external links in the todo list
 		rm "$buffer1"
 		DEPTH=$(($DEPTH-1)) #reduce depth, since already explored
 	fi #links to pages / external
-	echo "end: $(date)"
-fi
+	total=$(cat "$todo" | wc -l) #nb of lines in todo file
+	if [ $total -eq 0 ];then echo -e "\nend: $(date)"; exit; fi
+done
+if [ "$keep_tmp_in_todo" == "true" ];then cat "$buffer1" >> "$todo";fi
 rm -f "$buffer1"
