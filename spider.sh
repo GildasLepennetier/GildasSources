@@ -90,9 +90,6 @@ if [ "$1" == "-h" ];then usage;exit;fi
 
 url=$1
 
-getBaseDomain $1
-exit
-
 #check given url, if ok add to todo list
 if urlExists "$url"; then echo "$url" >> "$todo"; else echo -e "No url / Bad url\nPlease give an url as first argument, of -h for help"; fi
 
@@ -111,6 +108,8 @@ endtime=$(($starttime + $maxtime))
 # explore until run out of time
 while [ 0 ]; do
 	total=$(cat "$todo" | wc -l) #nb of lines in todo file
+	
+	### put addresses in RAM
 	for k in $(seq 1 $total) #for each line
 	do
 		if [ $(date +%s) -gt  $endtime ];then 
@@ -146,6 +145,7 @@ while [ 0 ]; do
 		DEPTH=$(($DEPTH-1)) #reduce depth, since already explored
 	fi #links to pages / external
 	if [ $(cat "$todo" | wc -l) -eq 0 ];then echo -e "\nend: $(date)"; exit; fi
+	#clean explored ??
 done
 if [ "$keep_tmp_in_todo" == "true" ];then cat "$buffer1" >> "$todo";fi
 rm -f "$buffer1"
