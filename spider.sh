@@ -12,10 +12,12 @@ CREATION="13 March 2015"
 mydb="domains_db.txt"
 todo="domains_todo.txt"
 explored="domains_explored.txt"
-DEPTH=1
-if [ $DEPTH -gt 1 ];then buffer1=$(mktemp -p $(pwd)); fi
+
+DEPTH=-1
+
+if [ $DEPTH -gt 1 ] || [ $DEPTH -lt 0 ];then buffer1=$(mktemp -p $(pwd)); fi
 keep_tmp_in_todo=true
-maxtime=600 #default: 10 minutes
+maxtime=$((60*60*24)) #default: 10 minutes
 
 #==============================
 #	FUNCTIONS
@@ -67,7 +69,12 @@ echo $data | grep -ve "$1"|grep -ve "http://" -ve "https://" -ve "ftp://"|sed '1
 done;}
 
 # get a domain name from a link
-getBaseDomain(){ suffix=${1##*//};echo "${1%%//*}//${suffix%%/*}";}
+getBaseDomain(){
+prefix=${1%%//*}
+suffix=${1#*//}
+domain=${suffix%%/*}
+echo "$prefix//$domain"
+}
 
 # use curl to know if url exist
 urlExists(){ curl --output /dev/null --silent --head --fail "$1";}
@@ -82,6 +89,9 @@ getRandom(){ sort -R "$1"|head -n 1;}
 if [ "$1" == "-h" ];then usage;exit;fi
 
 url=$1
+
+getBaseDomain $1
+exit
 
 #check given url, if ok add to todo list
 if urlExists "$url"; then echo "$url" >> "$todo"; else echo -e "No url / Bad url\nPlease give an url as first argument, of -h for help"; fi
@@ -113,11 +123,11 @@ while [ 0 ]; do
 		
 		currentLink=$(head -n 1 "$todo")
 		if ! grep -q "$currentLink" "$explored";then 
-			currentDomain=$(getBaseDomain "$currentLink"); echo -en "\r$k / $total - spider on $currentLink - depth=$DEPTH\033[0K"
+			currentDomain=$(getBaseDomain "$currentLink"); echo -en "\r$k / $total - spider on $currentLink - depth=$DEPTH \033[0K"
 			links_all=$(getLinksFromURL "$currentLink")
 			#get links on the page
 			echo "$links_all" | getInternalLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$todo" #links to page / internals
-			if [ $DEPTH -gt 1 ];then echo "$links_all" | getExternLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$buffer1"; fi #links to pages / external
+			if [ $DEPTH -gt 1 ] || [ $DEPTH -lt 0 ];then echo "$links_all" | getExternLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$buffer1"; fi #links to pages / external
 			#if domain is new, added in db
 			if ! grep -q "$currentDomain" "$mydb";then
 				echo -e "$currentDomain\t$(date +%s)" >> "$mydb"
@@ -130,7 +140,7 @@ while [ 0 ]; do
 			tail -n +2 "$todo" | sort -R | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # if already visited, remove from todo list / avoid duplicates
 		fi
 	done
-	if [ $DEPTH -gt 1 ];then 
+	if [ $DEPTH -gt 1 ] || [ $DEPTH -lt 0 ];then 
 		cat "$buffer1" >> "$todo" #add the discovered external links in the todo list
 		rm "$buffer1"
 		DEPTH=$(($DEPTH-1)) #reduce depth, since already explored
