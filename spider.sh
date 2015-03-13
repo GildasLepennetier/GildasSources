@@ -2,25 +2,19 @@
 #coding:utf-8
 
 #==============================
-#	DESCRIPTION
-#==============================
-
-	# too much disk access: need ram
-	# random sorting: too much efforts ( | sort -R )
-	# limit to a domain / a depth of X
-	# 
-	
-#epoch: Jan 1 1970
-	
-#==============================
 #	VARIABLES
 #==============================
+VERSION="1.0"
+AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
+COPY="Copyright 2015 LEPENNETIER Gildas"
+CREATION="13 March 2015"
+
 mydb="domains_db.txt"
 todo="domains_todo.txt"
 explored="domains_explored.txt"
-
-maxtime=$1
-if [ -z $maxtime ];then maxtime=10; fi
+DEPTH=1
+if [ $DEPTH -gt 1 ];then buffer1=$(mktemp -p $(pwd)); fi
+maxtime=600 #default: 10 minutes
 
 #==============================
 #	FUNCTIONS
@@ -29,110 +23,111 @@ if [ -z $maxtime ];then maxtime=10; fi
 # usage function
 usage(){
 cat << EOF
-	usage: $(basename $0)
-	----
-	Explore domains
+	usage: $(basename $0) url [-h]
+	
+	A spider for the big web.
+	
+	DESCRIPTION
+	
+	Explore web domains from a todo file ($todo)
 	Extract external and internal links
-	Create a domains database
-	----
+	Create a domains database ($mydb)
+	Keep track of explored links ($explored)
+	Can crawl with different depth (default: $DEPTH)
+	Stop if taking too long (max time: $maxtime)
+	
+	ARGUMENTS
+
+	-h		print help
+	
+-----------------------
+	$AUTHOR
+	Version $VERSION - Creation $CREATION
+	$COPY
 EOF
 }
 
 # get list of links from a url, url is $1
-getLinksFromURL(){ 
-curl $1 --silent --compressed --fail --max-time 60 --retry 3 --retry-delay 10 | 
-grep -E "href=['\"]{1}([^ #&?]*)['\"]{1}" --only-matching --no-messages | 
-sed -e "s/href=//g" -e "s/'//g" -e "s/\"//g" -e "s/\/$//g"
-}
+getLinksFromURL(){ curl $1 --silent --compressed --fail --max-time 15 --retry 3 --retry-delay 10 | grep -E "href=['\"]{1}([^ #&?]*)['\"]{1}" --only-matching --no-messages | sed -e "s/href=//g" -e "s/'//g" -e "s/\"//g" -e "s/\/$//g";}
 
 # from the list given in pipe, print only external links to domain $1
 getExternLinks(){ 
-while read data
-do 
+while read data;do 
 echo $data | 
 grep -e "http://" -e "https://" -e "ftp://" | 
 grep -v -e "$1"
-done
-}
+done ;}
+
+# from the list given in pipe, print only internal links to domain $1 / create link if relative path
 getInternalLinks(){ 
-while read data
-do 
+while read data;do 
 echo $data | grep -e "$1" #for the link fully made
-echo $data | grep -ve "$1" | grep -ve "http://" -ve "https://" -ve "ftp://" | awk "{print \"$1\" \"/\" \$0}"
-done
-}
+echo $data | grep -ve "$1"|grep -ve "http://" -ve "https://" -ve "ftp://"|sed '1s/^\///'|awk "{print \"$1\" \"/\" \$0}"
+done;}
 
 # get a domain name from a link
-getBaseDomain(){
-	suffix=${1##*//} 
-	echo "${1%%//*}//${suffix%%/*}"
-}
-#getBaseDomain https://soutien.laquadrature.net/tefr/dfsf/
+getBaseDomain(){ suffix=${1##*//};echo "${1%%//*}//${suffix%%/*}";}
+
+# use curl to know if url exist
+urlExists(){ curl --output /dev/null --silent --head --fail "$1";}
 
 # select 1 random lines from a file, file is $1
-#getRandom(){ sort -R "$1" | head -n 1; }
-
+getRandom(){ sort -R "$1"|head -n 1;}
 
 
 
 #==============================
 #	MAIN
 #==============================
+#print usage is asked
+if [ "$1" == "-h" ];then usage;exit;fi
 
-# initialization databases
-if [ ! -e "$mydb" ];then 
-	echo "no $mydb file found..."
-	read -p "please enter an url: " url
-	if curl --output /dev/null --silent --head --fail "$url"; then
-		echo "init $mydb"
-		echo -e "url\tepoch" > "$mydb"
-		echo "url added to $todo"
-		echo "$url" >> "$todo"
-	else
-		echo "url does not exist, aborded"; exit 1
-	fi
-fi
-# check if file exist
-if [ ! -e "$explored" ];then touch "$explored"; fi
+# initialization databases if not existing
+if [ ! -e "$mydb" ];then echo "init $mydb"; echo -e "url\tepoch" > "$mydb" ;fi
 
-# explore first domain in list
+#check given url, if ok add to todo list
+if urlExists "$1"; then echo "$1" >> "$todo"; fi
 
+# need to create a file of explored links, to grep in something
+if [ ! -e "$explored" ];then touch "$explored";fi
 
 starttime=$(date +%s)
 echo "start: $(date)"
 endtime=$(($starttime + $maxtime))
-while [ 0 ]; do
-	total=$(cat "$todo" | wc -l)
-	for k in $(seq 1 $total)
-	do
-		if [ $(date +%s) -gt  $endtime ];then echo -e "\nend of time ($maxtime s)"; echo "end: $(date)"; exit 1; fi
-		currentLink=$(head -n 1 "$todo")
-		if ! grep -q "$currentLink" "$explored";then 
-			echo "$currentLink" >> "$explored"
-			currentDomain=$(getBaseDomain "$currentLink")
 
-			echo -en "\r$k / $total\t- spider on $currentLink\033[0K"
-			
-			links_all=$(getLinksFromURL "$currentLink")
-			#echo -e "\n\t External links:"
-			echo "$links_all" | getExternLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$todo" #ifexternal link, put in todo list
-			#echo -e "\n\t Internal links:"
-			echo "$links_all" | getInternalLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$todo"
-			cat "$todo" | sort | uniq > "$todo.tmp"
-			mv "$todo.tmp" "$todo"
-			#if not found, added
-			if ! grep -q "$currentDomain" "$mydb";then echo -e "$currentDomain\t$(date +%s)" >> "$mydb"; fi
-			#echo -e "\n\t Internal pictures:"
-			#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e".bmp" -e".gif" -e".png" -e".jpg" -e".jpeg" -e".tiff"
-			#echo -e "\n\t Internal XML:"
-			#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e"xml"
-			# once exploration finished, remove from list
-			tail -n +2 "$todo" > "$todo.tmp" && mv "$todo.tmp" "$todo"
-		else
-			tail -n +2 "$todo" > "$todo.tmp" && mv "$todo.tmp" "$todo"
-		fi
+# explore until run out of time
+if [ 0 ];then
+	total=$(cat "$todo" | wc -l) #nb of lines in todo file
+	while [ $total -gt 0 ]; do
+		total=$(cat "$todo" | wc -l) #nb of lines in todo file
+		for k in $(seq 1 $total) #for each line
+		do
+			if [ $(date +%s) -gt  $endtime ];then echo -e "\nend of time ($maxtime s)"; echo -e "\nend: $(date)"; exit 1; fi #stop if take too long
+			currentLink=$(head -n 1 "$todo")
+			if ! grep -q "$currentLink" "$explored";then 
+				currentDomain=$(getBaseDomain "$currentLink"); echo -en "\r$k / $total\t- spider on $currentLink - depth=$DEPTH\033[0K"
+				links_all=$(getLinksFromURL "$currentLink")
+				#get links on the page
+				echo "$links_all" | getInternalLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$todo" #links to page / internals
+				if [ $DEPTH -gt 1 ];then echo "$links_all" | getExternLinks "$currentDomain" | grep -i -e".php" -e".html" >> "$buffer1"; fi #links to pages / external
+				#if domain is new, added in db
+				if ! grep -q "$currentDomain" "$mydb";then
+					echo -e "$currentDomain\t$(date +%s)" >> "$mydb"
+				fi
+				#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e".bmp" -e".gif" -e".png" -e".jpg" -e".jpeg" -e".tiff" #pictures
+				#echo "$links_all" | getInternalLinks $currentDomain | grep -i -e"xml" #feeds
+				echo "$currentLink" >> "$explored"
+				tail -n +2 "$todo" | sort | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # once exploration finished, remove from todo list / avoid duplicates
+			else
+				tail -n +2 "$todo" | sort | uniq > "$todo.tmp" && mv "$todo.tmp" "$todo" # if already visited, remove from todo list / avoid duplicates
+			fi
+		done
 	done
-done
-echo "end: $(date)"
-
-
+	if [ $DEPTH -gt 1 ];then 
+		cat "$buffer1" >> "$todo" #add the discovered external links in the todo list
+		rm "$buffer1"
+		DEPTH=$(($DEPTH-1)) #reduce depth, since already explored
+	fi #links to pages / external
+	echo "end: $(date)"
+fi
+rm -f "$buffer1"
