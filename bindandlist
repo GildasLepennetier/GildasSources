@@ -75,7 +75,7 @@ IDs=sorted(DICO.keys())
 for ID in IDs:
     #ELEMs=sorted(DICO[ID])# non-order-preserving
     ELEMs=DICO[ID]
-    args['out'].write(sep.join( [ str(el) for el in [ ID, sep2.join ([el for el in ELEMs]) ]])+"\n" )
+    args['out'].write(sep.join( [ el for el in [ ID, sep2.join ([el for el in ELEMs]) ]])+"\n")
 if VERB_LVL > 0:
     now=datetime.datetime.now() #now.year,now.month,now.day,now.hour,now.minute,now.microsecond
     print ("End: %s"%(now.strftime("%Y-%m-%d %H:%M:%S")))
