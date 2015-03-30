@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys,re,os,argparse,datetime
-parser = argparse.ArgumentParser(description='Match the coordinates of a request file on a reference file. Files should be in a csv-like format. Output: [[ Request line,matching Statut,Reference Line Matched ]]',epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')
+parser = argparse.ArgumentParser(description='Match the coordinates of a request file on a reference file. Files should be in a csv-like format. Output: [[ Request line,matching Statut,Reference Line Matched ]]',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-req', required=True, type=argparse.FileType('r'),help='request file (list of elements to match)')
 parser.add_argument('-ref', required=True, type=argparse.FileType('r'),help='reference file (where to search for)')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
