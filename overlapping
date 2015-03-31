@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys,re,argparse
-parser = argparse.ArgumentParser(description='Search overlapping genes. This function does not require a file sorted by coordinates. Default behaviour will self-match (find yourself) and mirror match (A match B == B match A).',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser = argparse.ArgumentParser(description='Search overlapping genes. This function does not require a file sorted by coordinates. Default behaviour will not self-match (find yourself) and mirror match (A match B == B match A).',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False,default=sys.stdin,type=argparse.FileType('r'),help='Input file')
 parser.add_argument('-out',required=False,default=sys.stdout,type=argparse.FileType('w'),help='Output file')
 parser.add_argument('-header',action='store_true',default=False,help='Add this flag if file have a header')
@@ -9,12 +9,10 @@ parser.add_argument('-chr',type=int,required=False,help='Column number for chrom
 parser.add_argument('-start',type=int,required=False,help='Column number for starts')
 parser.add_argument('-end',type=int,required=False,help='Column number for ends')
 parser.add_argument('--progress',default=False,action='store_true',help='Add this flag if you want to have a progress estimate.')
-parser.add_argument('--fast',default=False,action='store_true',help='Add flag for fast version. Will use .pop() function: no self matching (find yourself) and mirror matching (A match B == B match A).')
+parser.add_argument('--full',default=False,action='store_true',help='Add flag for full version. Will not use .pop() function, allowing: self matching (find yourself) and mirror matching (A match B == B match A).')
 parser.add_argument('--sorted',default=False,action='store_true',help='Add flag to use the sort function of the chromosome ids')
-
-parser.add_argument('--noself',default=False,action='store_true',help='Add flag to avoid self-matching (find yourself)')
-parser.add_argument('--nomirror',default=False,action='store_true',help='Add flag to avoid mirror matching (A match B == B match A).')
-
+#parser.add_argument('--noself',default=False,action='store_true',help='Add flag to avoid self-matching (find yourself)')
+#parser.add_argument('--nomirror',default=False,action='store_true',help='Add flag to avoid mirror matching (A match B == B match A).')
 parser.add_argument('-sep',type=str,default='\t',required=False,help='Separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='End of line (default: unix \\n)')
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
@@ -65,10 +63,10 @@ for CHR in CHR_IDS: #each chromosome separately
         lines_in_chr=len(LINES)
         #while LINES: #until the lines for a given chromosome are empty ###FAST
         while LINES and index_in_chr < lines_in_chr:
-                if args['fast']:
-                        LINE_req =LINES.pop(0) #take the first element in the list (pop remove it from the list, no self-match/mirror match)
-                else:
+                if args['full']:
                         LINE_req =LINES[index_in_chr]
+                else:
+                        LINE_req =LINES.pop(0) #take the first element in the list (pop remove it from the list, no self-match/mirror match)
                 counter+=1
                 index_in_chr+=1
                 if args['progress']:
