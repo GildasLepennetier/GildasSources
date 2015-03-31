@@ -1,0 +1,110 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import sys,re,argparse
+parser = argparse.ArgumentParser(description='Search overlaping genes. This function does not require a file sorted by coordinates, which make is slower.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in', required=False,default=sys.stdin,type=argparse.FileType('r'),help='Input file')
+parser.add_argument('-out',required=False,default=sys.stdout,type=argparse.FileType('w'),help='Output file')
+parser.add_argument('-header',action='store_true',default=False,help='Add this flag if file have a header')
+parser.add_argument('-chr',type=int,required=False,help='Column number for chromosome (aggregating element)')
+parser.add_argument('-start',type=int,required=False,help='Column number for starts')
+parser.add_argument('-end',type=int,required=False,help='Column number for ends')
+parser.add_argument('-progress',default=False,action='store_true',help='Add this flag if you want to have a progress estimate.')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='Separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='End of line (default: unix \\n)')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+parser.add_argument('--version', action='version', version='%(prog)s 30-03-2015')
+args=vars(parser.parse_args())
+if args['author']:
+	exit("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+if args['copy']:
+	exit("Copyright 2014 LEPENNETIER Gildas")
+if not args['chr']:
+        exit("Error: -chr required")
+if not args['start']:
+        exit("Error: -start required")
+if not args['end']:
+        exit("Error: -end required")
+chr_index   = int(args['chr']) -1
+start_index = int(args['start']) -1
+end_index = int(args['end']) -1
+LINES=args['in'].readlines()
+if args['header']:
+        # todo here: print a header ??
+        LINES=LINES[1:]
+        
+REF={}
+total=0
+for rline in LINES: #loading everything / split the line before
+        total+=1
+        line=rline.split(args['endline'])[0].split(args['sep'])
+        CHR_id=line[chr_index].split(" ")[0]
+        try: 
+                REF[ CHR_id ].append(line)
+        except KeyError:
+                REF[ CHR_id ]=[line]
+#CHR_IDS=sorted(CHR.keys()) #in case we want to sort that
+CHR_IDS=CHR.keys()
+k=0
+for CHR in CHR_IDS: #each chromosome separately
+        LINES=REF[CHR]
+        while LINES: #until the lines for a given chromosome are empty
+                k+=1
+                if args['progress']:
+                        sys.stderr.write("%s / %s\r"%(k,total))
+                        if k == total:
+                                sys.stderr.write("\n")
+                LINE_req =LINES.pop(0) #take the first element in the list (pop remove it from the list, no self-match)
+                START_req=LINE_req[start_index] #start and end of the request
+                END_req  =LINE_req[end_index]
+                for LINE_reference in LINES: # seach in the other lines
+                        START_ref=LINE_ref[start_index] #start and end of the reference (request is compared to reference)
+                        END_ref =LINE_ref[start_index]
+
+                        if END_req < START_ref: #request before
+                                continue
+                        if START_req > END_ref: #request after
+                                continue
+                        #if here: there is an overlap
+                        if START_req < START_ref:#start before
+                                if END_req == START_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['end_is_start_of'] + LINE_ref + [args['endline']]))#one gene after the other, with the end of the request been the start of the reference ____----
+                                        continue
+                                if END_req < END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['overlap_left'] + LINE_ref + [args['endline']]))#request end overlap the reference start: ____-_-_-----
+                                        continue
+                                if END_req == END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['alt_larger_5'] + LINE_ref + [args['endline']]))#request start before, but have the same end ___-_-_-_-_-_-|
+                                        continue
+                                if END_req > END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['contain'] + LINE_ref + [args['endline']]))#request contain the reference ___-_-_-_-____
+                                        continue
+                        if START_req == START_ref:#same start
+                                if END_req < END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['alt_shorter_3'] + LINE_ref + [args['endline']]))#same start, but end before, alternative shorter end |_-_-_-_-_------
+                                        continue
+                                if END_req == END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['same_coordinates'] + LINE_ref + [args['endline']]))#same coordinates, but differente internal structure ? |_-_-_-_-_-_-|
+                                        continue
+                                if END_req > END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['alt_larger_3'] + LINE_ref + [args['endline']]))#same start, larger end |_-_-_-_-______
+                                        continue
+                        if START_req > START_ref: #start after
+                                if END_req < END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['is_inside_of'] + LINE_ref + [args['endline']]))#start inside and end before: request is contained in reference ---_-_-_-----
+                                        continue
+                                if END_req == END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['alt_shorter_5'] + LINE_ref + [args['endline']]))#start inside, but end at same position: alternative shorter beginning : ------_-_-_-_-_|
+                                        continue
+                                if END_req > END_ref:
+                                        args['out'].write( args['sep'].join(LINE_req + ['overlap_right'] + LINE_ref + [args['endline']]))#request overlap the right of the reference : -----_-_-_-_-_-_______
+                                        continue
+                        
+                                        
+                       
+
+                
+                
+                
+                
+                
