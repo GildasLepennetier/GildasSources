@@ -1,17 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys,re,argparse
-parser = argparse.ArgumentParser(description='Search overlaping genes. This function does not require a file sorted by coordinates. Default behaviour will self-match (find yourself) and mirror match (A match B == B match A).',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser = argparse.ArgumentParser(description='Search overlapping genes. This function does not require a file sorted by coordinates. Default behaviour will self-match (find yourself) and mirror match (A match B == B match A).',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False,default=sys.stdin,type=argparse.FileType('r'),help='Input file')
 parser.add_argument('-out',required=False,default=sys.stdout,type=argparse.FileType('w'),help='Output file')
 parser.add_argument('-header',action='store_true',default=False,help='Add this flag if file have a header')
 parser.add_argument('-chr',type=int,required=False,help='Column number for chromosome (aggregating element)')
 parser.add_argument('-start',type=int,required=False,help='Column number for starts')
 parser.add_argument('-end',type=int,required=False,help='Column number for ends')
-
 parser.add_argument('--progress',default=False,action='store_true',help='Add this flag if you want to have a progress estimate.')
 parser.add_argument('--fast',default=False,action='store_true',help='Add flag for fast version. Will use .pop() function: no self matching (find yourself) and mirror matching (A match B == B match A).')
 parser.add_argument('--sorted',default=False,action='store_true',help='Add flag to use the sort function of the chromosome ids')
+
+parser.add_argument('--noself',default=False,action='store_true',help='Add flag to avoid self-matching (find yourself)')
+parser.add_argument('--nomirror',default=False,action='store_true',help='Add flag to avoid mirror matching (A match B == B match A).')
 
 parser.add_argument('-sep',type=str,default='\t',required=False,help='Separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='End of line (default: unix \\n)')
@@ -19,6 +21,9 @@ parser.add_argument('--copy',action='store_true',help='Display Copyright informa
 parser.add_argument('--author',action='store_true',help='Display author informations')
 parser.add_argument('--version', action='version', version='%(prog)s 30-03-2015')
 args=vars(parser.parse_args())
+if len(sys.argv) == 1:
+        parser.print_help()
+        exit()
 if args['author']:
 	exit("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
 if args['copy']:
@@ -39,7 +44,6 @@ if args['header']:
         firstlineRef =[ "%s_reference"%(el) for el in firstline]
         args['out'].write(  args['sep'].join( firstlineReq + ['matching_description'] + firstlineRef + [args['endline']] ))
         LINES=LINES[1:]
-        
 REF={}
 total=0
 for rline in LINES: #loading everything / split the line before
@@ -50,12 +54,11 @@ for rline in LINES: #loading everything / split the line before
                 REF[ CHR_id ].append(line)
         except KeyError:
                 REF[ CHR_id ]=[line]
-
 if args['sorted']:
         CHR_IDS=sorted(REF.keys()) #in case we want to sort that
 else:
         CHR_IDS=REF.keys()
-k=0
+counter=0
 for CHR in CHR_IDS: #each chromosome separately
         LINES=REF[CHR]
         index_in_chr=0
@@ -66,18 +69,17 @@ for CHR in CHR_IDS: #each chromosome separately
                         LINE_req =LINES.pop(0) #take the first element in the list (pop remove it from the list, no self-match/mirror match)
                 else:
                         LINE_req =LINES[index_in_chr]
-                k+=1
+                counter+=1
                 index_in_chr+=1
                 if args['progress']:
-                        sys.stderr.write("\r%s / %s"%(k,total))
-                        if k == total:
+                        sys.stderr.write("\r%s / %s"%(counter,total))
+                        if counter == total:
                                 sys.stderr.write("\n")
                 START_req=int(LINE_req[start_index]) #start and end of the request
                 END_req  =int(LINE_req[end_index])
                 for LINE_ref in LINES: # seach in the other lines
                         START_ref=int(LINE_ref[start_index]) #start and end of the reference (request is compared to reference)
                         END_ref  =int(LINE_ref[end_index])
-
                         if END_req < START_ref: #request before
                                 continue
                         if START_req > END_ref: #request after
@@ -117,12 +119,3 @@ for CHR in CHR_IDS: #each chromosome separately
                                 if END_req > END_ref:
                                         args['out'].write( args['sep'].join(LINE_req + ['overlap_right'] + LINE_ref + [args['endline']]))#request overlap the right of the reference : -----_-_-_-_-_-_______
                                         continue
-                        
-                                        
-                       
-
-                
-                
-                
-                
-                
