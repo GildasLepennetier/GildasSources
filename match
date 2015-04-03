@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys,re,os,argparse,datetime
-parser = argparse.ArgumentParser(description='Match the coordinates of a request file on a reference file. Files should be in a csv-like format. Output: [[ Request line,matching Statut,Reference Line Matched ]]',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser = argparse.ArgumentParser(description='Match the coordinates of a request file on a reference file. Files should be in a csv-like format. Output: [[ Request line,matching Status,Reference Line Matched ]]',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-req', required=True, type=argparse.FileType('r'),help='Request file (list of elements to match)')
 parser.add_argument('-ref', required=True, type=argparse.FileType('r'),help='Reference file (where to search for)')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
@@ -61,7 +61,7 @@ if args['req_header']:
 else:
 	firstline_req=args['sep'].join([ "." for el in LINES_REQ[0].split(args['endline'])[0].split(args['sep']) ])
 if args['ref_header'] or args['req_header']:
-	args['out'].write(args['sep'].join([firstline_req,"matching_statut",firstline_ref]) + args['endline'])
+	args['out'].write(args['sep'].join([firstline_req,"matching_status",firstline_ref]) + args['endline'])
 #Feed the dictionnary with lines of the reference file
 REFERENCE_dico={}
 for rline in LINES_REF: #open GFF lines

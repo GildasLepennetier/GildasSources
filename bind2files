@@ -62,7 +62,7 @@ if args['header2']:
 else:
 	firstline2=sep.join([ "." for el in lines_file2[0].split(args['endline'])[0].split(sep) ])
 if args['header1'] or args['header2']:
-	OUT.write(sep.join([firstline1,"matching_statut",firstline2]) + args['endline'])
+	OUT.write(sep.join([firstline1,"matching_status",firstline2]) + args['endline'])
 COLNB1=len(lines_file1[0].split(args['endline'])[0].split(sep))
 COLNB2=len(lines_file2[0].split(args['endline'])[0].split(sep))
 DICO={}
