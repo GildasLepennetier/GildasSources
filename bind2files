@@ -33,10 +33,10 @@ try:
 	COL2s=[int(el)-1 for el in args['c2'].split(",")]
 	if len(COL1s) != len(COL2s):
                 if not args['quiet']:
-                        print("Error: You have to provide the same number of columns !")
+                        sys.stderr.write("Error: You have to provide the same number of columns !\n")
 		exit()
 except ValueError:
-	print("Error: Bad format for the column number\n\
+	sys.stderr.write("Error: Bad format for the column number\n\
 \nHELP: Exemple to make links between file1 and file2:\n\
 if column 1 in file1 == col 2 in file2, type this:\n\
 \t-f1 file1 -f2 file2 -c1 1 -c2 2\n\
