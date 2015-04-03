@@ -29,9 +29,7 @@ DESCRIPTION
 	
 ADVICE:
 
-	Use the function check_SpliceSite to avoid mistakes or errors linked
-	to presence of Ns, sizes or position of canonical
-	[Those conditions are anyway required by the maxent script]
+	Not tested in presence of Ns in splice site.
 
 ARGUMENTS:
 
