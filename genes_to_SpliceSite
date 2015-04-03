@@ -10,8 +10,8 @@ parser.add_argument('-endline',type=str,default='\n',required=False,help='separa
 parser.add_argument('--version', action='version', version='%(prog)s old_ see genes_to_SS')#version display
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
 parser.add_argument('-fa', required=True, type=str, help='address to the fasta file')
-parser.add_argument('-istarts',type=int,required=True,help='column number for start of intron')
-parser.add_argument('-iends',type=int,required=True,help='column number for end of intron')
+parser.add_argument('-istart',type=int,required=True,help='column number for start of intron')
+parser.add_argument('-iend',type=int,required=True,help='column number for end of intron')
 parser.add_argument('-chr',type=int,required=True,help='column number for chromosome name')
 parser.add_argument('-strand',type=int,required=True,help='column number for strand')
 parser.add_argument('-b5',type=int,required=False,default=3,help ="before 5' splice site [default=3]")
@@ -34,8 +34,8 @@ IN=args['in']
 OUT=args['out']
 FA=args['fa']
 sep=args['sep']
-starts_index=int(args['istarts'])-1
-ends_index  =int(args['iends']  )-1
+starts_index=int(args['istart'])-1
+ends_index  =int(args['iend']  )-1
 chr_index   =int(args['chr']   )-1
 strand_index=int(args['strand'])-1
 b5=int(args['b5'])
@@ -137,19 +137,19 @@ if args['progress'] or VERB_LVL > 0:
 try:
     DICO=loadFasta(FA)
 except:
-    print("WARNING: Biopython load of fasta failed")
+    sys.stderr.write("WARNING: Biopython load of fasta failed\n")
     DICO=Fasta_To_Dico(FA,idtag='>')
 if VERB_LVL >0:
-    print len(DICO.keys()), "loaded keys"
-    print 'exemple: keys[0] ',DICO.keys()[0]," : ", len(DICO[DICO.keys()[0]])," nt"
+    sys.stderr.write("%s loaded keys"%(len(DICO.keys())))
+    sys.stderr.write("exemple: keys[0] %s : %s nt"%(DICO.keys()[0],len(DICO[DICO.keys()[0]])))
 ######## print for each line line
 Lines = IN.readlines()
 if len(Lines) <2:
     if VERB_LVL > 0:
-        print ("WARNING: less than 2 lines in the file")
+        sys.stderr.write("WARNING: less than 2 lines in the file\n")
 if args['header']: #skip first line
     if VERB_LVL > 0:
-        print ("skipping first line")
+        sys.stderr.write("skipping first line")
     FirstLine=Lines[0]
     OUT.write( sep.join( FirstLine.split(args['endline'])[0].split(sep) +['five','three','SS5','SS3',"iA","iC","iG","iT","intron"] ) + args['endline'])
     Lines=Lines[1:]
@@ -177,7 +177,7 @@ for line in Lines:
         for key in DICO.keys():
             if chro in key:
                 if VERB_LVL > 1:
-                    print ("WARNING: chro '%s' and key '%s' are same ? (here, consider as same, because chro not in the keys)"%(chro, key))
+                    sys.stderr.write("WARNING: chro '%s' and key '%s' are same ? (here, consider as same, because chro not in the keys)"%(chro, key))
                 SEQ=DICO[key]
                 break#one founded, stop
 
@@ -186,15 +186,15 @@ for line in Lines:
     IntronSeq=SEQ[start:end]
     if 'N' in IntronSeq:
         if VERB_LVL > 0:
-            print ("WARNING: removing intron which contain N")
+            sys.stderr.write("WARNING: removing intron which contain N")
         continue
     if 'n' in IntronSeq:
         if VERB_LVL > 0:
-            print ("WARNING: removing intron which contain n")
+            sys.stderr.write("WARNING: removing intron which contain n")
         continue
     if len(IntronSeq) <= a5+b3:
         if VERB_LVL > 0:
-            print ("WARNING: intron too short to extract splice site for %s"%(line))
+            sys.stderr.write("WARNING: intron too short to extract splice site for %s"%(line))
         continue
     NTC=countLetters(IntronSeq, case=False, freq=True, removeNn=True)
     if strand == '+':
@@ -210,26 +210,26 @@ for line in Lines:
         IntronSeq=revCompl_DNA(IntronSeq)
     else:
         if VERB_LVL > 0:
-            print ("WARNING: no +/- strand for\n%s"%s(line))
+            sys.stderr.write("WARNING: no +/- strand for\n%s"%s(line))
     if SS5 == '' or SS3 == '':
         if VERB_LVL > 0:
-            print ("WARNING: empty splice site (skipped)(%s %s-%s)"%(chro,start,end))
+            sys.stderr.write("WARNING: empty splice site (skipped)(%s %s-%s)"%(chro,start,end))
         continue
     if 'n' in SS5 or 'N' in SS5:
         if VERB_LVL > 0:
-            print ("WARNING: N or n present in 5' splice site (skipped)(%s %s-%s)"%(chro,start,end))
+            sys.stderr.write("WARNING: N or n present in 5' splice site (skipped)(%s %s-%s)"%(chro,start,end))
         continue
     if 'n' in SS3 or 'N' in SS3:
         if VERB_LVL > 0:
-            print ("WARNING: empty splice site (skipped)(%s %s-%s)"%(chro,start,end))
+            sys.stderr.write("WARNING: empty splice site (skipped)(%s %s-%s)"%(chro,start,end))
         continue
     if len(SS5) != b5+a5:
         if VERB_LVL > 0:
-            print ("WARNING: extraction of 5' splice site failed: size != %s"%(b5+a5))
+            sys.stderr.write("WARNING: extraction of 5' splice site failed: size != %s"%(b5+a5))
         continue
     if len(SS3) != b3+a3:
         if VERB_LVL > 0:
-            print ("WARNING: extraction of 3' splice site failed: size != %s"%(b3+a3))
+            sys.stderr.write("WARNING: extraction of 3' splice site failed: size != %s"%(b3+a3))
         continue    
     LISTE=lineSplit+[IntronSeq[:2],IntronSeq[-2:],SS5,SS3,NTC['A'],NTC['C'],NTC['G'],NTC['T'],IntronSeq]
     OUT.write( sep.join( [str(el) for el in LISTE] )+'\n' )
