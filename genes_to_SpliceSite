@@ -7,7 +7,7 @@ parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
 parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
-parser.add_argument('--version', action='version', version='%(prog)s old_ see genes_to_SS')#version display
+parser.add_argument('--version', action='version', version='%(prog)s v1.2')#version display
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
 parser.add_argument('-fa', required=True, type=str, help='address to the fasta file')
 parser.add_argument('-istart',type=int,required=True,help='column number for start of intron')
