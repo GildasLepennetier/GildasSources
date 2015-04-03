@@ -17,6 +17,9 @@ usage: $(basename $0) -in path/to/file [options]
 DESCRIPTION
 
 	This script calculate splice site scores using the maximum entropy scoring.
+	Only one splice site at a time: call the function with -a [acceptor] first, and then -d [donor].
+	You can easily use the cut and paste function to keep only what you need.
+	
 	The donor splice site should be:
 		-3 +6 (GT)
 		Ex:
