@@ -60,6 +60,7 @@ if args['CMD'] == 'TRIM':
         end=int(args['end'])
         check_negative(beg)
         check_negative(end)
+        namePart="beg%send%s"%(args['beg'],args['end'])
     except:
         sys.stderr.write("Error: you need to provide beg and end for the trim function."+args['endline'])
         exit()
@@ -69,11 +70,13 @@ if args['CMD'] == 'KEEP':
         keepbeg=int(args['keepbeg'])
         REF='beg'
         check_negative(keepbeg)
+        namePart="keep%sbeg"%(args['keepbeg'])
     except:
         try:
             keepend=int(args['keepend'])
             REF='end'
             check_negative(keepend)
+            namePart="keep%send"%(args['keepend'])
         except:
             sys.stderr.write("Error: check keepbeg OR keepend option"+args['endline'])
             exit()
@@ -86,6 +89,7 @@ if args['CMD'] == 'EXTRACT':
         REF='beg'
         check_negative(frombeg)
         check_negative(tobeg)
+        namePart="beg%sto%s"%(args['frombeg'],args['tobeg'])
     except:
         try:
             fromend=int(args['fromend'])
@@ -93,6 +97,7 @@ if args['CMD'] == 'EXTRACT':
             REF='end'
             check_negative(fromend)
             check_negative(toend)
+            namePart="end%sto%s"%(args['fromend'],args['toend'])
         except:
             sys.stderr.write("Error: you need to provide frombeg and tobeg OR fromend and toend for the extract function."+args['endline'])
             exit()
@@ -106,7 +111,7 @@ if args['header']:
     k+=1
     line=LINES[0].split(args['endline'])[0].split(args['sep'])
 
-    newName=str(line[index_col])+"_%s"%(args['CMD'])
+    newName=str(line[index_col])+"_%s_%s"%(args['CMD'],namePart)
 
     if args['OutForm'] == 'replace':
         line[index_col]=newName
