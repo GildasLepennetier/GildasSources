@@ -35,7 +35,8 @@ parser.add_argument('-tobeg',type=int,required=False,help='EXTRACT to; after beg
 parser.add_argument('-fromend',type=int,required=False,help='EXTRACT from; before end (from before to)')
 parser.add_argument('-toend',type=int,required=False,help='EXTRACT to; before end (form end and toend are ignored if frombeg and tobeg are present)')
 
-parser.add_argument('-KeepPart',action='store_true',default=False,help='add this flag if you want to keep the sequences too short to be trimed (example: trying to trim 5 letters from a sequence of 4 letters, this option return the 4-letters sequence instead of empty string)')
+parser.add_argument('-KeepPart',action='store_true',default=False,help='add this flag if you want to keep the sequences too short to be trimed \
+(example: trying to trim 5 letters from a sequence of 4 letters, this option return the 4-letters sequence instead of empty string). Do not work with extract option.')
 parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s 07-14-2014')#version display
@@ -179,26 +180,16 @@ for rline in LINES:
             if len(SEQ) > tobeg:
                 newString=SEQ[ frombeg : tobeg ]
             else:
-                if args['KeepPart']:
-                    newString=SEQ
-                    if not args['quiet']:
-                        sys.stderr.write('Warning: sequence too short for extraction. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
-                else:
-                    newString=str()
-                    if not args['quiet']:
-                        sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
+                newString=str()
+                if not args['quiet']:
+                    sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
         if REF == 'end':
             if len(SEQ) > fromend:
                 newString=SEQ[ -fromend : -toend ]
             else:
-                if args['KeepPart']:
-                    newString=SEQ
-                    if not args['quiet']:
-                        sys.stderr.write('Warning: sequence too short for extraction. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
-                else:
-                    newString=str()
-                    if not args['quiet']:
-                        sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
+                newString=str()
+                if not args['quiet']:
+                    sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
     #commandes: replace in situ
     if args['OutForm'] == 'replace':
         line[index_col]=newString
