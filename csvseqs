@@ -41,6 +41,9 @@ parser.add_argument('-endline',type=str,default='\n',required=False,help='separa
 parser.add_argument('--version', action='version', version='%(prog)s 07-14-2014')#version display
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
+
+parser.add_argument('--quiet',action='store_true',help='to remove the error messages')
+
 args=vars(parser.parse_args())
 
 if args['author']:
@@ -62,7 +65,8 @@ if args['CMD'] == 'TRIM':
         check_negative(end)
         namePart="beg%send%s"%(args['beg'],args['end'])
     except:
-        sys.stderr.write("Error: you need to provide beg and end for the trim function."+args['endline'])
+        if not args['quiet']:
+            sys.stderr.write("Error: you need to provide beg and end for the trim function."+args['endline'])
         exit()
 
 if args['CMD'] == 'KEEP':
@@ -78,7 +82,8 @@ if args['CMD'] == 'KEEP':
             check_negative(keepend)
             namePart="keep%send"%(args['keepend'])
         except:
-            sys.stderr.write("Error: check keepbeg OR keepend option"+args['endline'])
+            if not args['quiet']:
+                sys.stderr.write("Error: check keepbeg OR keepend option"+args['endline'])
             exit()
     
             
@@ -99,7 +104,8 @@ if args['CMD'] == 'EXTRACT':
             check_negative(toend)
             namePart="end%sto%s"%(args['fromend'],args['toend'])
         except:
-            sys.stderr.write("Error: you need to provide frombeg and tobeg OR fromend and toend for the extract function."+args['endline'])
+            if not args['quiet']:
+                sys.stderr.write("Error: you need to provide frombeg and tobeg OR fromend and toend for the extract function."+args['endline'])
             exit()
         
 index_col=int(args['col'])-1
@@ -135,10 +141,12 @@ for rline in LINES:
         else:
             if args['KeepPart']:
                 newString=SEQ
-                sys.stderr.write('Warning: sequence too short to trim. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
+                if not args['quiet']:
+                    sys.stderr.write('Warning: sequence too short to trim. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
             else:
                 newString=str()
-                sys.stderr.write('Warning: sequence too short to trim. line %s - row will be empty'%(k)+args['endline'] )
+                if not args['quiet']:
+                    sys.stderr.write('Warning: sequence too short to trim. line %s - row will be empty'%(k)+args['endline'] )
 
     if args['CMD'] == 'KEEP':
         if REF == 'beg':
@@ -147,20 +155,24 @@ for rline in LINES:
             else:
                 if args['KeepPart']:
                     newString=SEQ
-                    sys.stderr.write('Warning: sequence too short for keep. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
+                    if not args['quiet']:
+                        sys.stderr.write('Warning: sequence too short for keep. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
                 else:
                     newString=str()
-                    sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
+                    if not args['quiet']:
+                        sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
         if REF == 'end':
             if len(SEQ) > keepend:
                 newString=SEQ[ -keepend : ]
             else:
                 if args['KeepPart']:
                     newString=SEQ
-                    sys.stderr.write('Warning: sequence too short for keep. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
+                    if not args['quiet']:
+                        sys.stderr.write('Warning: sequence too short for keep. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
                 else:
                     newString=str()
-                    sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
+                    if not args['quiet']:
+                        sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
                     
     if args['CMD'] == 'EXTRACT':
         if REF == 'beg':
@@ -169,20 +181,24 @@ for rline in LINES:
             else:
                 if args['KeepPart']:
                     newString=SEQ
-                    sys.stderr.write('Warning: sequence too short for extraction. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
+                    if not args['quiet']:
+                        sys.stderr.write('Warning: sequence too short for extraction. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
                 else:
                     newString=str()
-                    sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
+                    if not args['quiet']:
+                        sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
         if REF == 'end':
             if len(SEQ) > fromend:
                 newString=SEQ[ -fromend : -toend ]
             else:
                 if args['KeepPart']:
                     newString=SEQ
-                    sys.stderr.write('Warning: sequence too short for extraction. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
+                    if not args['quiet']:
+                        sys.stderr.write('Warning: sequence too short for extraction. line %s - sequence will not be complete (option -KeepPart activated)'%(k)+args['endline'] )
                 else:
                     newString=str()
-                    sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
+                    if not args['quiet']:
+                        sys.stderr.write('Warning: sequence too short to keep. line %s - row will be empty'%(k)+args['endline'] )
     #commandes: replace in situ
     if args['OutForm'] == 'replace':
         line[index_col]=newString
