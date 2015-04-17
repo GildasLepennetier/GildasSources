@@ -5,7 +5,7 @@ from numpy import median
 parser = argparse.ArgumentParser(description='Performs operation line by line, on a given column, on floats.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False, default=sys.stdin ,type=argparse.FileType('r'),help='input file')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
-parser.add_argument('-action',type=str,required=True,help='action to perform on the integers in the column [min, max, mean, median, sum] ')
+parser.add_argument('-action',type=str,required=True,help='action to perform on the list of integers in the column [min, max, mean, median, sum, select] ')
 parser.add_argument('-sep',type=str,default='\t',required=False,help='initial separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='end of line (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s 06-17-2014')#version display
@@ -14,6 +14,9 @@ parser.add_argument('-col',type=int,required=True,help='column where to make ope
 parser.add_argument('-header',action='store_true',default=False,help='add this flag if file have a header.')
 parser.add_argument('-delim',type=str,default=',',required=False,help='separator of integer values (default: ,)')
 parser.add_argument('-decimal',type=str,default='.',required=False,help='decimal mark for values (default: .)')
+
+parser.add_argument('-elemNum',type=int,required=False,help='select || For selection: element number to extract')
+
 parser.add_argument('-toint',action='store_true',default=False,help='"to integer". Add this flag to avoid having a float when integers are expected. Careful: will truncate the result')
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
@@ -28,9 +31,16 @@ index_col = int(args['col']) -1
 if args['decimal'] == args['delim']:
     sys.stderr.write("Error: decimal and delimiter are the same !")
     exit()
-if args['action'] not in ['min','max','mean','median','sum','count']:
-    sys.stderr.write("Error: please choose an action in [min, max, mean, median, sum, count] !")
+if args['action'] not in ['min','max','mean','median','sum','count','select']:
+    sys.stderr.write("Error: please choose an action in [min, max, mean, median, sum, count, select]")
     exit()
+if args['action'] == 'select':
+    if not args['elemNum']:
+        sys.stderr.write("Error: please give -elemNum to precise the number of the element to extract from the list")
+        exit()
+    else:
+        elementNb=int(args['elemNum'])-1
+    
 LINES=args['in'].readlines()
 #k=0
 if args['header']:
@@ -50,10 +60,11 @@ for rline in LINES:
     Nbs=COL.split(args['delim'])
     NUMBERS=[]
     for el in Nbs:
-        if args['action'] in ['min','max','mean','median','sum']:#need floats
+        if args['action'] in ['min','max','mean','median','sum']:#need floats: in python, his require a decimal separator .
             NUMBERS.append( float( el.replace(args['decimal'],'.') ) )
-        if args['action'] in ['count']:#just need strings
+        if args['action'] in ['count','select']:
             NUMBERS.append( el )
+    
     if args['action'] == 'min':
         RESULT=min(NUMBERS)
     if args['action'] == 'max':
@@ -71,6 +82,15 @@ for rline in LINES:
             RESULT=0
     if args['toint']: #convert to integer
         RESULT=int(RESULT)
+
+    
+    if args['action'] == 'select':
+        try:
+            RESULT = NUMBERS[ elementNb ]
+        except IndexError:
+            RESULT=''
+            
+    
     args['out'].write ( args['sep'].join( [str(el) for el in line ] + [ str(RESULT) ]  ) + args['endline'])  
 
     
