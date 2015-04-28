@@ -4,12 +4,14 @@ import sys,argparse,random
 parser = argparse.ArgumentParser(description='return random selection of lines if duplicate in col',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='first file name given is the input file')
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='second file name given is the output file')
+
+parser.add_argument('-col',type=int,required=True,help='column number for the selection')
+parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have an header')
+
 parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
 parser.add_argument('--version',action='version', version='%(prog)s 30-04-2014')#version display
 parser.add_argument('--verbose','-v',action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
-parser.add_argument('-col',type=int,required=True,help='column number for the selection')
-parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have an header')
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
@@ -29,7 +31,7 @@ Lines = IN.readlines()
 if SkipFirst:
     OUT.write(  Lines[0]  )
     Lines=Lines[1:]
-if col+1 > len(Lines[0].split(sep)):
+if (col+1) > len(Lines[0].split(sep)) :
     print("ERROR: bad index for the column to use (required: %s / number: %s)"%(col+1,len(Lines[0].split(sep))))
     exit()
 DICO={}

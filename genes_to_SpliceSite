@@ -5,21 +5,25 @@ import sys,re,os,argparse,datetime
 parser = argparse.ArgumentParser(description='Extract features from .genes file.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file')
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
-parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
-parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
-parser.add_argument('--version', action='version', version='%(prog)s v1.2')#version display
-parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+
 parser.add_argument('-fa', required=True, type=str, help='address to the fasta file')
 parser.add_argument('-istart',type=int,required=True,help='column number for start of intron')
 parser.add_argument('-iend',type=int,required=True,help='column number for end of intron')
 parser.add_argument('-chr',type=int,required=True,help='column number for chromosome name')
 parser.add_argument('-strand',type=int,required=True,help='column number for strand')
+
 parser.add_argument('-b5',type=int,required=False,default=3,help ="before 5' splice site [default=3]")
 parser.add_argument('-a5',type=int,required=False,default=6,help ="after  5' splice site [default=6]")
 parser.add_argument('-b3',type=int,required=False,default=20,help="before 3' splice site [default=20]")
 parser.add_argument('-a3',type=int,required=False,default=3,help ="after  3' splice site [default=2]")
+
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have an header')
 parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. This also put verbosity to 1')
+
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s v1.2')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())

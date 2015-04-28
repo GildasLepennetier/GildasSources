@@ -5,20 +5,26 @@ import sys,os,argparse
 parser = argparse.ArgumentParser(description='Extract feature from .genes file.',epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')
 parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='input file')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
-parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
-parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
-parser.add_argument('--version', action='version', version='%(prog)s 04-30-2014')#version display
-parser.add_argument('--verbose','-v',action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+
 parser.add_argument('-chr',default=1,type=int,required=False,help='column number for chromosome name (default=1)')
 parser.add_argument('-id',default=2,type=int,required=False,help='column number for identifiant (default=2)')
 parser.add_argument('-parent',default=3,type=int,required=False,help='column number for parent (default=3)')
 parser.add_argument('-strand',default=4,type=int,required=False,help='column number for strand (default=4)')
 parser.add_argument('-starts',default=5,type=int,required=False,help='column number for start of exons (coma-separated) (default=5)')
 parser.add_argument('-ends',default=6,type=int,required=False,help='column number for ends of exons (coma-separated) (default=6)')
-parser.add_argument('-EndByComa',action='store_true',default=False,help='add this flag if last element in starts/ends is a coma')
-parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header (fist line with names of columns)')
+
+parser.add_argument('-header',action='store_true',default=False,help='If you have an header (fist line with names of columns)')
+parser.add_argument('-extra',action='store_true',default=False,help='If you want extended informations')
+parser.add_argument('-EndByComa',action='store_true',default=False,help='aIf last element in starts/ends is a coma')
+parser.add_argument('-keepNoIntron',action='store_true',default=False,help='If you want to keep non-intron containing genes. some columns will be empty')
+
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 04-30-2014')#version display
+parser.add_argument('--verbose','-v',action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+
 args=vars(parser.parse_args())
 if args['author']:
 	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
@@ -37,8 +43,11 @@ strand_index=int(args['strand'])-1
 id_index    =int(args['id'])    -1
 parent_index=int(args['parent'])-1
 ######## print first line
-LISTE=['chr','id','parent','strand','intronNumber','nbOfIntrons','geneStart','geneEnd','iStart','iEnd','iSize','GENEsize','ExonicSize','prev_eStart','prev_eEnd','next_eStart','next_eEnd']
-OUT.write(sep.join( LISTE ) + args['endline'])
+LIST=['chr','id','parent','strand','intronNumber','nbOfIntrons','iStart','iEnd','iSize']
+if args['extra']:
+    LIST=LIST+['geneStart','geneEnd','GENEsize','ExonicSize','prev_eStart','prev_eEnd','next_eStart','next_eEnd']
+OUT.write(sep.join( LIST ) + args['endline'])
+
 #######################     MAIN        ##############
 ######## print for each line line
 Lines = IN.readlines()
@@ -49,7 +58,7 @@ if args['header']: #skip first line
 for line in Lines:
     nbLines+=1
     lineSplit=line.split(args['endline'])[0].split(sep)
-    LISTE=[]
+    LIST=[]
     #careful: order in list
     chro  =lineSplit[chr_index]
     id    =lineSplit[id_index]
@@ -63,53 +72,60 @@ for line in Lines:
     if len(starts) != len(ends):
         print("WARNING: gene %s (line %s) have not a correct number of starts and ends of exons"%(parent,nbLines))
         continue
-    if len(starts) == 1: #if no intron(s), continue
-        continue
-    starts=[int(el) for el in starts]#exonic starts
-    ends  =[int(el) for el in ends]
-    #starts=sorted(starts)
-    #ends=sorted(ends)
-    starts.sort()
-    ends.sort()
-    ExonicSize = 0
-    for index in range(0,len(starts)):
-        ExonicSize += ends[index]-starts[index] +1 # +1 because first element is 1 and last is 100 : size = 100 and not 100-1...
-    GENEsize= ends[-1]-starts[0] +1 # +1 because first element is 1 and last is 100 : size = 100 and not 100-1...
-    nbOfExons  =len(starts)
-    nbOfIntrons=len(starts)-1
-    #conversion in intron starts-end:
-    iStarts=[]
-    iEnds=[]
-    for index in range(0,nbOfIntrons,1):
-        iStarts.append(  ends[index]   +1  ) #+1 to exclude last nt of the exon
-        iEnds.append(  starts[index+1] -1  ) #-1 same reason, the intron stop 1 nt before the start of the next exon
-    if strand not in ['+','-']:
-        print("WARNING: unknow strand, skipped %s:%s-%s (%s)"%(chro,starts[0],ends[-1],strand))
-        continue
-    for ii in range(0,nbOfIntrons,1):#for each intron
-        if strand == '+':
-            intronIndex= ii #in the list: 5'->3' so index "0 -> 10" #(if 11 introns)
-            intronNb   = ii+1
-            #
-            iStart  = iStarts[intronIndex]#here pick in the intron list
-            iEnd    = iEnds[intronIndex]
-            prev_eStart=  starts[intronIndex]#here, pick in the exon list
-            prev_eEnd  =  ends  [intronIndex]
-            next_eStart=  starts[intronIndex +1 ]
-            next_eEnd  =  ends  [intronIndex +1 ]
-        elif strand == '-':
-            intronIndex= ii   #nbOfIntrons-ii-1 #coordinates revertion in the list: 3' ->5' so "10 -> 0" #(if 11 introns)
-            intronNb   = nbOfIntrons-ii
-            #
-            iStart  = iStarts[intronIndex]#here pick in the intron list
-            iEnd    = iEnds[intronIndex]
-            prev_eStart=  starts[intronIndex +1 ]#here, pick in the exon list # /!\ previous and next for - strand are inverted /!\
-            prev_eEnd  =  ends  [intronIndex +1 ]#previous exon start=intron index +1
-            next_eStart=  starts[intronIndex ]#same index in the list, equivalent to previous for + strand
-            next_eEnd  =  ends  [intronIndex ]
-        iSize   = iEnd-iStart +1 # +1 because first element is 1 and last is 100 : size = 100 and not 100-1...
-        geneStart   = starts[0]
-        geneEnd     = ends[-1]
-        #LISTE=['chr','id','parent','strand','intronNumber','nbOfIntrons','gstart','gend','iStart','iEnd','iSize','GENEsize','ExonicSize'] + ['prev_eStart','prev_eEnd','next_eStart','next_eEnd']
-        LISTE=[chro,id,parent,strand,intronNb,nbOfIntrons,geneStart,geneEnd,iStart,iEnd,iSize,GENEsize,ExonicSize] + [prev_eStart,prev_eEnd,next_eStart,next_eEnd]
-        OUT.write( sep.join( [str(el) for el in LISTE] )+ args['endline'] )
+    if len(starts) > 1: #if no intron(s), continue
+        starts=[int(el) for el in starts]#exonic starts
+        ends  =[int(el) for el in ends]
+        #starts=sorted(starts)
+        #ends=sorted(ends)
+        starts.sort()
+        ends.sort()
+        ExonicSize = 0
+        for index in range(0,len(starts)):
+            ExonicSize += ends[index]-starts[index] +1 # +1 because first element is 1 and last is 100 : size = 100 and not 100-1...
+        GENEsize= ends[-1]-starts[0] +1 
+        nbOfExons  =len(starts)
+        nbOfIntrons=len(starts)-1
+        #conversion in intron starts-end:
+        iStarts=[]
+        iEnds=[]
+        for index in range(0,nbOfIntrons,1):
+            iStarts.append(  ends[index]   +1  ) #+1 to exclude last nt of the exon
+            iEnds.append(  starts[index+1] -1  ) #-1 same reason, the intron stop 1 nt before the start of the next exon
+        if strand not in ['+','-']:
+            print("WARNING: unknow strand, skipped %s:%s-%s (%s)"%(chro,starts[0],ends[-1],strand))
+            continue
+        for ii in range(0,nbOfIntrons,1):#for each intron
+            if strand == '+':
+                intronIndex= ii #in the list: 5'->3' so index "0 -> 10" #(if 11 introns)
+                intronNb   = ii+1
+                #
+                iStart  = iStarts[intronIndex]#here pick in the intron list
+                iEnd    = iEnds[intronIndex]
+                prev_eStart=  starts[intronIndex]#here, pick in the exon list
+                prev_eEnd  =  ends  [intronIndex]
+                next_eStart=  starts[intronIndex +1 ]
+                next_eEnd  =  ends  [intronIndex +1 ]
+            elif strand == '-':
+                intronIndex= ii   #nbOfIntrons-ii-1 #coordinates revertion in the list: 3' ->5' so "10 -> 0" #(if 11 introns)
+                intronNb   = nbOfIntrons-ii
+                #
+                iStart  = iStarts[intronIndex]#here pick in the intron list
+                iEnd    = iEnds[intronIndex]
+                prev_eStart=  starts[intronIndex +1 ]#here, pick in the exon list # /!\ previous and next for - strand are inverted /!\
+                prev_eEnd  =  ends  [intronIndex +1 ]#previous exon start=intron index +1
+                next_eStart=  starts[intronIndex ]#same index in the list, equivalent to previous for + strand
+                next_eEnd  =  ends  [intronIndex ]
+            iSize   = iEnd-iStart +1
+            geneStart   = starts[0]
+            geneEnd     = ends[-1]
+            LIST=[chro,id,parent,strand,intronNb,nbOfIntrons,iStart,iEnd,iSize]
+            if args['extra']:
+                LIST=LIST+[geneStart,geneEnd,GENEsize,ExonicSize,prev_eStart,prev_eEnd,next_eStart,next_eEnd]
+            OUT.write( sep.join( [str(el) for el in LIST] )+ args['endline'] )
+    else:
+        if args['keepNoIntron']:
+            LIST=[chro,id,parent,strand,'','','','','']
+            if args['extra']:
+                size=(int(ends[0])-int(starts[0])+1)
+                LIST=LIST+[starts[0],ends[0],size,size,'','','','']
+            OUT.write( sep.join( [str(el) for el in LIST] )+ args['endline'] )
