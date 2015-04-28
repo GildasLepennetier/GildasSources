@@ -7,7 +7,7 @@ parser.add_argument('-in', required=False, default=sys.stdin ,type=argparse.File
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
 
 parser.add_argument('-col',type=int,required=True,help='column where to make operation')
-parser.add_argument('-action',type=str,required=True,help='action to perform on the list of integers in the column [min, max, mean, median, sum, select] ')
+parser.add_argument('-action',type=str,required=True,help='action to perform on the list of integers in the column [min, max, mean, median, sum, count, select] ')
 
 parser.add_argument('-header',action='store_true',default=False,help='add this flag if file have a header.')
 
@@ -33,12 +33,16 @@ if args['copy']:
 	print ("Copyright 2014 LEPENNETIER Gildas")
 	exit()
 index_col = int(args['col']) -1
+
 if args['decimal'] == args['delim']:
     sys.stderr.write("Error: decimal and delimiter are the same !")
     exit()
+
+
 if args['action'] not in ['min','max','mean','median','sum','count','select']:
     sys.stderr.write("Error: please choose an action in [min, max, mean, median, sum, count, select]")
     exit()
+
 if args['action'] == 'select':
     if not args['elemNum']:
         sys.stderr.write("Error: please give -elemNum to precise the number of the element to extract from the list")
