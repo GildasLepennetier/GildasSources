@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import sys, os
 
@@ -108,7 +108,7 @@ except:
     LISTChrom = loadFasta_Dico(PATHGenome)
 
 if not LISTChrom:
-    print USAGE
+    print (USAGE)
     exit()
 #print (LISTChrom[0].__class__)
 SEQUENCE=''.join([str(el) for el in LISTChrom.itervalues()])
