@@ -1,14 +1,10 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
+#!/usr/bin/python3
+#coding: utf-8
 import os,sys,argparse,fcntl
-
-#funtion
 def uniq(seq): # Order preserving # author: Dave Kirby 
     seen = set()
     return [x for x in seq if x not in seen and not seen.add(x)]
-
-parser = argparse.ArgumentParser(description='Extract switch of isoforms between conditions from cummeRbund output.',epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')#En cas de redirection par pipe, la priorité est donnée au fichier en argument (car pas de default dans ce cas !)
+parser = argparse.ArgumentParser(description='Extract switch of isoforms between conditions from cummeRbund output.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')#En cas de redirection par pipe, la priorité est donnée au fichier en argument (car pas de default dans ce cas !)
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file: typically a isoforms.fpkm_tracking')
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file, default stdout')
 parser.add_argument('-sep',type=str,default='\t',help='separator (default: \\t)')
@@ -19,27 +15,22 @@ parser.add_argument('--copy',action='store_true',help='Display Copyright informa
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
+    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
+    print ("Copyright 2014 LEPENNETIER Gildas")
+    exit()
 index={"tracking_id":0,"class_code":1,"nearest_ref_id":2,"gene_id":3,"gene_short_name":4,"tss_id":5,"locus":6,"length":7,"coverage":8}
-
 Lines    = args['in'].readlines()
 firstline= Lines[0].split(args['endline'])[0].split(args['sep'])
 #removing first line
 Lines=Lines[1:]
-
-
 #ranges of column index for the differents experiments
 FPKM_Range   =range(9,len(firstline),4)
 conf_lo_Range=range(10,len(firstline),4)
 conf_hi_Range=range(11,len(firstline),4)
 status_Range =range(12,len(firstline),4)
-
 conditions=[ firstline[i].split('_FPKM')[0] for i in FPKM_Range ] #extract conditions
-
 #loading everything
 DICO={}
 for line in Lines:
@@ -49,17 +40,13 @@ for line in Lines:
         DICO[gene_id]=[lineSplit]
     else:
         DICO[gene_id].append(lineSplit)
-    
 if args['verbose'] > 1:
     sys.stderr.write('%s loaded genes\n'%(len(DICO)))
-
 LIST_OUT=["tracking_id","gene_id","nb_of_iso","switch","main_iso_in_conditions"] 
 args['out'].write( args['sep'].join( LIST_OUT ) + args['endline'] )
-
 iso_nb=0
 iso_nb_tot=0
 for gene_id in DICO: #for each gene
-    
     nb_isoforms=len(DICO[gene_id])
     iso_nb_tot+=nb_isoforms
     if nb_isoforms > 1:
@@ -79,10 +66,8 @@ for gene_id in DICO: #for each gene
                     higher_expt_cond=[cur_expr,cur_tracking_id] #j= index of isoform in the list, i index in the line
                 elif cur_expr == ref_expr:
                     higher_expt_cond=[ cur_expr, "%s,%s"%(cur_tracking_id,higher_expt_cond[1]) ] #list the ids with Ties
-                    
             expression.append( higher_expt_cond[0] ) #append with expression level and 
             main_iso.append(   higher_expt_cond[1] )#append with name of the iso (tracking id)
-
         ################### print output
         for j in range(0,nb_isoforms):
             tracking_id=DICO[gene_id][j][index['tracking_id']]
@@ -97,9 +82,6 @@ for gene_id in DICO: #for each gene
             else:
                 LIST_OUT=[ str(el) for el in [ tracking_id,gene_id,nb_isoforms,0,main_iso_in_condition] ] #switch = 0
                 args['out'].write( args['sep'].join( LIST_OUT ) + args['endline'] )
-
-
 if args['verbose'] > 1:
     sys.stderr.write( "%s isoforms\n"%iso_nb_tot)
     sys.stderr.write( "%s genes with >1 isoform\n"%iso_nb)
-
