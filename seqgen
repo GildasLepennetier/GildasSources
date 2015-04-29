@@ -48,14 +48,13 @@ if args['r']:
             print ("Error: restriction '%s' can not be apply: letter '%s' not in alphabet"%(r,r[1]))
             exit()
 for a in generator:
+    item=''.join(a)
     if args['r']:
-        item=''.join(a)
         P=True
         for i in range(0,len(args['r'])):
             if item[pos[i]] != res[i]:
                 P=False #if item do not respect the restriction, do not print
         if P:
             print(item)
-                
     else:
-        print(''.join(a))
+        print(item)
