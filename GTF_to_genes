@@ -10,7 +10,6 @@ parser.add_argument('-geneIDpattern',type=str,default=".*gene_id \"([\w.-]*)\";.
 parser.add_argument('-sep',type=str,default='\t',nargs='?',help='separator (default: \\t)')
 parser.add_argument('--version', action='version', version='%(prog)s v04-03-2014')#version display
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
-
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
     #Ensembl:
