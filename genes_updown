@@ -22,13 +22,13 @@ if args['copy']:
     print ("Copyright 2014 LEPENNETIER Gildas")
     exit()
 VERB_LVL=args['verbose']
-IN   =args['in']
-OUT  =args['out']
-sep  =args['sep']
+IN=args['in']
+OUT=args['out']
+sep=args['sep']
 parent_index =args['parent']  -1
 order_index=args['order']   -1
-cols_list    =args['cols']
-action    =args['action']
+cols_list=args['cols']
+action=args['action']
 if action not in ['up','down','both']:
     sys.stderr.write("Error: -action should be up, down or both%s"%(args['endline']))
     parser.print_help()
@@ -63,7 +63,7 @@ for line in Lines:#### Gathering :  lines .split() BY parent
     elif parent in DICO.keys():
         DICO[parent].append(line.split(sep))
 if VERB_LVL > 1:
-    print ( str(len(DICO.keys()))+' loading parents\n' )
+    print(str(len(DICO.keys()))+' loading parents\n')
 ALL_KEYS=DICO.keys()
 ALL_KEYS.sort()
 for CLE in ALL_KEYS:
