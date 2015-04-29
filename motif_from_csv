@@ -23,14 +23,14 @@ if args['copy']:
     print ("Copyright 2014 LEPENNETIER Gildas")
     exit()
 if args['action'] not in ['count','position']:
-    sys.stderr.write("Error: bad keyword. Please select [ count ; position ]")
+    sys.stderr.write("Error: bad keyword. Please select [ count ; position ]"+args['endline'])
     exit()
 if not args['pattern']:
-    sys.stderr.write("Error: argument -sequence is required")
+    sys.stderr.write("Error: argument -sequence is required"+args['endline'])
     parser.print_help()
     quit()
 if not args['sequence']:
-    sys.stderr.write("Error: argument -sequence is required")
+    sys.stderr.write("Error: argument -sequence is required"+args['endline'])
     parser.print_help()
     quit()
 VERB_LVL=args['verbose']
