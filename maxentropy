@@ -1,10 +1,10 @@
 #!/bin/bash
-
+#first release 19 March 2014
 ############################ default values
 CUR="$(pwd)"
-VERSION="1.0 - 19 March 2014"
+VERSION="1.1 - 29.04.2015"
 AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
-COPY="Copyright 2014 LEPENNETIER Gildas"
+COPY="Copyright 2014 2015 LEPENNETIER Gildas"
 MaxEntScript="$HOME/MaxEnt/"
 MAXENTSCRIPTS="http://genes.mit.edu/burgelab/maxent/download/fordownload.tar.gz"
 SEP="\t"
@@ -12,7 +12,7 @@ SEP="\t"
 usage()
 {
 cat << EOF
-usage: $(basename $0) -in path/to/file [options]
+usage: $(basename $0) -i path/to/file [-d donor | -a acceptor] [-f skip|keep header] [options]
 
 DESCRIPTION
 
@@ -66,28 +66,28 @@ EOF
 # put colon ":" after arguments that need a value in a variable. Ex: the flag -h don't need a value. same for V and A
 if [ $# -lt 1 ];then
 	echo "Error, please give arguments"
-	echo "Usage: $(basename $0) -i infile [-d index | -a index] [options]"
+	echo "Usage: $(basename $0) -i infile [-d index | -a index] [options, -h for help]"
 	exit 1
 fi
 
 while getopts "i:d:a:o:f:t:VAh" OPTION; do
 	case $OPTION in
-		i) IN="$OPTARG";;
+		i) IN="$OPTARG";  ;;
 		d) indexCol5ss="$OPTARG";;
 		a) indexCol3ss="$OPTARG";;
 		s) MaxEntScript="$OPTARG";;
 		o) OUT="$OPTARG";;
 		f) SkipFirst="$OPTARG";;
 		t) SEP="$OPTARG";;
-		V) echo $VERSION; exit 1; ;;
-		A) echo $AUTHOR;  exit 1; ;;
-		h) usage; exit 1; ;;
+		V) echo $VERSION; exit 1;;
+		A) echo $AUTHOR;  exit 1;;
+		h) usage; exit 1;;
 	esac
 done
 
 ######## tests before run
 # input file exist
-if [ ! -e $IN ];then
+if [ ! -e "$IN" ];then
 	echo "Error, infile not found: '$IN'"
     exit 1
 fi
