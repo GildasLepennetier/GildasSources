@@ -1,14 +1,10 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python3
+#coding: utf-8
 import sys,argparse,datetime
 parser = argparse.ArgumentParser(description='Extract sequences from .fasta using .csv file. Default output is a fasta file. Add the flag append to add the sequence in a column',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin,help='input file')
 parser.add_argument('-fasta',required=True,type=str, help='fasta file')
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
-parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
-parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
-parser.add_argument('--version', action='version', version='%(prog)s 06-18-2014')#version display
-parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
 parser.add_argument('-starts',type=int,required=True,help='column number for start of sequence')
 parser.add_argument('-ends',type=int,required=True,help='column number for end of sequence')
 parser.add_argument('-chr',type=int,required=True,help='column number for chromosome name')
@@ -18,15 +14,19 @@ parser.add_argument('-header',action='store_true',default=False,help='add this f
 parser.add_argument('-append',action='store_true',default=False,help='add this flag if you want to append the sequence in the file')
 parser.add_argument('-printFasta',action='store_true',default=False,help='add this flag if you want your sequence to be printed fasta-like (80 characteres per line for the sequence). Ignored if -append is activated')
 parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. this put also one flag --verbose')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 06-18-2014')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
+    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
+    print ("Copyright 2014 LEPENNETIER Gildas")
+    exit()
 VERB_LVL=args['verbose']
 IN=args['in']
 FASTA=args['fasta']
@@ -76,7 +76,7 @@ def revCompl_DNA(seq):
             if letter in CORRESPONDANCE.keys():
                 reverse.append(CORRESPONDANCE[letter])
             elif letter in ['u','U']:
-                print 'error, must work on DNA, and I found nome U or u'
+                print('error, must work on DNA, and I found nome U or u')
             else:
                 reverse.append(letter)
         return ''.join(reverse[::-1]) #inverser
@@ -123,16 +123,15 @@ for rline in LINES:
         sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     if kk == nbTot and args['progress']:
         sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
-
     lineNB+=1
     line=rline.split(args['endline'])[0].split(sep)
     try:
-	Chr    = line[chr_index]
-    	Start  = int(line[starts_index]) -1 #python list start at 0. List[0:10] extract from position 0 to 9, then from 1 to 10.
-    	End    = int(line[ends_index])
-	Strand = line[strand_index]
+        Chr =line[chr_index]
+        Start=int(line[starts_index]) -1 #python list start at 0.
+        End=int(line[ends_index])
+        Strand=line[strand_index]
     except: # ValueError =string, empty or not, instead of int in column
-	if VERB_LVL > 0:
+        if VERB_LVL > 0:
             sys.stderr.write("WARNING: Failed line %s%s"%(lineNB,args['endline']))
         if not args['printFasta']:
             if args['append']:
@@ -142,26 +141,26 @@ for rline in LINES:
                 continue
     try:
         SEQ = DICOChrom[Chr][Start:End]
-	if SEQ:
-                if Strand == "-":
-                    SEQ = revCompl_DNA( SEQ )
-                if args['append']:
-                    args['out'].write( sep.join( line+[SEQ] )+ args['endline'] )
+        if SEQ:
+            if Strand == "-":
+                SEQ = revCompl_DNA( SEQ )
+            if args['append']:
+                args['out'].write( sep.join( line+[SEQ] )+ args['endline'] )
+            else:
+                if args['printFasta']: #fasta-like
+                    args['out'].write(">%s:%s-%s %s%s%s%s"%(Chr,Start,End,Strand,args['endline'],insert_in_string(SEQ,insert=args['endline'],each=80),args['endline']))#using function conversion to fasta
                 else:
-                    if args['printFasta']: #fasta-like
-                        args['out'].write(">%s:%s-%s %s%s%s%s"%(Chr,Start,End,Strand,args['endline'],insert_in_string(SEQ,insert=args['endline'],each=80),args['endline']))#using function conversion to fasta
-                    else:
-                        args['out'].write("%s%s"%(SEQ,args['endline']))
+                     args['out'].write("%s%s"%(SEQ,args['endline']))
         else:
-                sys.stderr.write("WARNING: Failed line %s - %s %s %s\n"%(lineNB,Chr,Start,End))
-                if args['append']:
-                    args['out'].write( sep.join( line+["Error_during_extraction"] )+ args['endline'] )
+            sys.stderr.write("WARNING: Failed line %s - %s %s %s\n"%(lineNB,Chr,Start,End))
+            if args['append']:
+                args['out'].write( sep.join( line+["Error_during_extraction"] )+ args['endline'] )
+            else:
+                if args['printFasta']: #fasta-like
+                    args['out'].write(">%s:%s-%s %s%s%s%s"%(Chr,Start,End,Strand,args['endline'],"Error_during_extraction",args['endline']))#using function conversion to fasta
                 else:
-                    if args['printFasta']: #fasta-like
-                        args['out'].write(">%s:%s-%s %s%s%s%s"%(Chr,Start,End,Strand,args['endline'],"Error_during_extraction",args['endline']))#using function conversion to fasta
-                    else:
-                        args['out'].write("%s%s"%("Error_during_extraction",args['endline']))
+                    args['out'].write("%s%s"%("Error_during_extraction",args['endline']))
     except KeyError:
         if VERB_LVL > 0:
             sys.stderr.write("WARNING: line %s : no record in fasta for %s%s"%(lineNB,Chr,args['endline']))
-	    continue
+            continue
