@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys,argparse
 parser = argparse.ArgumentParser(description="Bind two files depending on the IDs on the column(s). If there is more than one match, then lines of the file 2 are duplicated.",epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')
 parser.add_argument('-f1',type=str,required=True,help='first file address: the query')
@@ -14,35 +14,33 @@ parser.add_argument('--version', action='version', version='%(prog)s 04-28-2014'
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
-
 parser.add_argument('--quiet',action='store_true',help='to remove the error messages')
-
 args=vars(parser.parse_args())
 if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
+    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
+    print ("Copyright 2014 LEPENNETIER Gildas")
+    exit()
 OUT=args['out']
 sep=args['sep']
 FILE1=args['f1']
 FILE2=args['f2']
 try:
-	COL1s=[int(el)-1 for el in args['c1'].split(",")]
-	COL2s=[int(el)-1 for el in args['c2'].split(",")]
-	if len(COL1s) != len(COL2s):
-                if not args['quiet']:
-                        sys.stderr.write("Error: You have to provide the same number of columns !\n")
-		exit()
+    COL1s=[int(el)-1 for el in args['c1'].split(",")]
+    COL2s=[int(el)-1 for el in args['c2'].split(",")]
+    if len(COL1s) != len(COL2s):
+        if not args['quiet']:
+            sys.stderr.write("Error: You have to provide the same number of columns !\n")
+        exit()
 except ValueError:
-	sys.stderr.write("Error: Bad format for the column number\n\
+    sys.stderr.write("Error: Bad format for the column number\n\
 \nHELP: Exemple to make links between file1 and file2:\n\
 if column 1 in file1 == col 2 in file2, type this:\n\
 \t-f1 file1 -f2 file2 -c1 1 -c2 2\n\
 if in addition, you want column 10 in file1 == column 20 in file2, type this\n\
 \t-f1 file1 -f2 file2 -c1 1,10 -c2 2,20")
-	exit()
+    exit()
 file1=open(FILE1)
 file2=open(FILE2)
 lines_file1=file1.readlines()
@@ -52,34 +50,34 @@ file2.close()
 firstline1=""
 firstline2=""
 if args['header1']:
-	firstline1=lines_file1[0].split(args['endline'])[0]
-	lines_file1=lines_file1[1:]#rm first line file 1
+    firstline1=lines_file1[0].split(args['endline'])[0]
+    lines_file1=lines_file1[1:]#rm first line file 1
 else:
-	firstline1=sep.join([ "." for el in lines_file1[0].split(args['endline'])[0].split(sep) ])
+    firstline1=sep.join([ "." for el in lines_file1[0].split(args['endline'])[0].split(sep) ])
 if args['header2']:
-	firstline2=lines_file2[0].split(args['endline'])[0]
-	lines_file2=lines_file2[1:]#rm first line file 2
+    firstline2=lines_file2[0].split(args['endline'])[0]
+    lines_file2=lines_file2[1:]#rm first line file 2
 else:
-	firstline2=sep.join([ "." for el in lines_file2[0].split(args['endline'])[0].split(sep) ])
+    firstline2=sep.join([ "." for el in lines_file2[0].split(args['endline'])[0].split(sep) ])
 if args['header1'] or args['header2']:
-	OUT.write(sep.join([firstline1,"matching_status",firstline2]) + args['endline'])
+    OUT.write(sep.join([firstline1,"matching_status",firstline2]) + args['endline'])
 COLNB1=len(lines_file1[0].split(args['endline'])[0].split(sep))
 COLNB2=len(lines_file2[0].split(args['endline'])[0].split(sep))
 DICO={}
 for line2 in lines_file2:
-	lineRef=line2.split(args['endline'])[0].split(sep)
-	LI=[ lineRef[int(col)] for col in COL2s ]
-	REF_ID= "".join( [ str(el) for el in LI ] )
-	if REF_ID not in DICO:
-                DICO[REF_ID]=lineRef
-	else:
-                if not args['quiet']:
-                        sys.stderr.write("Error: duplicated ID in Ref file, line omited: %s%s"%(lineRef,args['endline']))
+    lineRef=line2.split(args['endline'])[0].split(sep)
+    LI=[ lineRef[int(col)] for col in COL2s ]
+    REF_ID= "".join( [ str(el) for el in LI ] )
+    if REF_ID not in DICO:
+        DICO[REF_ID]=lineRef
+    else:
+        if not args['quiet']:
+            sys.stderr.write("Error: duplicated ID in Ref file, line omited: %s%s"%(lineRef,args['endline']))
 for line1 in lines_file1:
-	cur_line=line1.split(args['endline'])[0].split(sep)
-	try:
-		LI=[ cur_line[int(col)] for col in COL1s ]
-		CUR_ID="".join( [ str(el) for el in LI ] )
-		OUT.write(sep.join(cur_line+["OK"]+ DICO[CUR_ID] ) +args['endline']) #print the line
-	except:
-		OUT.write(sep.join(cur_line+["NO_MATCH"]+["" for el in range(0,COLNB2)] ) + args['endline'])
+    cur_line=line1.split(args['endline'])[0].split(sep)
+    try:
+        LI=[ cur_line[int(col)] for col in COL1s ]
+        CUR_ID="".join( [ str(el) for el in LI ] )
+        OUT.write(sep.join(cur_line+["OK"]+ DICO[CUR_ID] ) +args['endline'])
+    except:
+        OUT.write(sep.join(cur_line+["NO_MATCH"]+["" for el in range(0,COLNB2)] ) + args['endline'])
