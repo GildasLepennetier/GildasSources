@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys,argparse
 ##########################################
 #### some function for one day
@@ -20,12 +20,12 @@ def Fasta_To_Dico_path(path,idtag='>',endline="\n"):
 def Fasta_To_Dico_file(file,idtag='>',endline="\n"):
     dico={}
     for line in file:
-		line=line.split(endline)[0]
-		if line[0]==idtag:
-			ID=line[1:] #avoid '>' in IDs
-			dico[ID]='' 
-		else:
-			dico[ID]+=line
+        line=line.split(endline)[0]
+        if line[0]==idtag:
+            ID=line[1:] #avoid '>' in IDs
+            dico[ID]=''
+        else:
+            dico[ID]+=line
     return dico
 #### LOAD FASTA BIOPYTHON ####
 def loadFasta(adresse,endline="\n"):
@@ -77,28 +77,31 @@ def insert_in_string(string,insert="\n",each=80):
 parser = argparse.ArgumentParser(description='Make the reverse complement of a sequence in columns of a csv file',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file')
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
-parser.add_argument('-Marker',type=str,default='>',required=False,help='mark for the name of a record (default: >)')
-parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
-parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
-parser.add_argument('--version', action='version', version='%(prog)s v1.0')#version display
-parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
-parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have / want an header (fist line with names of columns)')
 parser.add_argument('-cmd',type=str,required=True,help='commande for the tool: [csv_to_fasta | fasta_to_csv | fasta_freq ]')
+
+parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have / want an header (fist line with names of columns)')
 parser.add_argument('-seqCol',type=int,required=False,help='[csv_to_fasta] : where to find the sequence')
 parser.add_argument('-id',type=str,required=False,help='[csv_to_fasta] : where to find the id. Can be a coma-separated list of column, will be join by _')
 parser.add_argument('-idJoin',type=str,default="_",required=False,help='[csv_to_fasta] : If several columns for id, this will be the spacer. default: "_" ')
 parser.add_argument('-ntPerLine',type=int,default=80,required=False,help='[csv_to_fasta] : How many nucleotides per line for the fasta? default=80')
 parser.add_argument('-rmId',action='store_true',default=False,help='[fasta_to_csv] add this flag if you want to remove the id of the fasta, will be in first column')
 parser.add_argument('-keepIds',type=str,help='[extract] extract only those ids in a fasta format. coma-separated')
+parser.add_argument('-Marker',type=str,default='>',required=False,help='mark for the name of a record (default: >)')
+
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('--version', action='version', version='%(prog)s v1.0')#version display
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
+    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
+    print ("Copyright 2014 LEPENNETIER Gildas")
+    exit()
 ##########################################
 """
     [csv_to_fasta]
@@ -187,17 +190,17 @@ if args['cmd'] == 'fasta_freq':
     args['out'].write( args['sep'].join ( [ str(el) for el in [ FREQ['A'],FREQ['C'],FREQ['G'],FREQ['T'] ] ] ) +args['endline'] )
 ##########################################
 if args['cmd'] == 'extract':
-	if not args['keepIds']:
-		sys.stderr.write("Error: -keepIds missing, you need to specify ids to keep (coma-sep)%s"%(args['endline']))
-		exit()
-	IDS=args['keepIds'].split(",")
-	p=False
-	for line in args['in']:
-		if line[0] == args['Marker']:
-			#sys.stderr.write("%s\n"%(line.split(" ")[0]))
-			if line.split(" ")[0].split(args['Marker'])[1] in IDS:
-				p=True
-			else:
-				p=False
-		if p:
-			sys.stdout.write(line)
+    if not args['keepIds']:
+        sys.stderr.write("Error: -keepIds missing, you need to specify ids to keep (coma-sep)%s"%(args['endline']))
+        exit()
+    IDS=args['keepIds'].split(",")
+    p=False
+    for line in args['in']:
+        if line[0] == args['Marker']:
+            #sys.stderr.write("%s\n"%(line.split(" ")[0]))
+            if line.split(" ")[0].split(args['Marker'])[1] in IDS:
+                p=True
+            else:
+                p=False
+        if p:
+            sys.stdout.write(line)
