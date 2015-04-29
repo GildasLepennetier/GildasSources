@@ -7,7 +7,7 @@ parser.add_argument('-action',type=str,required=False,default='both',help='actio
 parser.add_argument('-parent',type=int,required=True,help='column number for the parent. data will be concatenated using this. Be cafeful with duplicates')
 parser.add_argument('-order',type=int,required=True,help='column number where the gathering number are')
 parser.add_argument('-cols',type=str,required=True,help='column(s) to keep, separator for differents columns: ,')
-parser.add_argument('-header', action='store_true',default=True, required=True, help='You should add this flag, so you remember the function require a header')
+parser.add_argument('-header', action='store_true',help='If you have an header')
 parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s Final')
