@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys,os,datetime,argparse
 exemple="""
 From a file
@@ -32,11 +32,11 @@ parser.add_argument('--copy',action='store_true',help='Display Copyright informa
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
+    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
+    print ("Copyright 2014 LEPENNETIER Gildas")
+    exit()
 VERB_LVL=args['verbose']
 sep=args['sep']
 sep2=args['sep2']
