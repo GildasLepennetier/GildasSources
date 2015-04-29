@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser(description='Performs operation line by line, o
 parser.add_argument('-in', required=False, default=sys.stdin ,type=argparse.FileType('r'),help='input file')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
 parser.add_argument('-col',type=int,required=True,help='column where to make operation')
-parser.add_argument('-action',type=str,required=True,help='action to perform on the list of integers in the column [min, max, mean, median, sum, count, select] ')
+parser.add_argument('-action',type=str,required=True,help='action to perform on the list of integers in the column [min, max, mean, median, sum, count, select, revcompl] ')
 parser.add_argument('-header',action='store_true',default=False,help='add this flag if file have a header.')
 parser.add_argument('-delim',type=str,default=',',required=False,help='separator of integer values (default: ,)')
 parser.add_argument('-decimal',type=str,default='.',required=False,help='decimal mark for values (default: .)')
@@ -29,8 +29,8 @@ index_col = int(args['col']) -1
 if args['decimal'] == args['delim']:
     sys.stderr.write("Error: decimal and delimiter are the same !")
     exit()
-if args['action'] not in ['min','max','mean','median','sum','count','select']:
-    sys.stderr.write("Error: please choose an action in [min, max, mean, median, sum, count, select]")
+if args['action'] not in ['min','max','mean','median','sum','count','select','revcompl']:
+    sys.stderr.write("Error: please choose an action in [min, max, mean, median, sum, count, select, revcompl]")
     exit()
 if args['action'] == 'select':
     if not args['elemNum']:
@@ -38,6 +38,27 @@ if args['action'] == 'select':
         exit()
     else:
         elementNb=int(args['elemNum'])-1
+#### Give the reverse complement of a DNA sequence, change also if iupac nucleotide ####
+def revCompl_DNA(seq):
+    #Return reverse complement of dna, but does not change in case of N, Y, ...
+    reverse = []
+    if seq:
+        for letter in seq: #remplir avec le complementaire
+            COR={"A":"T","a":"t","C":"G","c":"g","G":"C","g":"c","T":"A","t":"a",#usual ACGT, case conserve
+                "R":"Y","r":"y","Y":"R","y":"r",#iupac R=A/G, Y=C/T
+                "S":"W","s":"w","W":"S","w":"s",#S=G/C, W=A/T
+                "K":"M","k":"m","M":"K","m":"k",#K=G/T, M=A/C
+                "B":"V","b":"v","V":"B","v":"b",# B=C/G/T, V=A/C/G
+                "D":"H","d":"h","H":"D","h":"d"}# D=A/G/T, H=A/C/T
+            if letter in COR.keys():
+                reverse.append(COR[letter])
+            elif letter in ['u','U']:
+                print ('error, must work on DNA, and I found nome U or u')
+            else:
+                reverse.append(letter)
+        return ''.join(reverse[::-1]) #inverser
+    else:
+        return ""
 LINES=args['in'].readlines()
 if args['header']:
     rline=LINES[0]
@@ -79,4 +100,7 @@ for rline in LINES:
             RESULT = NUMBERS[ elementNb ]
         except IndexError:
             RESULT=''
+    if args['action'] in ['revcompl']:
+        RESULT=revCompl_DNA(COL)
+        
     args['out'].write ( args['sep'].join( [str(el) for el in line ] + [ str(RESULT) ]  ) + args['endline'])
