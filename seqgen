@@ -1,12 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import argparse
 import itertools
 parser = argparse.ArgumentParser(description='Create sequences.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
-parser.add_argument('-l','-length',help='Length of the sequence.')#todo: Can be coma separated in the form: from,to or from,to,by ??
+parser.add_argument('-l','-length',type=int,help='Length of the sequence.')#todo: Can be coma separated in the form: from,to or from,to,by ??
 parser.add_argument('-a','-alphabet',help='Alphabet to use.')
 parser.add_argument('-i','-insensitive',action='store_true',help='Case insensitive, output will be in lower case.')
 parser.add_argument('-u','-upper',action='store_true',help='Converted output to upper case.')
+parser.add_argument('-r','-restrictions',action='append',help='Restriction to use. Give in the form: 2G for 2ond letter to be a G. Can be cumulated.')
+
 parser.add_argument('-V','--version', action='version', version='%(prog)s 29-04-2015')
 parser.add_argument('-C','--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('-A','--author',action='store_true',help='Display author informations')
@@ -31,5 +33,29 @@ if args['u']:#if output upper: everything upper
     A=[a.upper() for a in A]
 A=list(set(A))#remove duplicates in alphabet
 generator = itertools.product( ''.join(A), repeat=L)
+if args['r']:
+    pos=[]#position
+    res=[]#restriction
+    for r in args['r']:
+        if int(r[0]) <= L:
+            pos.append(int(r[0])-1)#python index: -1
+        else:
+            print ("Error: restriction '%s' can not be apply: position '%s' out of range"%(r,r[0]))
+            exit()
+        if r[1] in A:
+            res.append(r[1])
+        else:
+            print ("Error: restriction '%s' can not be apply: letter '%s' not in alphabet"%(r,r[1]))
+            exit()
 for a in generator:
-    print(''.join(a))
+    if args['r']:
+        item=''.join(a)
+        P=True
+        for i in range(0,len(args['r'])):
+            if item[pos[i]] != res[i]:
+                P=False #if item do not respect the restriction, do not print
+        if P:
+            print(item)
+                
+    else:
+        print(''.join(a))
