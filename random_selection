@@ -1,13 +1,11 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python3
+#coding: utf-8
 import sys,argparse,random
 parser = argparse.ArgumentParser(description='return random selection of lines if duplicate in col',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='first file name given is the input file')
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='second file name given is the output file')
-
 parser.add_argument('-col',type=int,required=True,help='column number for the selection')
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have an header')
-
 parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
 parser.add_argument('--version',action='version', version='%(prog)s 30-04-2014')#version display
@@ -16,11 +14,11 @@ parser.add_argument('--copy',action='store_true',help='Display Copyright informa
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
+    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
+    print ("Copyright 2014 LEPENNETIER Gildas")
+    exit()
 VERB_LVL=args['verbose']
 IN=args['in']
 OUT=args['out']
@@ -46,10 +44,6 @@ KEYS=DICO.keys()
 KEYS.sort()
 for K in KEYS:
     if len(DICO[K]) > 1:
-        OUT.write(  random.choice(DICO[K]) + args['endline']  )
+        OUT.write(random.choice(DICO[K]) + args['endline'])
     else:
-        OUT.write(  DICO[K][0] + args['endline']  )
-
-
-
-
+        OUT.write(DICO[K][0] + args['endline'])
