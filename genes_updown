@@ -1,33 +1,26 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys,re,os,argparse
-# Expand a file using 'parent' grouping and 'order' ranking. Originally: with introns informations, using the intron number (position 1,2)
-#
-#not possible to skip first line, which is required because we want to change the name of the col with up_ down_
-#gather everything in y dict
-#first line: print base + up_* <- for each column
-#then, for each element in the list, print the line + the column for up and down
-#if first element OR last element, print . on the up_ down_ col
 parser = argparse.ArgumentParser(description="Expand a file using 'parent' grouping and 'order' ranking (intron number).\nex: .introns file with up and down informations about splice site, GC content etc....\n REQUIRED: a first line with name of columns",epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='input file')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
-parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
-parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
-parser.add_argument('--version', action='version', version='%(prog)s Final')#version display
-parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('-action',type=str,required=False,default='both',help='action to perform: up, down, or default: both')
 parser.add_argument('-parent',type=int,required=True,help='column number for the parent. data will be concatenated using this. Be cafeful with duplicates')
 parser.add_argument('-order',type=int,required=True,help='column number where the gathering number are')
 parser.add_argument('-cols',type=str,required=True,help='column(s) to keep, separator for differents columns: ,')
 parser.add_argument('-header', action='store_true',default=True, required=True, help='You should add this flag, so you remember the function require a header')
-parser.add_argument('-action',type=str,required=False,default='both',help='action to perform: up, down, or default: both')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s Final')
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# +1 for each -v flag
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
+    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
+    print ("Copyright 2014 LEPENNETIER Gildas")
+    exit()
 VERB_LVL=args['verbose']
 IN   =args['in']
 OUT  =args['out']
@@ -40,10 +33,9 @@ if action not in ['up','down','both']:
     sys.stderr.write("Error: -action should be up, down or both%s"%(args['endline']))
     parser.print_help()
     exit()
-#transform the index of columns in python index-1
 cols_list2=[]
 cols_list=cols_list.split(',')
-for i in cols_list:
+for i in cols_list: #transform the index of columns in python index-1
     i=int(i)
     cols_list2.append(i-1)
 cols_list=cols_list2
@@ -52,9 +44,7 @@ del cols_list2
 #print ['up_%s'%(el) for el in [firstlineSplit[index] for index in cols_list]]
 #print ['down_%s'%(el) for el in [firstlineSplit[index] for index in cols_list]]
 Lines = IN.readlines()
-# print first line and others lines in cols
-# extract first line
-if args['header']:
+if args['header']:# extract first line
     firstlineSplit=Lines[0].split(args['endline'])[0].split(sep)
     TO_write=[]
     if action in ['up','both']:
@@ -63,9 +53,8 @@ if args['header']:
         TO_write+=['down_%s'%(el) for el in [firstlineSplit[index] for index in cols_list]]
     OUT.write(sep.join(firstlineSplit+TO_write)   +args['endline'])
     Lines=Lines[1:]
-#### Gathering :  lines .split() BY parent
 DICO={}
-for line in Lines:
+for line in Lines:#### Gathering :  lines .split() BY parent
     line=line.split(args['endline'])[0]
     parent=line.split(sep)[parent_index]
     #OUT.write( line+'\n' )
@@ -75,10 +64,8 @@ for line in Lines:
         DICO[parent].append(line.split(sep))
 if VERB_LVL > 1:
     print ( str(len(DICO.keys()))+' loading parents\n' )
-#### print output file
 ALL_KEYS=DICO.keys()
 ALL_KEYS.sort()
-#line_nb=0
 for CLE in ALL_KEYS:
     elementsNB=len(DICO[CLE])
     LISTES=DICO[CLE]
@@ -87,20 +74,17 @@ for CLE in ALL_KEYS:
         current_nb=int(line_REF[order_index]) #current number in the 'order' (intron number in gene)
         line_UP  =[]   #reinitialization
         line_DOWN=[]
-        #fullfill the lines
-        for line_2 in LISTES:
+        for line_2 in LISTES:#fullfill the lines
             if int(line_2[order_index]) == current_nb -1:
                 for index in cols_list:
                     line_UP.append(line_2[index])
             elif int(line_2[order_index]) == current_nb +1:
                 for index in cols_list:
                     line_DOWN.append(line_2[index])
-        #UP fullfill the lines if index where first and last
-        if line_UP==[]:
+        if line_UP==[]:#UP fill the lines if index where first and last
             for el in cols_list:
                 line_UP.append('')
-        #DOWN fullfill the lines if index where first and last
-        if line_DOWN==[]:
+        if line_DOWN==[]:#DOWN fill the lines if index where first and last
             for el in cols_list:
                 line_DOWN.append('')
         TO_write=[]
@@ -108,5 +92,4 @@ for CLE in ALL_KEYS:
             TO_write+=line_UP
         if action in ['down','both']:
             TO_write+=line_DOWN
-        
         OUT.write(sep.join(line_REF  +  [el for el in TO_write]  ) +args['endline'])
