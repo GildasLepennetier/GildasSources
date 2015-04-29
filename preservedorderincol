@@ -1,24 +1,23 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys,os,datetime,argparse
-
 parser = argparse.ArgumentParser(description='Check the order of the elements in a column. Return 0 if the order is conserved, and 1 if it is disrupted',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),help='input file')
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
 parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t )')
+parser.add_argument('-col',type=int,required=True,help='index of the column')
+parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s 04-30-2014')#version display
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity. 1: print time 2:print each step')# count the level of verbosity, +1 for each -v flag
-parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header')
-parser.add_argument('-col',type=int,required=True,help='index of the column')
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
+    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
+    print ("Copyright 2014 LEPENNETIER Gildas")
+    exit()
 VERB_LVL=args['verbose']
 OUT=args['out']
 sep=args['sep']
@@ -47,7 +46,7 @@ for rline in LINES:
 motifSize=len(MOTIF)
 if VERB_LVL > 1:
     print("motif on %s lines"%motifSize)
-    print MOTIF
+    print(MOTIF)
 #check the motif in all the file
 lineNumber=0
 for rline in LINES: #LINES[motifSize:]
@@ -64,4 +63,3 @@ if ELEM != MOTIF[-1]:
 if VERB_LVL > 0:
     now=datetime.datetime.now() #now.year,now.month,now.day,now.hour,now.minute,now.microsecond
     print ("End: %s"%(now.strftime("%Y-%m-%d %H:%M:%S")))
-exit(0)
