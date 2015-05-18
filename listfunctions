@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# This function list the current directory
+
+ls $HOME/GildasSources
