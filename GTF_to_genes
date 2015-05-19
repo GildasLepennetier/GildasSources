@@ -36,7 +36,7 @@ Lines = IN.readlines()
 index_gff={'seqid':0,'source':1,'type':2,'start':3,'end':4,'score':5,'strand':6,'frame':7,'attribute':8}
 GENOME={}
 if VERB_LVL > 0:
-    print("Loading the dictionnary : genes, isoforms...")
+    sys.stderr.write("Loading the dictionnary : genes, isoforms...\n")
 DICO={}
 for line in Lines:
     if line[0] in ["#","\n"]:
@@ -61,11 +61,11 @@ for line in Lines:
             GENOME[PARENT]={} #create gene
             GENOME[PARENT][ID]=[EXON_INFOS]
 if VERB_LVL > 0:
-    print ("%s keys in genome"%(len(GENOME.keys())))
+    sys.stderr.write("%s keys in genome\n"%(len(GENOME.keys())))
 #first line
 OUT.write(sep.join(['Chr','iso_id','gene_id','strand','%sStarts'%ELEMENT,'%sEnds'%ELEMENT])+"\n")
-mykeys=GENOME.keys()
-mykeys.sort()
+mykeys=sorted(GENOME.keys())
+
 for gene_id in mykeys:
     GENE=GENOME[gene_id]
     for iso_id in GENE.keys():
@@ -80,7 +80,7 @@ for gene_id in mykeys:
             strand=tupl[2]
             chrom=tupl[3]
             if strand not in ["+","-"]:
-                print ('ERROR: exon with bad strand [geneID isoID strand start end]: %s - %s - %s - %s'%(gene_id,iso_id,tupl[2],tupl[0],tupl[1]))
+                sys.stderr.write('ERROR: exon with bad strand [geneID isoID strand start end]: %s - %s - %s - %s\n'%(gene_id,iso_id,tupl[2],tupl[0],tupl[1]))
         exons_start.sort()
         exons_end.sort()
         exons_s=','.join([str(el) for el in exons_start])
