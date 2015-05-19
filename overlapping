@@ -108,6 +108,9 @@ for CHR in CHR_IDS: #each chromosome separately
                     args['out'].write( args['sep'].join(LINE_req + ['alt_larger_3'] + LINE_ref + [args['endline']]))#same start, larger end |_-_-_-_-______
                     continue
             if START_req > START_ref: #start after
+                if START_req == END_ref:
+                    args['out'].write( args['sep'].join(LINE_req + ['start_is_end_of'] + LINE_ref + [args['endline']]))#request overlap the right of the reference : -----|________
+                    continue
                 if END_req < END_ref:
                     args['out'].write( args['sep'].join(LINE_req + ['is_inside_of'] + LINE_ref + [args['endline']]))#start inside and end before: request is contained in reference ---_-_-_-----
                     continue
@@ -117,6 +120,4 @@ for CHR in CHR_IDS: #each chromosome separately
                 if END_req > END_ref:
                     args['out'].write( args['sep'].join(LINE_req + ['overlap_right'] + LINE_ref + [args['endline']]))#request overlap the right of the reference : -----_-_-_-_-_-_______
                     continue
-            if START_req == END_ref:
-                args['out'].write( args['sep'].join(LINE_req + ['start_is_end_of'] + LINE_ref + [args['endline']]))#request overlap the right of the reference : -----|________
-                continue
+            
