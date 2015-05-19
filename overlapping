@@ -119,4 +119,4 @@ for CHR in CHR_IDS: #each chromosome separately
                     continue
             if START_req == END_ref:
                 args['out'].write( args['sep'].join(LINE_req + ['start_is_end_of'] + LINE_ref + [args['endline']]))#request overlap the right of the reference : -----|________
-                    continue
+                continue
