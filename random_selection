@@ -40,8 +40,7 @@ for line in Lines:
         DICO[KEY]=[line]
     else:
         DICO[KEY].append(line)
-KEYS=DICO.keys()
-KEYS.sort()
+KEYS=sorted(DICO.keys())
 for K in KEYS:
     if len(DICO[K]) > 1:
         OUT.write(random.choice(DICO[K]) + args['endline'])
