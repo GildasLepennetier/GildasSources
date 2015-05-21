@@ -15,10 +15,7 @@ WD=$(pwd)
 #sudo apt-get upgrade
 #sudo apt-get update
 ################################################################################
-## FIREFOX
-#gildas.lepennetier@hotmail.fr
-#gildas.lepennetier
-#recovery key : y-aj2fd-n8fqm-fp4iz-ykz3d-fw9ii
+# cmd to know
 if [ ];then cd $HOME; echo "commands to know / master"
 	
 	echo uname #unix name
@@ -26,17 +23,17 @@ if [ ];then cd $HOME; echo "commands to know / master"
 	echo rsync #synchronization
 	echo fdisk #checkdisk
 	
-	echo which
-	echo du
-	echo df
-	echo dd
-	echo find
-	echo locate
+	echo which #where is the command located
+	echo du #disl use
+	echo df #disk free
+	echo dd #copy data
+	echo find #do not forget the -name option
+	echo locate #using index to search
 	
 	echo !! #!! is replaced by the previous command / potential error of execution: echo $(!!)
 	echo useradd and adduser
 	
-	echo ping 128.176.213.35 -c 5
+	echo ping 128.176.213.35 -c 5 #ping...
 fi
 ################################################################################
 # libreoffice
@@ -356,7 +353,7 @@ if [ ];then cd $HOME; echo "(bio)informatic tools"
 	
 	
 fi
-#RepeatMasker
+# RepeatMasker
 if [ ];then cd $HOME; echo "RepeatMasker, libraries and search programs"
 	echo "go to : http://tandem.bu.edu/trf/trf407b.linux.download.html"
 	echo "and download the program, then put it in a directory called 'trp' in your home"
@@ -430,7 +427,7 @@ if [ ];then cd $HOME; echo "RepeatMasker, libraries and search programs"
 	#- 70 ancestral and ubiquitous sequence(s) for drosophila fruit fly genus
 	#- 0 lineage specific sequence(s) for drosophila fruit fly genus
 fi
-#imageMagick
+# imageMagick
 if [ 0 ];then cd $HOME; echo "imageMagick"
 	
 	if [ ];then echo "tiff support"
@@ -459,7 +456,9 @@ if [ 0 ];then cd $HOME; echo "imageMagick"
 	sudo make install
 	sudo ldconfig /usr/local/lib #to fix shared library problems
 	make clean
+	
 	#http://www.imagemagick.org/script/command-line-tools.php
+	#http://www.imagemagick.org/Usage/
 fi
 ############################################################################
 # tips, techniques and so on
@@ -527,3 +526,5 @@ fi
 
 #back to directory
 cd $WD
+
+## FIREFOX sync: gildas.lepennetier@hotmail.fr
