@@ -14,56 +14,16 @@ WD=$(pwd)
 #sudo apt-get install -f # fix brocken packages
 #sudo apt-get upgrade
 #sudo apt-get update
-################################################################################
-# cmd to know
-if [ ];then cd $HOME; echo "commands to know / master"
-	
-	echo uname #unix name
-	echo arch #achitecture
-	echo rsync #synchronization
-	echo fdisk #checkdisk
-	
-	echo which #where is the command located
-	echo du #disl use
-	echo df #disk free
-	echo dd #copy data
-	echo find #do not forget the -name option
-	echo locate #using index to search
-	
-	echo !! #!! is replaced by the previous command / potential error of execution: echo $(!!)
-	echo useradd and adduser
-	
-	echo ping 128.176.213.35 -c 5 #ping...
-fi
-################################################################################
-# libreoffice
-if [ ];then cd $HOME; echo "libreoffice"
-	#install kde integration for libreoffice
-	sudo apt-get install libreoffice-kde
-	#download libreoffice - last version
-	read -p "Did you update the version in the script?"
-	wget -nc http://donate.libreoffice.org/fr/dl/deb-x86_64/4.3.7/fr/LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
-	tar -xvzf LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
-	cd LibreOffice_4.3.7.2_Linux_x86-64_deb/DEBS
-	sudo dpkg -i *.deb
-	cd ../..
-	rm -r LibreOffice_4.3.7.2_Linux_x86-64_deb
-	rm LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
-fi
-# PDF
-if [ ];then cd $HOME; echo "Adobe reader"
-	read -p "Did you update the version in the script?"
-	wget -nc ftp://ftp.adobe.com/pub/adobe/reader/unix/9.x/9.5.5/enu/AdbeRdr9.5.5-1_i386linux_enu.deb
-	sudo dpkg -i AdbeRdr9.5.5-1_i386linux_enu.deb
-	rm AdbeRdr9.5.5-1_i386linux_enu.deb
-fi
+
 # git
-if [ ];then cd $HOME; echo "Git"
+if [ 0 ];then cd $HOME; echo "Git - supposed to be there already"
 	sudo apt-get install git
 	#exemple: clone the pirate bay
 	#git clone https://github.com/isohuntto/openbay.git
 	#git clone https://github.com/GildasLepennetier/GildasSources.git
+	#git clone https://github.com/GildasLepennetier/smartPySpider.git
 fi
+###############################################################################
 # R
 if [ ];then cd $HOME; echo "R and RStudio"
 	# R
@@ -112,7 +72,7 @@ if [ ];then cd $HOME; echo "R and RStudio"
 	fi
 fi
 # python
-if [ ];then cd $HOME; echo "python exra"
+if [ 0 ];then cd $HOME; echo "python exra"
 	#python setup tools: easy_install
 	sudo apt-get install python-setuptools
 	# required
@@ -130,11 +90,11 @@ if [ ];then cd $HOME; echo "python exra"
 	#sudo pip install cutadapt
 fi
 # my SQL
-if [ ];then cd $HOME; echo "my SQL"
+if [ 0 ];then cd $HOME; echo "my SQL"
 	sudo apt-get install mysql-server
 fi
 # SSH
-if [ ];then cd $HOME; echo "ssh and sshd"
+if [ 0 ];then cd $HOME; echo "ssh and sshd"
 	
 	sudo apt-get install openssh-server
 	
@@ -196,7 +156,7 @@ if [ ];then cd $HOME; echo "ssh and sshd"
 	fi
 fi
 # FTP
-if [ ];then cd $HOME; echo "FTP Port 21"
+if [ 0 ];then cd $HOME; echo "FTP Port 21"
 
 	sudo apt-get install vsftpd
 	if [ ];then echo "configuration"
@@ -279,16 +239,9 @@ if [ ];then cd $HOME; echo "build apach server httpd from sources"
 		#$HOME/bin/apachectl start
     fi
 fi
-# Dropbox
-if [ ];then cd $HOME; echo "Dropbox"
-	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox
-	echo "TODO: nemo --quit #need to quit the daemon"
-	echo "TODO dropbox start -i"
-	#gilou_on_net@hotmail.com
-	#sy...
-fi
+
 # PERL
-if [ ];then cd $HOME; echo "perl modules"
+if [ 0 ];then cd $HOME; echo "perl modules"
 	sudo apt-get install perl-doc
 	#search modules -> http://search.cpan.org/
 	# perl modules
@@ -298,7 +251,7 @@ if [ ];then cd $HOME; echo "perl modules"
 	echo "TODO: reload cpan"
 fi
 # Zotero
-if [ ];then cd $HOME; echo "zotero"
+if [ 0 ];then cd $HOME; echo "zotero"
 	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
 	wget -nc https://download.zotero.org/standalone/4.0.19/Zotero-4.0.19_linux-x86_64.tar.bz2
 	tar -xjf Zotero-4.0.19_linux-x86_64.tar.bz2
@@ -309,7 +262,7 @@ if [ ];then cd $HOME; echo "zotero"
 	#preferences: user: gildas.lepennetier@hotmail.fr (sy)
 fi
 # bioinfo
-if [ ];then cd $HOME; echo "(bio)informatic tools"
+if [ 0 ];then cd $HOME; echo "(bio)informatic tools"
 	
 	### internet
 	sudo apt-get install curl #internet function: download pages
@@ -354,7 +307,7 @@ if [ ];then cd $HOME; echo "(bio)informatic tools"
 	
 fi
 # RepeatMasker
-if [ ];then cd $HOME; echo "RepeatMasker, libraries and search programs"
+if [ 0 ];then cd $HOME; echo "RepeatMasker, libraries and search programs"
 	echo "go to : http://tandem.bu.edu/trf/trf407b.linux.download.html"
 	echo "and download the program, then put it in a directory called 'trp' in your home"
 	echo ""
@@ -395,10 +348,10 @@ if [ ];then cd $HOME; echo "RepeatMasker, libraries and search programs"
 		rm ncbi-blast-2.2.30+-ia32-linux.tar.gz
 	fi
 	
-	if [ ];then echo "downloading Libraries - if error -> check versions"
+	if [ 0 ];then echo "downloading Libraries - if error -> check versions"
 		cd RepeatMasker
 		#repbase require login
-		echo "You should register to access the RepBase libraries. it is not allowed to use gildas's password, legally";exit
+		#echo "You should register to access the RepBase libraries. it is not allowed to use gildas's password, legally";exit
 		LOGIN=gildas
 		PASS=edr6qv
 		wget -nc --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase20.01.embl.tar.gz
@@ -430,7 +383,7 @@ fi
 # imageMagick
 if [ 0 ];then cd $HOME; echo "imageMagick"
 	
-	if [ ];then echo "tiff support"
+	if [ 0 ];then echo "tiff support"
 		wget -nc "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.3.tar.gz"
 		tar xzf "tiff-4.0.3.tar.gz"
 		rm -v "tiff-4.0.3.tar.gz"
@@ -528,3 +481,54 @@ fi
 cd $WD
 
 ## FIREFOX sync: gildas.lepennetier@hotmail.fr
+
+################################################################################
+# cmd to know
+if [ ];then cd $HOME; echo "commands to know / master"
+	
+	echo uname #unix name
+	echo arch #achitecture
+	echo rsync #synchronization
+	echo fdisk #checkdisk
+	
+	echo which #where is the command located
+	echo du #disl use
+	echo df #disk free
+	echo dd #copy data
+	echo find #do not forget the -name option
+	echo locate #using index to search
+	
+	echo !! #!! is replaced by the previous command / potential error of execution: echo $(!!)
+	echo useradd and adduser
+	
+	echo ping 128.176.213.35 -c 5 #ping...
+fi
+# Dropbox
+if [ ];then cd $HOME; echo "Dropbox"
+	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox
+	echo "TODO: nemo --quit #need to quit the daemon"
+	echo "TODO dropbox start -i"
+	#gilou_on_net@hotmail.com
+	#sy...
+fi
+# PDF
+if [ ];then cd $HOME; echo "Adobe reader"
+	read -p "Did you update the version in the script?"
+	wget -nc ftp://ftp.adobe.com/pub/adobe/reader/unix/9.x/9.5.5/enu/AdbeRdr9.5.5-1_i386linux_enu.deb
+	sudo dpkg -i AdbeRdr9.5.5-1_i386linux_enu.deb
+	rm AdbeRdr9.5.5-1_i386linux_enu.deb
+fi
+# libreoffice
+if [ ];then cd $HOME; echo "libreoffice"
+	#install kde integration for libreoffice
+	sudo apt-get install libreoffice-kde
+	#download libreoffice - last version
+	read -p "Did you update the version in the script?"
+	wget -nc http://donate.libreoffice.org/fr/dl/deb-x86_64/4.3.7/fr/LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
+	tar -xvzf LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
+	cd LibreOffice_4.3.7.2_Linux_x86-64_deb/DEBS
+	sudo dpkg -i *.deb
+	cd ../..
+	rm -r LibreOffice_4.3.7.2_Linux_x86-64_deb
+	rm LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
+fi
