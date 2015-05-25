@@ -53,6 +53,8 @@ trim_seq_in_csv
 
 echo -e "don't forget to reload bash"
 
+#list all file with exec rights
+#find . -type f -perm /111
 
 
 
