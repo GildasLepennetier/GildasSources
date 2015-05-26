@@ -242,30 +242,32 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 	#- 0 lineage specific sequence(s) for drosophila fruit fly genus
 fi
 # imageMagick - tiff support
-if [ 0 ];then echo -e "\n tiff support"
-	wget -nc -c "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.3.tar.gz"
-	tar xzf "tiff-4.0.3.tar.gz"
-	rm -v "tiff-4.0.3.tar.gz"
-	cd "tiff-4.0.3"
-	echo "patching the stuff..."; sleep 10
-	wget -nc -c "http://www.linuxfromscratch.org/patches/blfs/svn/tiff-4.0.3-fixes-1.patch"
-	patch -Np1 -i tiff-4.0.3-fixes-1.patch
-	
-	rm tiff-4.0.3-fixes-1.patch
-	
-	bash configure
-	make check
-	sudo make install
-	
-	cd $HOME
-	rm -r tiff-4.0.3
-fi
+
 # imageMagick
-if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
+if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
 	
 	sudo apt-get install imagemagick
 	
-	if [ ];then echo "failed install auto, here the manual (hope it works)"
+	if [ ];then echo -e "\n tiff support"
+		wget -nc -c "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.3.tar.gz"
+		tar xzf "tiff-4.0.3.tar.gz"
+		rm -v "tiff-4.0.3.tar.gz"
+		cd "tiff-4.0.3"
+		echo "patching the stuff..."; sleep 10
+		wget -nc -c "http://www.linuxfromscratch.org/patches/blfs/svn/tiff-4.0.3-fixes-1.patch"
+		patch -Np1 -i tiff-4.0.3-fixes-1.patch
+		
+		rm tiff-4.0.3-fixes-1.patch
+		
+		bash configure
+		make check
+		sudo make install
+		
+		cd $HOME
+		rm -r tiff-4.0.3
+	fi
+	
+	if [ ];then echo "manual (hope it works)"
 		cd $HOME
 		VERSION_MAGICK="6.9.1-2"
 		wget -nc -c "ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-$VERSION_MAGICK.tar.gz"
@@ -281,6 +283,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
 		#http://www.imagemagick.org/script/command-line-tools.php
 		#http://www.imagemagick.org/Usage/
 	fi
+	
 fi
 ############################################################################
 # tips, techniques and so on
@@ -497,6 +500,7 @@ if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
 # 		install.packages("VennDiagram",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# Venn Diagram
 # 		
 	fi
+
 fi
 # Dropbox
 if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
