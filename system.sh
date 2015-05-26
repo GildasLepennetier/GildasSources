@@ -17,6 +17,7 @@ SAYYES="--assume-yes"
 #sudo apt-get update
 #sudo apt-get upgrade
 
+#apt-get autoremove
 
 # git
 if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
@@ -243,7 +244,7 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 fi
 
 # R
-if [ 0 ];then cd $HOME; echo -e "\n G install: R and RStudio"
+if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	
 	#dependencies required
 	sudo apt-get install libjpeg62
@@ -434,6 +435,12 @@ fi
 #
 # non-necessary
 #
+
+#Filezilla
+if [ ];then echo -e "\n G install: Filezilla"
+	sudo apt-get install filezilla
+fi
+
 #Apach internet :80 httpd
 if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sources"
 	
