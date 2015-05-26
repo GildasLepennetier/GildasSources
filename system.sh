@@ -241,8 +241,62 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 	#- 70 ancestral and ubiquitous sequence(s) for drosophila fruit fly genus
 	#- 0 lineage specific sequence(s) for drosophila fruit fly genus
 fi
-# imageMagick - tiff support
 
+# R
+if [ 0 ];then cd $HOME; echo -e "\n G install: R and RStudio"
+	
+	#dependencies required
+	sudo apt-get install libjpeg62
+	
+	# R
+	sudo apt-get install r-base r-base-dev r-base-html r-doc-html #libjpeg62 required
+	
+	# RStudio
+	wget -nc -c http://download1.rstudio.org/rstudio-0.98.507-i386.deb
+	sudo dpkg -i rstudio-0.98.507-i386.deb
+	rm rstudio-0.98.507-i386.deb
+	
+	#java compiler ? r-java
+	#sudo apt-get install gcj-aarch64-linux-gnu r-cran-rjava
+	
+	#exporting variable
+	#R CMD javareconf -e
+	
+	if [ ];then 
+		echo "run sudo R"
+		
+		#for Bioconductor
+# 		source("http://bioconductor.org/biocLite.R")
+# 		biocLite("BiocUpgrade")
+# 			#biocValid()
+# 			#biocLite()
+# 		biocLite("cummeRbund") #Sequencing
+# 			#biocLite("ArrayExpressHTS")
+# 		biocLite("QuasR")
+# 			#biocLite("rjava")
+# 		biocLite("limma") #for Venn Diagram
+# 		
+# 		#PACKAGES default lib=/home/gildas/R/x86_64-pc-linux-gnu-library/3.1
+# 		install.packages("ggplot2",dependencies=T,repos="http://mirrors.softliste.de/cran/")			#plot
+# 		install.packages("zoo",dependencies=T,repos="http://mirrors.softliste.de/cran/")				#rolling function
+# 		install.packages("plyr",dependencies=T,repos="http://mirrors.softliste.de/cran/")	        	#arrange dataframe
+# 		install.packages("gtools",dependencies=T,repos="http://mirrors.softliste.de/cran/")	        	#cut a vector depending on quantiles
+# 		install.packages("ppcor",dependencies=T,repos="http://mirrors.softliste.de/cran/")	        	#partial corelation
+# 		install.packages("FactoMineR",dependencies=T,repos="http://mirrors.softliste.de/cran/")			#PCA
+# 		install.packages("ade4",dependencies=T,repos="http://mirrors.softliste.de/cran/")	        	#PCA
+# 		install.packages("rgl",dependencies=T,repos="http://mirrors.softliste.de/cran/")				#repository=Berlin #plot3d, X11 and header GL/gl.h required
+# 		install.packages("argparse",dependencies=T,repos="http://mirrors.softliste.de/cran/")			#argument parser
+# 		install.packages("vegan",dependencies=T,repos="http://mirrors.softliste.de/cran/")				#with Karsten
+# 		install.packages("rococo",dependencies=T,repos="http://mirrors.softliste.de/cran/")				#Robust Rank Correlation Coefficient test
+# 		install.packages("boot",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# bootstrap
+# 		install.packages("raster",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# modal value, ...
+# 		install.packages("VennDiagram",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# Venn Diagram
+# 		
+	fi
+
+fi
+
+# imageMagick - tiff support
 # imageMagick
 if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
 	
@@ -428,6 +482,7 @@ if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sourc
 		#$HOME/bin/apachectl start
     fi
 fi
+
 # PERL
 if [ ];then cd $HOME; echo -e "\n G install: perl modules"
 	sudo apt-get install perl-doc
@@ -438,10 +493,12 @@ if [ ];then cd $HOME; echo -e "\n G install: perl modules"
 	echo "TODO: install CPAN"
 	echo "TODO: reload cpan"
 fi
+
 # my SQL
 if [ ];then cd $HOME; echo -e "\n G install: my SQL"
 	sudo apt-get install mysql-server
 fi
+
 # Zotero
 if [ ];then cd $HOME; echo -e "\n G install: zotero"
 	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
@@ -454,54 +511,7 @@ if [ ];then cd $HOME; echo -e "\n G install: zotero"
 	rm Zotero-4.0.19_linux-x86_64.tar.bz2
 	#preferences: user: gildas.lepennetier@hotmail.fr (sy)
 fi
-# R
-if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
-	# R
-	sudo apt-get install r-base r-base-dev r-base-html r-doc-html #libjpeg62 required ??
-	
-	# RStudio
-	wget -nc -c http://download1.rstudio.org/rstudio-0.98.507-i386.deb
-	sudo dpkg -i rstudio-0.98.507-i386.deb
-	rm rstudio-0.98.507-i386.deb
-	
-	#java compiler ? r-java
-	sudo apt-get install r-cran-rjava
-	#exporting variable
-	R CMD javareconf -e
-	
-	if [ ];then 
-		echo "run sudo R"
-		
-		#for Bioconductor
-# 		source("http://bioconductor.org/biocLite.R")
-# 		biocLite("BiocUpgrade")
-# 			#biocValid()
-# 			#biocLite()
-# 		biocLite("cummeRbund") #Sequencing
-# 			#biocLite("ArrayExpressHTS")
-# 		biocLite("QuasR")
-# 			#biocLite("rjava")
-# 		biocLite("limma") #for Venn Diagram
-# 		
-# 		#PACKAGES default lib=/home/gildas/R/x86_64-pc-linux-gnu-library/3.1
-# 		install.packages("ggplot2",dependencies=T,repos="http://mirrors.softliste.de/cran/")			#plot
-# 		install.packages("zoo",dependencies=T,repos="http://mirrors.softliste.de/cran/")				#rolling function
-# 		install.packages("plyr",dependencies=T,repos="http://mirrors.softliste.de/cran/")	        	#arrange dataframe
-# 		install.packages("gtools",dependencies=T,repos="http://mirrors.softliste.de/cran/")	        	#cut a vector depending on quantiles
-# 		install.packages("ppcor",dependencies=T,repos="http://mirrors.softliste.de/cran/")	        	#partial corelation
-# 		install.packages("FactoMineR",dependencies=T,repos="http://mirrors.softliste.de/cran/")			#PCA
-# 		install.packages("ade4",dependencies=T,repos="http://mirrors.softliste.de/cran/")	        	#PCA
-# 		install.packages("rgl",dependencies=T,repos="http://mirrors.softliste.de/cran/")				#repository=Berlin #plot3d, X11 and header GL/gl.h required
-# 		install.packages("argparse",dependencies=T,repos="http://mirrors.softliste.de/cran/")			#argument parser
-# 		install.packages("vegan",dependencies=T,repos="http://mirrors.softliste.de/cran/")				#with Karsten
-# 		install.packages("rococo",dependencies=T,repos="http://mirrors.softliste.de/cran/")				#Robust Rank Correlation Coefficient test
-# 		install.packages("boot",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# bootstrap
-# 		install.packages("raster",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# modal value, ...
-# 		install.packages("VennDiagram",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# Venn Diagram
-# 		
-	fi
 
-fi
 # Dropbox
 if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
 	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox
@@ -510,6 +520,7 @@ if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
 	#gilou_on_net@hotmail.com
 	#sy...
 fi
+
 # PDF
 if [ ];then cd $HOME; echo -e "\n G install: Adobe reader"
 	read -p "Did you update the version in the script?"
@@ -517,6 +528,7 @@ if [ ];then cd $HOME; echo -e "\n G install: Adobe reader"
 	sudo dpkg -i AdbeRdr9.5.5-1_i386linux_enu.deb
 	rm AdbeRdr9.5.5-1_i386linux_enu.deb
 fi
+
 # libreoffice
 if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
 	#install kde integration for libreoffice
@@ -531,6 +543,7 @@ if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
 	rm -r LibreOffice_4.3.7.2_Linux_x86-64_deb
 	rm LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
 fi
+
 # FTP
 if [ ];then cd $HOME; echo -e "\n G install: FTP Port 21"
 
