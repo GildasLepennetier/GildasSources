@@ -252,9 +252,10 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	sudo apt-get install r-base r-base-dev r-base-html r-doc-html #libjpeg62 required
 	
 	# RStudio
-	wget -nc -c http://download1.rstudio.org/rstudio-0.98.507-i386.deb
-	sudo dpkg -i rstudio-0.98.507-i386.deb
-	rm rstudio-0.98.507-i386.deb
+	VERSION=0.98.1103-amd64
+	wget -nc -c http://download1.rstudio.org/rstudio-$VERSION.deb
+	sudo dpkg -i rstudio-$VERSION.deb
+	rm rstudio-$VERSION.deb
 	
 	#java compiler ? r-java
 	#sudo apt-get install gcj-aarch64-linux-gnu r-cran-rjava
