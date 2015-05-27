@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e #to stop if error
 WD=$(pwd)
+
 SAYYES="--assume-yes"
+WGETOPT="-nc -c"
+
+ARCH=$(arch)
 
 ################################################################################
 #
@@ -20,8 +24,9 @@ SAYYES="--assume-yes"
 #apt-get autoremove
 
 # git
-if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
-	sudo apt-get install git
+if [ 0 ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
+	sudo apt-get install git $SAYYES
+	
 	#exemple: clone the pirate bay
 	#git clone https://github.com/isohuntto/openbay.git
 	#git clone https://github.com/GildasLepennetier/GildasSources.git
@@ -29,27 +34,27 @@ if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
 fi
 ###############################################################################
 # python
-if [ ];then cd $HOME; echo -e "\n G install: python exra"
+if [ 0 ];then cd $HOME; echo -e "\n G install: python exra"
 	#python setup tools: easy_install
-	sudo apt-get install python-setuptools
-	# required
-	sudo apt-get install python-dev
+	sudo apt-get install python-dev python-setuptools $SAYYES
 	# scipy and numpy
-	sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose
+	sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose $SAYYES
 	## biopython
-	sudo apt-get install python-biopython python-biopython-doc python-biopython-sql
+	sudo apt-get install python-biopython python-biopython-doc python-biopython-sql $SAYYES
 	## IDLE
-	sudo apt-get install idle idle-python2.7
+	sudo apt-get install idle idle-python2.7 $SAYYES
 	## weblogo
-	sudo easy_install weblogo #sudo easy_install --upgrade weblogo
+	sudo easy_install weblogo $SAYYES
+	sudo easy_install --upgrade weblogo
 	## pip
-	sudo apt-get install python-pip
+	sudo apt-get install python-pip $SAYYES
 	#sudo pip install cutadapt
 fi
+
 # SSH
-if [ ];then cd $HOME; echo -e "\n G install: ssh and sshd"
+if [ 0 ];then cd $HOME; echo -e "\n G install: ssh and sshd"
 	
-	sudo apt-get install openssh-server
+	sudo apt-get install openssh-server $SAYYES
 	
 	if [ ];then
 		#############################
@@ -105,45 +110,50 @@ if [ ];then cd $HOME; echo -e "\n G install: ssh and sshd"
 		#Your identification has been saved in /home/gildas/.ssh/id_rsa.
 		#Your public key has been saved in /home/gildas/.ssh/id_rsa.pub.
 		#ssh-copy-id log@server
-		#############################
 	fi
+
 fi
-# bioinfo
-if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
+
+#bioinfo
+if [ 0 ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	
 	### internet
-	sudo apt-get install curl #internet function: download pages
-	sudo apt-get install whois #link ip and domain
+	sudo apt-get install filezilla $SAYYES #don't forget the import of links
 	
-	sudo apt-get install apache2-bin #Apache system for ???
-	sudo apt-get install php5-cli #PHP
-	sudo apt-get install mongodb-clients #MongoDB
+	sudo apt-get install curl $SAYYES #internet function: download pages
+	sudo apt-get install whois $SAYYES  #link ip and domain
+	
+	sudo apt-get install apache2-bin $SAYYES  #Apache system for ???
+	sudo apt-get install php5-cli $SAYYES  #PHP
+	sudo apt-get install mongodb-clients $SAYYES  #MongoDB
 	
 	### bioinfo
-	sudo apt-get install libncurses-dev
-	sudo apt-get install tophat
-	sudo apt-get install bowtie
-	sudo apt-get install cufflinks
-	sudo apt-get install bedtools #bam to fastq
+	sudo apt-get install libncurses-dev $SAYYES 
+	sudo apt-get install tophat $SAYYES 
+	sudo apt-get install bowtie $SAYYES 
+	sudo apt-get install cufflinks $SAYYES 
+	sudo apt-get install bedtools $SAYYES  #bam to fastq
 	
 	# blat for x86_64
 	wget -nc -c http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/blat/blat
 	sudo chmod +x blat
+	sudo mv blat /usr/bin/blat
+	
 	# blast
-	sudo apt-get install ncbi-blast+
+	sudo apt-get install ncbi-blast+ $SAYYES 
 	
 	### system
-	sudo apt-get install rpm #package mannager
-	sudo apt-get install yum #yum updater
+	sudo apt-get install rpm $SAYYES  #package manager
+	sudo apt-get install yum $SAYYES  #yum updater
 	
-	sudo apt-get install htop #display system daemons
-	sudo apt-get install g++ #C compiler
-	sudo apt-get install wine #wine windows compatibility
+	sudo apt-get install htop $SAYYES  #display system daemons
+	sudo apt-get install g++ $SAYYES #C compiler
+	sudo apt-get install wine $SAYYES  #wine windows compatibility
 	#sudo apt-get install chkconfig #manage services not available
-	sudo apt-get install dmidecode #view BIOS Information
-	sudo apt-get install baobab #disc usage
+	sudo apt-get install dmidecode $SAYYES  #view BIOS Information
+	sudo apt-get install baobab $SAYYES  #disc usage
 	
-	sudo apt-get install filezilla #don't forget the import of links
+	
 	
 	### other
 	sudo apt-get install gnumeric 
@@ -153,23 +163,29 @@ if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	
 	
 fi
+
 # RepeatMasker
-if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
-	echo "go to : http://tandem.bu.edu/trf/trf407b.linux.download.html"
-	echo "and download the program, then put it in a directory called 'trf' in your home"
-	echo ""
-	echo "name it only trf > mv trf407b.linux trf"
-	echo "put it the exec rights: > sudo chmod +x trf"
-	echo "when done, presse here enter. trf address is: $HOME/trf"
-	read X
-	cd $HOME
+if [ 0 ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
+	
+	mkdir -p "$HOME/trf"
+	
+	if [ ! -d trf ];then echo "get tandem repeat finder - trf"
+		echo "Download the program by clicking on the button, then put it in the directory called 'trf' in your home"
+		echo "go to : http://tandem.bu.edu/trf/trf407b.linux.download.html"
+		echo "when done, press here enter. trf address is: $HOME/trf"
+		read X
+		mv -v $HOME/trf/trf407b.linux $HOME/trf/trf
+		sudo chmod +x $HOME/trf/trf
+	fi
+	
 	if [ ! -d RepeatMasker ];then echo "get RepeatMasker"
 		wget -nc -c http://www.repeatmasker.org/RepeatMasker-open-4-0-5.tar.gz
 		tar -xvf RepeatMasker-open-4-0-5.tar.gz
-		#rm RepeatMasker-open-4-0-5.tar.gz
+		rm RepeatMasker-open-4-0-5.tar.gz
 	fi
-	cd $HOME
-	if [ ! -d hmmer-3.1b1-linux-intel-ia32 ];then echo "install Hmmer"
+	
+
+	if [ 0 ];then echo "install Hmmer"
 		wget -nc -c http://selab.janelia.org/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-ia32.tar.gz
 		tar -xvf hmmer-3.1b1-linux-intel-ia32.tar.gz
 		cd hmmer-3.1b1-linux-intel-ia32
@@ -177,28 +193,31 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 		make #build
 		make check #automated tests
 		sudo make install #automated install
-		echo $(pwd)
 		cd $HOME
 		rm hmmer-3.1b1-linux-intel-ia32.tar.gz
 		rm -r hmmer-3.1b1-linux-intel-ia32
 	fi
-	cd $HOME
+
 	
-	if [ 0 ];then echo "downloading RMBlast Binaries"
+	if [ ];then echo "search program RMVlast / Blast"
+	
+		echo "downloading RMBlast Binaries"
+		
 		wget -nc -c ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST/ncbi-rmblastn-2.2.28-ia32-linux.tar.gz
 		tar zxvf ncbi-rmblastn-2.2.28-ia32-linux.tar.gz
 		rm ncbi-rmblastn-2.2.28-ia32-linux.tar.gz
-		cd ncbi-rmblastn-2.2.28/bin/
-		sudo chmod +x rmblastn
-	
-		cd $HOME
+
 		echo "downloading BLAST+ Binaries"
 		
 		wget -nc -c ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.2.30+-ia32-linux.tar.gz
 		tar zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz
 		rm ncbi-blast-2.2.30+-ia32-linux.tar.gz
+		
 		cd $HOME/ncbi-blast-2.2.30+/bin/
+		sudo chmod +x *
 		cp -v $HOME/ncbi-rmblastn-2.2.28/bin/rmblastn .
+		
+		
 		
 		echo "move everything in usr/local/bin"
 		cp $HOME/ncbi-blast-2.2.30+/bin/* usr/local/bin
@@ -223,14 +242,17 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 		### wget -nc -c --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase19.12.fasta.tar.gz
 		### tar -xvf RepBase19.12.fasta.tar.gz
 	fi
+	
 	echo "configure RepeatMasker"
 	
 	#sudo find / -name nhmmer
 	echo "hammer: /usr/local/bin"
-	echo "rmbalst: /home/caine/ncbi-blast-2.2.30+/bin"
+	echo "rmbalst: $HOME/ncbi-blast-2.2.30+/bin"
 	
+	read X
 	cd $HOME/RepeatMasker/
 	perl configure
+	
 	#RepeatMasker version open-4.0.5
 	#WARNING: The first version of Dfam is a human database. Searching
 	#with other species will only search for ancestral repeats shared
@@ -244,17 +266,21 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 fi
 
 # R
-if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
+if [ 0 ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	
 	#dependencies required
-	sudo apt-get install libjpeg62
+	sudo apt-get install libjpeg62 $SAYYES 
 	
 	# R
-	sudo apt-get install r-base r-base-dev r-base-html r-doc-html #libjpeg62 required
+	sudo apt-get install r-base r-base-dev r-base-html r-doc-html $SAYYES  #libjpeg62 required
 	
 	# RStudio
-	VERSION=0.98.1103-amd64
+	VERSION=0.99.441-$ARCH
+	
+	if [ "$ARCH" == "i686" ];then VERSION=0.99.441-i386; fi
+	
 	wget -nc -c http://download1.rstudio.org/rstudio-$VERSION.deb
+				
 	sudo dpkg -i rstudio-$VERSION.deb
 	rm rstudio-$VERSION.deb
 	
@@ -300,16 +326,18 @@ fi
 
 # imageMagick - tiff support
 # imageMagick
-if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
+if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
 	
-	sudo apt-get install imagemagick
+	sudo apt-get install imagemagick $SAYYES 
 	
 	if [ ];then echo -e "\n tiff support"
+		
 		wget -nc -c "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.3.tar.gz"
 		tar xzf "tiff-4.0.3.tar.gz"
 		rm -v "tiff-4.0.3.tar.gz"
 		cd "tiff-4.0.3"
-		echo "patching the stuff..."; sleep 10
+		
+		echo "patching the stuff..."
 		wget -nc -c "http://www.linuxfromscratch.org/patches/blfs/svn/tiff-4.0.3-fixes-1.patch"
 		patch -Np1 -i tiff-4.0.3-fixes-1.patch
 		
@@ -341,7 +369,24 @@ if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
 	fi
 	
 fi
+
 ############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################
+################################################################################
+################################################################################
 # tips, techniques and so on
 if [ ];then cd $HOME; echo -e "\n G install: little notes"
 	exit
@@ -410,7 +455,6 @@ cd $WD
 
 ## FIREFOX sync: gildas.lepennetier@hotmail.fr
 
-################################################################################
 # cmd to know
 if [ ];then cd $HOME; echo -e "\n G install: commands to know / master"
 	
