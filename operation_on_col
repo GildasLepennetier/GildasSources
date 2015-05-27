@@ -1,7 +1,6 @@
 #!/usr/bin/python
 #coding: utf-8
 import sys,re,os,argparse,datetime
-from numpy import median
 parser = argparse.ArgumentParser(description='Performs operation line by line, on a given column, on floats.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False, default=sys.stdin ,type=argparse.FileType('r'),help='input file')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
@@ -59,6 +58,15 @@ def revCompl_DNA(seq):
         return ''.join(reverse[::-1]) #inverser
     else:
         return ""
+#from numpy import median
+def median(alist):
+    srtd = sorted(alist) # returns a sorted copy
+    mid = len(alist)/2   # remember that integer division truncates
+    if len(alist) % 2 == 0:  # take the avg of middle two
+        return (srtd[mid-1] + srtd[mid]) / 2.0
+    else:
+        return srtd[mid]
+
 LINES=args['in'].readlines()
 if args['header']:
     rline=LINES[0]
