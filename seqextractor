@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #coding: utf-8
 import sys,argparse,datetime
 parser = argparse.ArgumentParser(description='Extract sequences from .fasta using .csv file. Default output is a fasta file. Add the flag append to add the sequence in a column',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import sys,argparse
 parser = argparse.ArgumentParser(description='Extract feature from .csv file.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file')

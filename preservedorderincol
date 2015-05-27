@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import sys,os,datetime,argparse
 parser = argparse.ArgumentParser(description='Check the order of the elements in a column. Return 0 if the order is conserved, and 1 if it is disrupted',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),help='input file')

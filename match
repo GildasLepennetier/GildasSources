@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #coding: utf-8
 import sys,re,os,argparse,datetime
 parser = argparse.ArgumentParser(description='Match the coordinates of a request file on a reference file. Files should be in a csv-like format. Output: [[ Request line,matching Status,Reference Line Matched ]]',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')

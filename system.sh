@@ -564,13 +564,20 @@ fi
 # Zotero
 if [ ];then cd $HOME; echo -e "\n G install: zotero"
 	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
-	wget -nc -c https://download.zotero.org/standalone/4.0.19/Zotero-4.0.19_linux-x86_64.tar.bz2
-	tar -xjf Zotero-4.0.19_linux-x86_64.tar.bz2
-	cd Zotero_linux-x86_64/
+	if [ "$ARCH" == "i386" ];then
+		VERSION=i386
+	fi
+	if [ "$ARCH" == "x86_64" ];then
+		VERSION=x86_64
+	fi
+	wget -nc -c https://download.zotero.org/standalone/4.0.19/Zotero-4.0.19_linux-$VERSION.tar.bz2
+	tar -xjf Zotero-4.0.19_linux-$VERSION.tar.bz2
+	cd Zotero_linux-$VERSION/
 	./run-zotero.sh
 	echo "id: gildas.lepennetier@hotmail.fr"
 	cd ..
-	rm Zotero-4.0.19_linux-x86_64.tar.bz2
+	rm Zotero-4.0.19_linux-$VERSION.tar.bz2
+	
 	#preferences: user: gildas.lepennetier@hotmail.fr (sy)
 fi
 

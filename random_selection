@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #coding: utf-8
 import sys,argparse,random
 parser = argparse.ArgumentParser(description='return random selection of lines if duplicate in col',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')

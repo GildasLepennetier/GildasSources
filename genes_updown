@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import sys,re,os,argparse
 parser = argparse.ArgumentParser(description="Expand a file using 'parent' grouping and 'order' ranking (intron number).\nex: .introns file with up and down informations about splice site, GC content etc....\n REQUIRED: a first line with name of columns",epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='input file')

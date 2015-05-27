@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys,re,os,argparse,datetime
 parser = argparse.ArgumentParser(description='Extract features from .genes file.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')

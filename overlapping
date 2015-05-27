@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #coding: utf-8
 import sys,re,argparse
 parser = argparse.ArgumentParser(description='Search overlapping genes. This function does not require a file sorted by coordinates. Default behaviour will not self-match (find yourself) and mirror match (A match B == B match A).',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')

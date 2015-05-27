@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import sys,argparse
 parser = argparse.ArgumentParser(description="Bind two files depending on the IDs on the column(s). If there is more than one match, then lines of the file 2 are duplicated.",epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')
 parser.add_argument('-f1',type=str,required=True,help='first file address: the query')

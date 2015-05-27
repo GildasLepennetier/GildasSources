@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys,argparse,re
 parser = argparse.ArgumentParser(description='Extract start and ends from GTF file for an element.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')

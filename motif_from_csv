@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import sys,re,os,argparse,datetime
 parser = argparse.ArgumentParser(description='Find motif (pattern) in a csv-like file. Choose -action count to have the number of match OR -action position to get the coordinate (base 1) where the motif start',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',type=argparse.FileType('r'),default=sys.stdin, help='input file')

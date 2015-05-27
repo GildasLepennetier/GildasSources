@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import sys,argparse
 parser = argparse.ArgumentParser(description='Change the header of a file.',epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')
 parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='input file')

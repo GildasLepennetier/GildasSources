@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import sys,re,os,argparse,datetime
 parser = argparse.ArgumentParser(description="Print line plus the element(s) of the previous-next line asked in cols. REQUIRED a header, avoid name errors",epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='input file')
