@@ -18,15 +18,16 @@ ARCH=$(arch)
 ################################################################################
 ### commands to know
 #sudo apt-get install -f # fix brocken packages
-#sudo apt-get update
-#sudo apt-get upgrade
+
+#sudo apt-get update 
+#sudo apt-get upgrade $SAYYES
 
 #apt-get autoremove
 
 #change computer name: hostname NewName
 
 # git
-if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
+if [ 0 ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
 	sudo apt-get install git $SAYYES
 	
 	#exemple: clone the pirate bay
@@ -36,7 +37,7 @@ if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
 fi
 ###############################################################################
 # python
-if [ ];then cd $HOME; echo -e "\n G install: python exra"
+if [ 0 ];then cd $HOME; echo -e "\n G install: python extra"
 	#python setup tools: easy_install
 	sudo apt-get install python-dev python-setuptools $SAYYES
 	# scipy and numpy
@@ -46,7 +47,7 @@ if [ ];then cd $HOME; echo -e "\n G install: python exra"
 	## IDLE
 	sudo apt-get install idle idle-python2.7 $SAYYES
 	## weblogo
-	sudo easy_install weblogo $SAYYES
+	sudo easy_install weblogo
 	sudo easy_install --upgrade weblogo
 	## pip
 	sudo apt-get install python-pip $SAYYES
@@ -54,7 +55,7 @@ if [ ];then cd $HOME; echo -e "\n G install: python exra"
 fi
 
 # SSH
-if [ ];then cd $HOME; echo -e "\n G install: ssh and sshd"
+if [ 0 ];then cd $HOME; echo -e "\n G install: ssh and sshd"
 	
 	sudo apt-get install openssh-server $SAYYES
 	
@@ -117,7 +118,7 @@ if [ ];then cd $HOME; echo -e "\n G install: ssh and sshd"
 fi
 
 #bioinfo
-if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
+if [ 0 ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	
 	### internet
 	sudo apt-get install filezilla $SAYYES #don't forget the import of links
@@ -158,10 +159,10 @@ if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	
 	
 	### other
-	sudo apt-get install gnumeric 
-	sudo apt-get install nmap 
-	sudo apt-get install pinta #paint-like
-	sudo apt-get install freemind
+	#sudo apt-get install gnumeric $SAYYES 
+	sudo apt-get install nmap $SAYYES 
+	sudo apt-get install pinta $SAYYES #paint-like
+	#sudo apt-get install freemind $SAYYES 
 	
 	
 fi
@@ -271,7 +272,7 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 fi
 
 # R
-if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
+if [ 0 ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	
 	#dependencies required
 	sudo apt-get install libjpeg62 $SAYYES 
@@ -280,14 +281,15 @@ if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	sudo apt-get install r-base r-base-dev r-base-html r-doc-html $SAYYES  #libjpeg62 required
 	
 	# RStudio
-	VERSION=0.99.441-$ARCH
+	VERSION=0.99.441
+	if [ "$ARCH" == "i386" ];then V=$VERSION-i386; fi
+	if [ "$ARCH" == "i686" ];then V=$VERSION-i386; fi #http://download1.rstudio.org/rstudio-0.99.441-i386.deb
+	if [ "$ARCH" == "x86_64" ];then V=$VERSION-amd64; fi #http://download1.rstudio.org/rstudio-0.99.441-amd64.deb
 	
-	if [ "$ARCH" == "i686" ];then VERSION=0.99.441-i386; fi
+	wget -nc -c http://download1.rstudio.org/rstudio-$V.deb
 	
-	wget -nc -c http://download1.rstudio.org/rstudio-$VERSION.deb
-				
-	sudo dpkg -i rstudio-$VERSION.deb
-	rm rstudio-$VERSION.deb
+	sudo dpkg -i rstudio-$V.deb
+	rm rstudio-$V.deb
 	
 	#java compiler ? r-java
 	#sudo apt-get install gcj-aarch64-linux-gnu r-cran-rjava
@@ -331,7 +333,7 @@ fi
 
 # imageMagick - tiff support
 # imageMagick
-if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
+if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
 	
 	sudo apt-get install imagemagick $SAYYES 
 	
@@ -387,11 +389,80 @@ fi
 
 
 
+#Filezilla
+if [ 0 ];then echo -e "\n G install: Filezilla"
+	sudo apt-get install filezilla $SAYYES  
+fi
+
+#Thunderbird
+if [ 0 ];then echo -e "\n G install: Thunderbird"
+	sudo apt-get install thunderbird $SAYYES 
+fi
+
+# Zotero
+if [ 0 ];then cd $HOME; echo -e "\n G install: zotero"
+	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
+	if [ "$ARCH" == "i386" ];then VERSION=i386; fi
+	if [ "$ARCH" == "i686" ];then VERSION=i386; fi
+	if [ "$ARCH" == "x86_64" ];then VERSION=x86_64;	fi
+	wget -nc -c https://download.zotero.org/standalone/4.0.19/Zotero-4.0.19_linux-$VERSION.tar.bz2
+	tar -xjf Zotero-4.0.19_linux-$VERSION.tar.bz2
+	cd Zotero_linux-$VERSION/
+	./run-zotero.sh
+	echo "id: gildas.lepennetier@hotmail.fr"
+	cd ..
+	rm Zotero-4.0.19_linux-$VERSION.tar.bz2
+	
+	#preferences: user: gildas.lepennetier@hotmail.fr (sy)
+fi
+
+# Dropbox
+if [ 0 ];then cd $HOME; echo -e "\n G install: Dropbox"
+	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $SAYYES 
+	echo "TODO: nemo --quit #need to quit the daemon"
+	echo "TODO dropbox start -i"
+	#gilou_on_net@hotmail.com
+	#sy...
+fi
+
+# PERL
+if [ ];then cd $HOME; echo -e "\n G install: perl modules"
+	sudo apt-get install perl-doc $SAYYES 
+	#search modules -> http://search.cpan.org/
+	# perl modules
+	sudo cpan install Base
+	sudo cpan HTTP
+	echo "TODO: install CPAN"
+	echo "TODO: reload cpan"
+fi
+
+################################################################################
+################################################################################
+################################################################################
 
 
-################################################################################
-################################################################################
-################################################################################
+## FIREFOX sync: gildas.lepennetier@hotmail.fr
+
+# cmd to know - MEMO
+if [ ];then cd $HOME; echo -e "\n G install: commands to know / master"
+	
+	echo uname #unix name
+	echo arch #achitecture
+	echo rsync #synchronization
+	echo fdisk #checkdisk
+	
+	echo which #where is the command located
+	echo du #disl use
+	echo df #disk free
+	echo dd #copy data
+	echo find #do not forget the -name option
+	echo locate #using index to search
+	
+	echo !! #!! is replaced by the previous command / potential error of execution: echo $(!!)
+	echo useradd and adduser
+	
+	echo ping 128.176.213.35 -c 5 #ping...
+fi
 # tips, techniques and so on
 if [ ];then cd $HOME; echo -e "\n G install: little notes"
 	exit
@@ -455,47 +526,11 @@ if [ ];then cd $HOME; echo -e "\n G install: little notes"
 	############################################################################
 fi
 
-#back to directory
-cd $WD
-
-## FIREFOX sync: gildas.lepennetier@hotmail.fr
-
-# cmd to know
-if [ ];then cd $HOME; echo -e "\n G install: commands to know / master"
-	
-	echo uname #unix name
-	echo arch #achitecture
-	echo rsync #synchronization
-	echo fdisk #checkdisk
-	
-	echo which #where is the command located
-	echo du #disl use
-	echo df #disk free
-	echo dd #copy data
-	echo find #do not forget the -name option
-	echo locate #using index to search
-	
-	echo !! #!! is replaced by the previous command / potential error of execution: echo $(!!)
-	echo useradd and adduser
-	
-	echo ping 128.176.213.35 -c 5 #ping...
-fi
-
 #
 # non-necessary
 #
 
-#Filezilla
-if [ ];then echo -e "\n G install: Filezilla"
-	sudo apt-get install filezilla
-fi
-
-#Thunderbird
-if [ ];then echo -e "\n G install: Thunderbird"
-	sudo apt-get install thunderbird
-fi
-
-#Apach internet :80 httpd
+#Apach internet :80 httpd - not required except to emit as webserver
 if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sources"
 	
 	#http://httpd.apache.org/docs/2.4/install.html
@@ -544,61 +579,18 @@ if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sourc
 		#$HOME/bin/apachectl start
     fi
 fi
-
-# PERL
-if [ ];then cd $HOME; echo -e "\n G install: perl modules"
-	sudo apt-get install perl-doc
-	#search modules -> http://search.cpan.org/
-	# perl modules
-	sudo cpan install Base
-	sudo cpan HTTP
-	echo "TODO: install CPAN"
-	echo "TODO: reload cpan"
-fi
-
-# my SQL
+# my SQL - not really required
 if [ ];then cd $HOME; echo -e "\n G install: my SQL"
 	sudo apt-get install mysql-server
 fi
-
-# Zotero
-if [ ];then cd $HOME; echo -e "\n G install: zotero"
-	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
-	if [ "$ARCH" == "i386" ];then
-		VERSION=i386
-	fi
-	if [ "$ARCH" == "x86_64" ];then
-		VERSION=x86_64
-	fi
-	wget -nc -c https://download.zotero.org/standalone/4.0.19/Zotero-4.0.19_linux-$VERSION.tar.bz2
-	tar -xjf Zotero-4.0.19_linux-$VERSION.tar.bz2
-	cd Zotero_linux-$VERSION/
-	./run-zotero.sh
-	echo "id: gildas.lepennetier@hotmail.fr"
-	cd ..
-	rm Zotero-4.0.19_linux-$VERSION.tar.bz2
-	
-	#preferences: user: gildas.lepennetier@hotmail.fr (sy)
-fi
-
-# Dropbox
-if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
-	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox
-	echo "TODO: nemo --quit #need to quit the daemon"
-	echo "TODO dropbox start -i"
-	#gilou_on_net@hotmail.com
-	#sy...
-fi
-
-# PDF
+# PDF - use sumatra or another, useful only if problems with forms
 if [ ];then cd $HOME; echo -e "\n G install: Adobe reader"
 	read -p "Did you update the version in the script?"
 	wget -nc -c ftp://ftp.adobe.com/pub/adobe/reader/unix/9.x/9.5.5/enu/AdbeRdr9.5.5-1_i386linux_enu.deb
 	sudo dpkg -i AdbeRdr9.5.5-1_i386linux_enu.deb
 	rm AdbeRdr9.5.5-1_i386linux_enu.deb
 fi
-
-# libreoffice
+# libreoffice - manual installation
 if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
 	#install kde integration for libreoffice
 	sudo apt-get install libreoffice-kde
@@ -612,8 +604,7 @@ if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
 	rm -r LibreOffice_4.3.7.2_Linux_x86-64_deb
 	rm LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
 fi
-
-# FTP
+# FTP - filezilla works also
 if [ ];then cd $HOME; echo -e "\n G install: FTP Port 21"
 
 	sudo apt-get install vsftpd
