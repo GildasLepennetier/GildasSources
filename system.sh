@@ -23,8 +23,10 @@ ARCH=$(arch)
 
 #apt-get autoremove
 
+#change computer name: hostname NewName
+
 # git
-if [ 0 ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
+if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
 	sudo apt-get install git $SAYYES
 	
 	#exemple: clone the pirate bay
@@ -34,7 +36,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: Git - supposed to be there alread
 fi
 ###############################################################################
 # python
-if [ 0 ];then cd $HOME; echo -e "\n G install: python exra"
+if [ ];then cd $HOME; echo -e "\n G install: python exra"
 	#python setup tools: easy_install
 	sudo apt-get install python-dev python-setuptools $SAYYES
 	# scipy and numpy
@@ -52,7 +54,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: python exra"
 fi
 
 # SSH
-if [ 0 ];then cd $HOME; echo -e "\n G install: ssh and sshd"
+if [ ];then cd $HOME; echo -e "\n G install: ssh and sshd"
 	
 	sudo apt-get install openssh-server $SAYYES
 	
@@ -115,7 +117,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: ssh and sshd"
 fi
 
 #bioinfo
-if [ 0 ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
+if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	
 	### internet
 	sudo apt-get install filezilla $SAYYES #don't forget the import of links
@@ -165,14 +167,17 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 fi
 
 # RepeatMasker
-if [ 0 ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
+if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
 	
-	mkdir -p "$HOME/trf"
+	echo "careful, this is not finished - enter to continue"
+	echo "todo: repeatmasker in a better place than home, same for hmmer and so one"
+	read X
 	
 	if [ ! -d trf ];then echo "get tandem repeat finder - trf"
+		mkdir -p "$HOME/trf"
 		echo "Download the program by clicking on the button, then put it in the directory called 'trf' in your home"
 		echo "go to : http://tandem.bu.edu/trf/trf407b.linux.download.html"
-		echo "when done, press here enter. trf address is: $HOME/trf"
+		echo "when done, press here enter. trf address should be: $HOME/trf"
 		read X
 		mv -v $HOME/trf/trf407b.linux $HOME/trf/trf
 		sudo chmod +x $HOME/trf/trf
@@ -180,16 +185,17 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and searc
 	
 	if [ ! -d RepeatMasker ];then echo "get RepeatMasker"
 		wget -nc -c http://www.repeatmasker.org/RepeatMasker-open-4-0-5.tar.gz
-		tar -xvf RepeatMasker-open-4-0-5.tar.gz
+		tar -xf RepeatMasker-open-4-0-5.tar.gz
 		rm RepeatMasker-open-4-0-5.tar.gz
 	fi
 	
 
 	if [ 0 ];then echo "install Hmmer"
 		wget -nc -c http://selab.janelia.org/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-ia32.tar.gz
-		tar -xvf hmmer-3.1b1-linux-intel-ia32.tar.gz
+		tar -xf hmmer-3.1b1-linux-intel-ia32.tar.gz
 		cd hmmer-3.1b1-linux-intel-ia32
-		bash configure
+		
+		configure
 		make #build
 		make check #automated tests
 		sudo make install #automated install
@@ -197,9 +203,8 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and searc
 		rm hmmer-3.1b1-linux-intel-ia32.tar.gz
 		rm -r hmmer-3.1b1-linux-intel-ia32
 	fi
-
 	
-	if [ ];then echo "search program RMVlast / Blast"
+	if [ 0 ];then echo "search program RMVlast / Blast"
 	
 		echo "downloading RMBlast Binaries"
 		
@@ -216,11 +221,11 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and searc
 		cd $HOME/ncbi-blast-2.2.30+/bin/
 		sudo chmod +x *
 		cp -v $HOME/ncbi-rmblastn-2.2.28/bin/rmblastn .
-		
-		
-		
+				
 		echo "move everything in usr/local/bin"
 		cp $HOME/ncbi-blast-2.2.30+/bin/* usr/local/bin
+		
+		read X
 	fi
 	
 	if [ 0 ];then echo "downloading Libraries - if error -> check versions"
@@ -266,7 +271,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and searc
 fi
 
 # R
-if [ 0 ];then cd $HOME; echo -e "\n G install: R and RStudio"
+if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	
 	#dependencies required
 	sudo apt-get install libjpeg62 $SAYYES 
@@ -326,7 +331,7 @@ fi
 
 # imageMagick - tiff support
 # imageMagick
-if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
+if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
 	
 	sudo apt-get install imagemagick $SAYYES 
 	
@@ -483,6 +488,11 @@ fi
 #Filezilla
 if [ ];then echo -e "\n G install: Filezilla"
 	sudo apt-get install filezilla
+fi
+
+#Thunderbird
+if [ ];then echo -e "\n G install: Thunderbird"
+	sudo apt-get install thunderbird
 fi
 
 #Apach internet :80 httpd
