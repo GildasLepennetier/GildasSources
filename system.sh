@@ -27,7 +27,7 @@ ARCH=$(arch)
 #change computer name: hostname NewName
 
 # git
-if [ 0 ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
+if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
 	sudo apt-get install git $SAYYES
 	
 	#exemple: clone the pirate bay
@@ -37,7 +37,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: Git - supposed to be there alread
 fi
 ###############################################################################
 # python
-if [ 0 ];then cd $HOME; echo -e "\n G install: python extra"
+if [ ];then cd $HOME; echo -e "\n G install: python extra"
 	#python setup tools: easy_install
 	sudo apt-get install python-dev python-setuptools $SAYYES
 	# scipy and numpy
@@ -55,7 +55,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: python extra"
 fi
 
 # SSH
-if [ 0 ];then cd $HOME; echo -e "\n G install: ssh and sshd"
+if [ ];then cd $HOME; echo -e "\n G install: ssh and sshd"
 	
 	sudo apt-get install openssh-server $SAYYES
 	
@@ -118,7 +118,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: ssh and sshd"
 fi
 
 #bioinfo
-if [ 0 ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
+if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	
 	### internet
 	sudo apt-get install filezilla $SAYYES #don't forget the import of links
@@ -196,7 +196,7 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 		tar -xf hmmer-3.1b1-linux-intel-ia32.tar.gz
 		cd hmmer-3.1b1-linux-intel-ia32
 		
-		configure
+		./configure
 		make #build
 		make check #automated tests
 		sudo make install #automated install
@@ -272,7 +272,7 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 fi
 
 # R
-if [ 0 ];then cd $HOME; echo -e "\n G install: R and RStudio"
+if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	
 	#dependencies required
 	sudo apt-get install libjpeg62 $SAYYES 
@@ -332,12 +332,12 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: R and RStudio"
 fi
 
 # imageMagick - tiff support
-# imageMagick
+# imageMagick - cmd line
 if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
 	
-	sudo apt-get install imagemagick $SAYYES 
-	
-	if [ ];then echo -e "\n tiff support"
+	if [ ];then echo -e "\n tiff support - need to be installed first"
+		
+		rm -fr tiff-4.0.3 #because we want clean
 		
 		wget -nc -c "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.3.tar.gz"
 		tar xzf "tiff-4.0.3.tar.gz"
@@ -350,7 +350,9 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
 		
 		rm tiff-4.0.3-fixes-1.patch
 		
-		bash configure
+		./configure
+		make clean
+		make
 		make check
 		sudo make install
 		
@@ -358,14 +360,24 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
 		rm -r tiff-4.0.3
 	fi
 	
-	if [ ];then echo "manual (hope it works)"
+	sudo apt-get install imagemagick $SAYYES 
+	sudo ldconfig /usr/local/lib #to fix shared library problems
+	
+	#check some variables
+	#convert -list configure
+	#convert -list format
+	
+	if [ ];then echo "manual (hope it works, if the previous option do not)"
 		cd $HOME
-		VERSION_MAGICK="6.9.1-2"
+		VERSION_MAGICK="6.9.1-3"
 		wget -nc -c "ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-$VERSION_MAGICK.tar.gz"
+		
+		#ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick.tar.gz
+		
 		tar xzf "ImageMagick-$VERSION_MAGICK.tar.gz"
 		rm -v "ImageMagick-$VERSION_MAGICK.tar.gz"
 		cd "ImageMagick-$VERSION_MAGICK"
-		bash configure
+		./configure
 		make check
 		sudo make install
 		sudo ldconfig /usr/local/lib #to fix shared library problems
@@ -390,17 +402,17 @@ fi
 
 
 #Filezilla
-if [ 0 ];then echo -e "\n G install: Filezilla"
+if [ ];then echo -e "\n G install: Filezilla"
 	sudo apt-get install filezilla $SAYYES  
 fi
 
 #Thunderbird
-if [ 0 ];then echo -e "\n G install: Thunderbird"
+if [ ];then echo -e "\n G install: Thunderbird"
 	sudo apt-get install thunderbird $SAYYES 
 fi
 
 # Zotero
-if [ 0 ];then cd $HOME; echo -e "\n G install: zotero"
+if [ ];then cd $HOME; echo -e "\n G install: zotero"
 	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
 	if [ "$ARCH" == "i386" ];then VERSION=i386; fi
 	if [ "$ARCH" == "i686" ];then VERSION=i386; fi
@@ -417,7 +429,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: zotero"
 fi
 
 # Dropbox
-if [ 0 ];then cd $HOME; echo -e "\n G install: Dropbox"
+if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
 	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $SAYYES 
 	echo "TODO: nemo --quit #need to quit the daemon"
 	echo "TODO dropbox start -i"
@@ -548,7 +560,7 @@ if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sourc
 		
 		echo "install - apr"
 		cd $HOME/tmp/apr-1.5.1
-		bash configure --prefix=$HOME/.srclib/apr
+		./configure --prefix=$HOME/.srclib/apr
 		make
 		make test
 		sudo make install
@@ -556,7 +568,7 @@ if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sourc
 	if [ ];then echo "apr-util required for apache"
 		echo "install - apr-util"
 		cd $HOME/tmp/apr-util-1.5.4
-		bash configure --prefix=$HOME/.srclib/apr-util --with-apr $HOME/.srclib/apr
+		./configure --prefix=$HOME/.srclib/apr-util --with-apr $HOME/.srclib/apr
 		make
 		make test
 		#sudo make install
@@ -564,7 +576,7 @@ if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sourc
 		
 	if [ ];then echo "download the daemon httpd"
 		cd $HOME/.srclib/apr
-		bash configure --prefix=$HOME/.srclib/apr
+		./configure --prefix=$HOME/.srclib/apr
 		make
 		mkdir -p $HOME/.srclib
 	
@@ -573,7 +585,7 @@ if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sourc
 		tar -xvzf httpd-2.4.12.tar.gz
 		rm httpd-2.4.12.tar.gz
 		cd httpd-2.4.12
-		bash configure --prefix=$HOME --with-included-apr
+		./configure --prefix=$HOME --with-included-apr
 		#make
 		#make install
 		#$HOME/bin/apachectl start
