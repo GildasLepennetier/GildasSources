@@ -164,6 +164,8 @@ if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	sudo apt-get install pinta $SAYYES #paint-like
 	#sudo apt-get install freemind $SAYYES 
 	
+	#libroffice kde stuff integration
+	sudo apt-get install libreoffice-kde
 	
 fi
 
