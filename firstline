@@ -6,13 +6,13 @@ USAGE="usage: $(basename $0) file.csv [-h] [filename or - for stdin]\
 \nCareful, using awk: multiple spaces taken as on\
 \nIn adition, use of /dev/stdin -> not in the POSIX standard"
 [[ $1 == "-h" ]] && echo -e $USAGE && exit 0
-[[ $# -eq 0 ]] && echo "Error: please give a filename or - if stdin should be read" && echo -e $USAGE && exit 1
+[[ $# -eq 0 ]] && echo echo "Error $(basename $0) when piping to $(basename $0) function, use '-' as first argument" && exit 0
 # if read from stdin
-if [ $1 == "-" ];then
+if [ "$1" == "-" ];then
 	File=$(cat /dev/stdin | head -n 1)
 	X=$(echo $File | wc -w)
 	for i in $(seq 1 $X); do
-		echo $File | awk -F $"\t" "{print \"$i\" \"\t\" \$$i}" #tab separated
+		echo $File | awk "{print \"$i\" \"\t\" \$$i}" #tab separated
 	done
 	exit 0
 fi
