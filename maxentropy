@@ -14,6 +14,8 @@ usage()
 cat << EOF
 usage: $(basename $0) -i path/to/file [-d donor | -a acceptor] [-f skip|keep header] [options]
 
+	Output in the same file name with .MaxEnt extension
+
 DESCRIPTION
 
 	This script calculate splice site scores using the maximum entropy scoring.
