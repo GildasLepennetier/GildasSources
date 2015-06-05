@@ -41,7 +41,7 @@ ARGUMENTS:
 	-i		Input file name
 	-d		Donor splice site sequence index in the input file (first column = column 1)
 	-a		Acceptor splice site sequence index in the input file
-	-f keep|skip		Skip or not the first line in file (useful for name of columns)
+	-f keep|skip		Skip or not the first line in file (useful for name of columns, if you have an header, please use skip to avoid inclusion)
 	
 	OPTIONALS
 
