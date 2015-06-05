@@ -1,5 +1,4 @@
 #!/bin/bash
 
 # This function list the current directory
-
-ls $HOME/GildasSources
+ls $HOME/GildasSources "$*"
