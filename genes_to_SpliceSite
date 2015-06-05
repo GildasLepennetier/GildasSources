@@ -153,11 +153,12 @@ if len(Lines) <2:
 if args['header']: #skip first line
     if VERB_LVL > 0:
         sys.stderr.write("skipping first line")
-    FirstLine=Lines[0]
-    OUT.write( sep.join( FirstLine.split(args['endline'])[0].split(sep) +['five','three','SS5','SS3',"iA","iC","iG","iT","intron"] ) + args['endline'])
+    FirstLine=Lines[0].split(args['endline'])[0].split(sep)
+    OUT.write( sep.join( FirstLine +['five','three','SS5','SS3',"iA","iC","iG","iT","intron"] ) + args['endline'])
     Lines=Lines[1:]
 else:#need to give space
-    OUT.write( sep.join( FirstLine.split(args['endline'])[0].split(sep) +['five','three','SS5','SS3',"iA","iC","iG","iT","intron"] ) + args['endline'])
+    FirstLine=["" for el in Lines[0].split(args['endline'])[0].split(sep) ]
+    OUT.write( sep.join( FirstLine +['five','three','SS5','SS3',"iA","iC","iG","iT","intron"] ) + args['endline'])
 ######## print first line
 kk=0
 nbTot=len(Lines)
