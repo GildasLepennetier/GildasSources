@@ -12,13 +12,13 @@ if [ "$1" == "-" ];then
 	File=$(cat /dev/stdin | head -n 1)
 	X=$(echo $File | wc -w)
 	for i in $(seq 1 $X); do
-		echo $File | awk "{print \"$i\" \"\t\" \$$i}" #tab separated
+		echo $File | awk "BEGIN{FS="\t"}{print \"$i\" \"\t\" \$$i}" #tab separated
 	done
 fi
 #if filename given
 if [ -e $1 ];then
 	X=$(head -n 1 $1 | wc -w)
 	for i in $(seq 1 $X); do
-		head -n 1 $1 | awk -F $"\t" "{print \"$i\" \"\t\" \$$i}" #tab separated
+		head -n 1 $1 | awk "BEGIN{FS="\t"}{print \"$i\" \"\t\" \$$i}" #tab separated
 	done
 fi
