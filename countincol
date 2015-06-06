@@ -11,12 +11,10 @@ USAGE="usage: $(basename $0) [column] [filename or| - for stdin]\
 # if read from stdin
 if [ "$2" == "-" ];then
 	awk "{count[\$$1]++} END{for(j in count) print count[j] \"\t\" j }" /dev/stdin
-	exit 0
 fi
 #if filename given
 if [ -e "$2" ];then
-	awk "{count[\$$1]++} END{for(j in count) print count[j] \"\t\" j }" $2
-	exit 0
+	awk -F $"\t" "{count[\$$1]++} END{for(j in count) print count[j] \"\t\" j }" $2
 fi
 
 
