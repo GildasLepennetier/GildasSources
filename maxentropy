@@ -34,7 +34,7 @@ DESCRIPTION
 	
 ADVICE:
 
-	Not tested in presence of Ns in splice site.
+	Not tested in presence of Ns in splice site. -> perl script return nothing, so move all following results up -_-'
 
 ARGUMENTS:
 
@@ -93,6 +93,10 @@ if [ ! -e "$IN" ];then
 	echo "Error, infile not found: '$IN'"
     exit 1
 fi
+
+
+if [ $(grep -n N "$IN") ]; then grep -n N "$IN";echo "error: there are some N on your sequences, remove those lines"; fi 
+
 # if oufile not set, make the default output name
 if [ ! $OUT ];then
 	OUT="$IN.MaxEnt"
