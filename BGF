@@ -38,23 +38,6 @@ def loadFasta_Dico(path):
                 listDico[index][ID]=''.join([listDico[index][ID],line.split('\n')[0]]) #join the curent line to the string
     return listDico
 # LOAD FASTA BIOPYTHON
-# parsing (loading) of fasta file, return Bio.SeqRecord
-def loadFasta_biopythonDico(adresse, nb=None):  # ne retourne plus une liste de records de biopython
-    try:
-        from Bio import SeqIO
-    except ImportError:
-        print ("Error in loadFasta_biopythonDico: Bio from BioPython not available")
-        exit()
-    List = list()
-    for seq_record in SeqIO.parse(adresse, 'fasta'): # supported formats:http://biopython.org/wiki/SeqIO
-        #repr(seq_record.seq) affiche une représentation
-        # record biopython : http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc35
-        dico={}
-        dico['line']=str(seq_record.description)
-        dico['seq']=str(seq_record.seq) #attention, sans ce seq(), on obtient une classe BioSeq
-        List.append(dico)
-    return List # list of [ dico {'line': ,'seq', }, ... ]
-# LOAD FASTA BIOPYTHON
 def loadFasta(adresse):
     from Bio import SeqIO
     dico={}
@@ -101,7 +84,6 @@ def countLetters(string, case=False, freq=True, removeNn=False):
             return dico
 PATHGenome   =str(sys.argv[2])
 try:
-    #LISTChrom = loadFasta_biopythonDico(PATHGenome)
     LISTChrom =loadFasta(PATHGenome)
 except:
     sys.stderr.write("You don't have biopython, this will take time\n")
