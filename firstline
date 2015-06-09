@@ -1,23 +1,25 @@
 #!/bin/bash
-USAGE="usage: $(basename $0) file.csv [-h] [filename or - for stdin]\
-\n\n\tReturn column number and column name from a file\
+USAGE="usage: $(basename $0) file.csv filename [-h]\
+\n\n\tReturn column number and column name from a TAB-delimited file\
 \n\nCopyright 2014 LEPENNETIER Gildas\
-\nAuthor: Gildas Lepennetier - gildas.lepennetier@hotmail.fr\
-\nCareful, using awk: multiple spaces taken as on\
-\nIn adition, use of /dev/stdin -> not in the POSIX standard"
+\nAuthor: Gildas Lepennetier - gildas.lepennetier@hotmail.fr\\"
 [[ $1 == "-h" ]] && echo -e $USAGE && exit 0
-[[ $# -eq 0 ]] && echo echo "Error $(basename $0) when piping to $(basename $0) function, use '-' as first argument" && exit 0
-# if read from stdin
-if [ "$1" == "-" ];then
-	File=$(cat /dev/stdin | head -n 1)
-	X=$(echo $File | wc -w)
-	for i in $(seq 1 $X); do
-		echo $File | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}" #tab separated
-	done
-fi
+[[ $# -eq 0 ]] && echo "Error in $(basename $0) : piping is forbidden" && exit 0
+#[[ $# -eq 0 ]] && echo "Error $(basename $0) when piping to $(basename $0) function, use '-' as first argument" && exit 0
+# if read from stdin : error, the tab disappear
+#if [ "$1" == "-" ];then
+#	File=$(cat /dev/stdin | head -n 1)
+#	#X=$(echo $File | wc -w)
+#	X=`echo $File | awk -F"\t" '{ if(NR==1) { print NF }}'`
+#	for i in $(seq 1 $X); do
+#		echo $File | head -n 1 | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}" #tab separated
+#	done
+#fi
+
 #if filename given
 if [ -e $1 ];then
-	X=$(head -n 1 $1 | wc -w)
+	#X=$(head -n 1 $1 | wc -w)
+	X=`awk -F"\t" '{ if(NR==1) { print NF }}' $1`
 	for i in $(seq 1 $X); do
 		head -n 1 $1 | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}" #tab separated
 	done
