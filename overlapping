@@ -40,7 +40,7 @@ if args['header']:
     firstline=LINES[0].split(args['endline'])[0].split(args['sep'])
     firstlineReq =[ "%s_request"%(el) for el in firstline]
     firstlineRef =[ "%s_reference"%(el) for el in firstline]
-    args['out'].write(  args['sep'].join( firstlineReq + ['matching_description'] + firstlineRef + [args['endline']] ))
+    args['out'].write(  args['sep'].join( firstlineReq + ['matching_description'] + firstlineRef)+ args['endline'])
     LINES=LINES[1:]
 REF={}
 total=0
@@ -86,38 +86,38 @@ for CHR in CHR_IDS: #each chromosome separately
             #remove if there is a paire founded ?? -> not safe, several gene can match the same
             if START_req < START_ref:#start before
                 if END_req == START_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['end_is_start_of'] + LINE_ref) + [args['endline']] )#one gene after the other, with the end of the request been the start of the reference ____----
+                    args['out'].write( args['sep'].join(LINE_req + ['end_is_start_of'] + LINE_ref) + args['endline'] )#one gene after the other, with the end of the request been the start of the reference ____----
                     continue
                 if END_req < END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['overlap_left'] + LINE_ref) + [args['endline']] )#request end overlap the reference start: ____-_-_-----
+                    args['out'].write( args['sep'].join(LINE_req + ['overlap_left'] + LINE_ref) + args['endline'] )#request end overlap the reference start: ____-_-_-----
                     continue
                 if END_req == END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['alt_larger_5'] + LINE_ref) + [args['endline']] )#request start before, but have the same end ___-_-_-_-_-_-|
+                    args['out'].write( args['sep'].join(LINE_req + ['alt_larger_5'] + LINE_ref) + args['endline'] )#request start before, but have the same end ___-_-_-_-_-_-|
                     continue
                 if END_req > END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['contain'] + LINE_ref) + [args['endline']] )#request contain the reference ___-_-_-_-____
+                    args['out'].write( args['sep'].join(LINE_req + ['contain'] + LINE_ref) + args['endline'] )#request contain the reference ___-_-_-_-____
                     continue
             if START_req == START_ref:#same start
                 if END_req < END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['alt_shorter_3'] + LINE_ref) + [args['endline']] )#same start, but end before, alternative shorter end |_-_-_-_-_------
+                    args['out'].write( args['sep'].join(LINE_req + ['alt_shorter_3'] + LINE_ref) + args['endline'] )#same start, but end before, alternative shorter end |_-_-_-_-_------
                     continue
                 if END_req == END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['same_coordinates'] + LINE_ref) + [args['endline']] )#same coordinates, but differente internal structure ? |_-_-_-_-_-_-|
+                    args['out'].write( args['sep'].join(LINE_req + ['same_coordinates'] + LINE_ref) + args['endline'] )#same coordinates, but differente internal structure ? |_-_-_-_-_-_-|
                     continue
                 if END_req > END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['alt_larger_3'] + LINE_ref)  + [args['endline']] )#same start, larger end |_-_-_-_-______
+                    args['out'].write( args['sep'].join(LINE_req + ['alt_larger_3'] + LINE_ref)  + args['endline'] )#same start, larger end |_-_-_-_-______
                     continue
             if START_req > START_ref: #start after
                 if START_req == END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['start_is_end_of'] + LINE_ref) + [args['endline']] )#request overlap the right of the reference : -----|________
+                    args['out'].write( args['sep'].join(LINE_req + ['start_is_end_of'] + LINE_ref) + args['endline'] )#request overlap the right of the reference : -----|________
                     continue
                 if END_req < END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['is_inside_of'] + LINE_ref) + [args['endline']] )#start inside and end before: request is contained in reference ---_-_-_-----
+                    args['out'].write( args['sep'].join(LINE_req + ['is_inside_of'] + LINE_ref) + args['endline'] )#start inside and end before: request is contained in reference ---_-_-_-----
                     continue
                 if END_req == END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['alt_shorter_5'] + LINE_ref) + [args['endline']] )#start inside, but end at same position: alternative shorter beginning : ------_-_-_-_-_|
+                    args['out'].write( args['sep'].join(LINE_req + ['alt_shorter_5'] + LINE_ref) + args['endline'] )#start inside, but end at same position: alternative shorter beginning : ------_-_-_-_-_|
                     continue
                 if END_req > END_ref:
-                    args['out'].write( args['sep'].join(LINE_req + ['overlap_right'] + LINE_ref) + [args['endline']] )#request overlap the right of the reference : -----_-_-_-_-_-_______
+                    args['out'].write( args['sep'].join(LINE_req + ['overlap_right'] + LINE_ref) + args['endline'] )#request overlap the right of the reference : -----_-_-_-_-_-_______
                     continue
             
