@@ -1,12 +1,12 @@
 GildasSources
 ========
 DESCRIPTION
-==
+================================
 GildasSources is a collection of bioinformatic tools
 
 
 INSTALLATION
-==
+================================
 GildasSources does not require an installation.
 Just add the directory in the PATH, and give the execution rights.
 Exemple of commandes:
@@ -15,7 +15,7 @@ Exemple of commandes:
 > bash # reload the shell
 
 NOTES
-==
+================================
 The function have an integrated help function. Just call is from the terminal. Exemple:
 myfunction -h
 I am trying to make those functions pipeble, so they can take the 
