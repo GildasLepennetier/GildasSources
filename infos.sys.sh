@@ -1,38 +1,30 @@
 #/bin/bash
-echo -e "START"
 function repchar(){ printf "%0.s#" {1..80}; echo;} #function to repeat a char several time
 
 repchar
-echo "# Info partitions"
+echo -e "\nInfo partitions"
 cat  /etc/fstab
 
 repchar
-echo "# Ethernet"
+echo -e "\nEthernet"
 ifconfig -a
 
 repchar
-echo "# Processors"
-cat /proc/cpuinfo | grep processor | wc -l
-cat /proc/cpuinfo | grep "model name" |sort|uniq
-cat /proc/cpuinfo | grep "cpu MHz" |sort|uniq
-
-
-repchar
-echo "# hardware"
+echo -e "\nhardware"
 lspci
 
 repchar
-echo "# Free space:"
+echo -e "\nFree space:"
 df -hT
 
 repchar
-echo "# Informations bout the system:"
+echo -e "\nSystem information"
 uname -a
 cat /proc/version
 
 repchar
-echo "PBS (bortable batch system)"
-
-echo -e "END"
-qmgr -c "print server"
+echo -e "\nProcessors"
+cat /proc/cpuinfo | grep processor | wc -l
+cat /proc/cpuinfo | grep "model name" |sort|uniq
+cat /proc/cpuinfo | grep "cpu MHz" |sort|uniq
 
