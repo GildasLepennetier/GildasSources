@@ -1,5 +1,5 @@
-GildasSources
-========
+____GildasSources____
+
 DESCRIPTION
 ================================
 GildasSources is a collection of bioinformatic tools
