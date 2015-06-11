@@ -94,9 +94,6 @@ if [ ! -e "$IN" ];then
     exit 1
 fi
 
-
-if [ $(grep -n N "$IN") ]; then grep -n N "$IN";echo "error: there are some N on your sequences, remove those lines"; fi 
-
 # if oufile not set, make the default output name
 if [ ! $OUT ];then
 	OUT="$IN.MaxEnt"
@@ -118,8 +115,23 @@ else
 		exit 1
 	fi
 fi
+
 #check for skip first line
 if [[ "$SkipFirst" != "skip" && "$SkipFirst" != "keep" ]];then echo "Error, please give skip/keep to -f"; exit 1; fi
+
+#check for Ns in the sequences
+if [[ "$SkipFirst" == "skip" ]];then
+	NB=$(cat "$IN" | tail -n +2 | grep -n N | wc -l)
+	if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences";exit; fi 
+fi
+if [[ "$SkipFirst" == "keep" ]];then
+	NB=$(cat "$IN" | grep -n N | wc -l)
+	if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences";exit; fi 
+fi
+
+
+
+
 #scripts are there
 if [ ! -d $MaxEntScript ];then
 	echo "Error, scripts not found at: $MaxEntScript"
