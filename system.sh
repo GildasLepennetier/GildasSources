@@ -167,6 +167,9 @@ if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	#libroffice kde stuff integration
 	sudo apt-get install libreoffice-kde
 	
+	#midnight commander
+	sudo apt-get install mc $SAYYES
+	
 fi
 
 # RepeatMasker
