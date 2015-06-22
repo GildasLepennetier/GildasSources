@@ -168,7 +168,10 @@ if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
 	sudo apt-get install libreoffice-kde
 	
 	#midnight commander
-	sudo apt-get install mc $SAYYES
+	#sudo apt-get install mc $SAYYES
+	
+	# program for mutation detection: Staden computer package
+	sudo apt-get install libtrace-tools
 	
 fi
 
