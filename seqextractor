@@ -58,8 +58,6 @@ def loadFasta(adresse,endline="\n"):
         SEQ=str( seq_record.seq.split(endline)[0] )
         if ID not in dico.keys():
             dico[ID]=SEQ
-        else:
-            print("ERROR: %s already exist as key!"%ID)
     return dico
 #### Give the reverse complement of a DNA sequence, change also if iupac nucleotide ####
 def revCompl_DNA(seq):

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import sys,re,os,argparse,datetime
 parser = argparse.ArgumentParser(description='Extract features from .genes file.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
@@ -58,7 +58,7 @@ def Fasta_To_Dico(path,idtag='>',endline="\n"):
         for line in file:
             line=line.split(endline)[0]
             if line[0]==idtag:
-                ID=line[1:] #avoid '>' in IDs
+                ID=line[1:].split(' ')[0] #avoid '>' in IDs
                 dico[ID]='' 
             else:
                 dico[ID]+=line
@@ -68,14 +68,11 @@ def loadFasta(adresse):
     from Bio import SeqIO
     dico={}
     for seq_record in SeqIO.parse(adresse, 'fasta'):
-        ID=str(seq_record.description)
-        SEQ=str(seq_record.seq)
+        ID=str(seq_record.description.split(' ')[0] )
+        SEQ=str(seq_record.seq.split("\n")[0])
         if ID not in dico.keys():
             dico[ID]=SEQ
-        else:
-            print("ERROR: %s already exist as key!"%ID)
     return dico
-
 # COUNT OF LETTER 
 # return dico of frequency for each letter in letter list
 # on peut lui donner une liste ou bien une sequence
@@ -136,7 +133,7 @@ def revCompl_DNA(seq):
         return ""
 ######## load fasta file
 if args['progress'] or VERB_LVL > 0:
-	sys.stderr.write("Loading fasta...")
+    sys.stderr.write("Loading fasta...")
 try:
     DICO=loadFasta(FA)
 except:
