@@ -126,10 +126,10 @@ for rline in LINES:
     lineNB+=1
     line=rline.split(args['endline'])[0].split(sep)
     try:
-        Chr =str(line[chr_index])
+        Chr =line[chr_index]
         Start=int(line[starts_index]) -1 #python list start at 0.
         End=int(line[ends_index])
-        Strand=str(line[strand_index])
+        Strand=line[strand_index]
     except: # ValueError =string, empty or not, instead of int in column
         if VERB_LVL > 0:
             sys.stderr.write("WARNING: Failed line %s%s"%(lineNB,args['endline']))

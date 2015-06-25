@@ -136,7 +136,7 @@ def revCompl_DNA(seq):
         return ""
 ######## load fasta file
 if args['progress'] or VERB_LVL > 0:
-    sys.stderr.write("Loading fasta...")
+	sys.stderr.write("Loading fasta...")
 try:
     DICO=loadFasta(FA)
 except:
@@ -171,8 +171,8 @@ for line in Lines:
         sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
     lineSplit=line.split(args['endline'])[0].split(sep)
     #careful: order in list
-    chro  =str(lineSplit[chr_index])
-    strand=str(lineSplit[strand_index])
+    chro  =lineSplit[chr_index]
+    strand=lineSplit[strand_index]
     start =int(lineSplit[starts_index]) -1 #here ici : -1 because of python string
     end   =int(lineSplit[ends_index])
     if chro in DICO:
