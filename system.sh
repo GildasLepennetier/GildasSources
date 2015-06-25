@@ -481,6 +481,9 @@ if [ ];then cd $HOME; echo -e "\n G install: commands to know / master"
 	echo !! #!! is replaced by the previous command / potential error of execution: echo $(!!)
 	echo useradd and adduser
 	
+	#gestion of the volume sound
+	echo alsamixer
+	
 	echo ping 128.176.213.35 -c 5 #ping...
 fi
 # tips, techniques and so on
