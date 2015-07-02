@@ -82,12 +82,11 @@ fi
 echo "$L"
 echo "install those packages? (yes)"
 read q
-if [ "$q" == "yes" ]; then sudo apt-get install $yes; fi
+if [ "$q" == "yes" ]; then sudo apt-get install $L $yes; else echo "Cancelled"; fi
 
 # fix dependencies problems
-#sudo apt-get install -f
-
-#sudo apt-get build-dep build-essential
+sudo apt-get install -f
+#sudo apt-get build-dep "package" $yes #specifically build dependencies for the package
 
 
 # RepeatMasker
@@ -256,7 +255,7 @@ fi
 
 # imageMagick - tiff support
 # imageMagick - cmd line
-if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
+if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
 	
 	if [ ];then echo -e "\n tiff support - need to be installed first"
 		
