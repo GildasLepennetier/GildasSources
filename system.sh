@@ -1,179 +1,94 @@
 #!/bin/bash
-set -e #to stop if error
-WD=$(pwd)
-
-SAYYES="--assume-yes"
-WGETOPT="-nc -c"
-
-ARCH=$(arch)
 
 ################################################################################
 #
-# Install tools for a functional Linux environment
+#	Install tools for a functional Linux environment
 #
-# Copyright 2015 LEPENNETIER Gildas
-# Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr
+#	apt: Advanced Package Tool
 #
-# 19 Mars 2015
+#	Copyright 2015 LEPENNETIER Gildas
+#	Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr
+#
+#																2 July 2015
 ################################################################################
-### commands to know
-#sudo apt-get install -f # fix brocken packages
 
-#sudo apt-get update 
-#sudo apt-get upgrade $SAYYES
+################################################################################
+#
+#			options
+#
+set -e						# to stop this script if error
+workDir=$(pwd)				# current working directory
+yes="--assume-yes"			# to say yes during install
+wgetOpt="-nc -c"			# option for the wget
+processorType=$(arch)		# processor type: i386, amd64...
+archi=$(getconf LONG_BIT)	# computer's architechture: return 32 or 64
+OS=$(uname -s)
+L=""						# list of programs to install
+################################################################################
 
-#apt-get autoremove
+# OTHER packages mannagers
+#sudo apt-get install rpm	#package manager
+#sudo apt-get install yum	#yum updater
 
-#change computer name: hostname NewName
 
-# git
-if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
-	sudo apt-get install git $SAYYES
-	
-	#exemple: clone the pirate bay
-	#git clone https://github.com/isohuntto/openbay.git
-	#git clone https://github.com/GildasLepennetier/GildasSources.git
-	#git clone https://github.com/GildasLepennetier/smartPySpider.git
+if [ 0 ];then echo -e "\n added: system (compiler and compatibility)"
+	#L="$L htop"	#display system daemons
+	L="$L g++"	#C compiler
+	L="$L wine"	#wine windows compatibility
 fi
-###############################################################################
-# python
-if [ ];then cd $HOME; echo -e "\n G install: python extra"
-	#python setup tools: easy_install
-	sudo apt-get install python-dev python-setuptools $SAYYES
-	# scipy and numpy
-	sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose $SAYYES
-	## biopython
-	sudo apt-get install python-biopython python-biopython-doc python-biopython-sql $SAYYES
-	## IDLE
-	sudo apt-get install idle idle-python2.7 $SAYYES
-	## weblogo
-	sudo easy_install weblogo
-	sudo easy_install --upgrade weblogo
-	## pip
-	sudo apt-get install python-pip $SAYYES
-	#sudo pip install cutadapt
+
+# python packages
+if [ 0 ];then echo -e "\n added: python extra tools"
+	L="$L python-dev python-setuptools"	#python setup tools: easy_install
+	L="$L python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose"	# scipy and numpy
+	L="$L python-biopython python-biopython-doc python-biopython-sql"	# biopython
+	#L="$L idle idle-python2.7" # IDLE
+	#L="$L python-pip"	# pip for cutadapt
 fi
 
 # SSH
-if [ ];then cd $HOME; echo -e "\n G install: ssh and sshd"
-	
-	sudo apt-get install openssh-server $SAYYES
-	
-	if [ ];then
-		#############################
-		## ssh : programme client permetant de se connecter au serveur
-		## sshd : daemon écoutant sur un port (default=22)
-		#sudo service ssh start
-		#sudo service ssh stop
-		#sudo service ssh restart
-		#service ssh status
-		
-		echo "internet protocol address: "
-		ifconfig | grep "inet addr:"
-		
-		## log file: 
-		grep ssh /var/log/auth.log
-		
-		## config: 
-		cat /etc/ssh/sshd_config #exemple: Port 1 to 65535; PermitRootLogin no
-		## sudo to modify
-		sudo nano /etc/ssh/sshd_config
-		
-		
-		## Test connection
-		#ssh gildas@localhost #to self
-		#ssh glepe_01@palma1.uni-muenster.de # Connection to PALMA ( 128.176.188.146 )
-		#ssh glepe_01@zivsmp.uni-muenster.de
-		#ssh glepe_01@vpnserver.uni-muenster.de # Connection to the ZIV, gateway
-		#ssh -p 55555 glepe_01@ebbgateway.uni-muenster.de #then ssh ebbsrv02
-		#ssh  caine@92.228.253.168
-		#other ip for home: 92.231.13.161
-		#*********
-		#PBS -o /scratch/tmp/glepe_01/COMPUTED/output.dat
-		#PBS -l walltime=02:00:00,nodes=4:westmere:ppn=12
-		#PBS -A r0catani
-		#PBS -M glepe_01@uni-muenster.de
-		#PBS -m e
-		#PBS -q default
-		#PBS -N Job_001
-		#PBS -j oe
-		#cd path/to/script and files
-		#python file arg1 arg2
-		#*********
-		#qsub submit.cmd
-		# qstat : Affiche la file d'attente actuelle - Zeigt die derzeitige Warteschlange an
-		# qstat -a : Pareil, seulement avec le nombre de nœuds demandés - Selbiges, nur mit Anzahl der angeforderten Knoten
-		# qstat -n : Tous les nœuds sont affectés aux emplois sont brisés - Alle Knoten, die den Jobs zugeordnet sind, werden aufgeschlüsselt
-		# qdel Jobnummer : Supprime les travaux de la file d'attente - Löscht Jobs aus der Warteschlange
-		# showbf : Affiche le nombre de cœurs de processeur disponibles - Zeigt die Anzahl der freien Prozessorkerne
-		# showres : Indique quand un travail est lancé - Zeigt an, wann ein Job gestartet wird
-		#*********
-		#### regeneration des keys: in ~ /.ssh/id_rsa
-		#ssh-keygen
-		#Your identification has been saved in /home/gildas/.ssh/id_rsa.
-		#Your public key has been saved in /home/gildas/.ssh/id_rsa.pub.
-		#ssh-copy-id log@server
-	fi
+if [ 0 ];then echo -e "\n added: ssh and sshd"
+	L="$L openssh-server"
+fi
 
+#internet tools
+if [ 0 ];then echo -e "\n added: internet tools"
+	L="$L curl"	#internet function: download pages
+	L="$L whois"	#link ip and domain
+	L="$L nmap"	#Network Mapper
+	#L="$L apache2-bin" # Apache system ???
 fi
 
 #bioinfo
-if [ ];then cd $HOME; echo -e "\n G install: (bio)informatic tools"
-	
-	### internet
-	sudo apt-get install filezilla $SAYYES #don't forget the import of links
-	
-	sudo apt-get install curl $SAYYES #internet function: download pages
-	sudo apt-get install whois $SAYYES  #link ip and domain
-	
-	sudo apt-get install apache2-bin $SAYYES  #Apache system for ???
-	sudo apt-get install php5-cli $SAYYES  #PHP
-	sudo apt-get install mongodb-clients $SAYYES  #MongoDB
-	
-	### bioinfo
-	sudo apt-get install libncurses-dev $SAYYES 
-	sudo apt-get install tophat $SAYYES 
-	sudo apt-get install bowtie $SAYYES 
-	sudo apt-get install cufflinks $SAYYES 
-	sudo apt-get install bedtools $SAYYES  #bam to fastq
-	
-	# blat for x86_64
-	wget -nc -c http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/blat/blat
-	sudo chmod +x blat
-	sudo mv blat /usr/bin/blat
-	
+if [ 0 ];then echo -e "\n added: (bio)informatic tools"
+	L="$L libncurses-dev"			# required by tuxedo ?
+	L="$L tophat bowtie cufflinks"	# tuxedo programs
+	L="$L bedtools"					# bam to fastq
 	# blast
-	sudo apt-get install ncbi-blast+ $SAYYES 
-	
-	### system
-	sudo apt-get install rpm $SAYYES  #package manager
-	sudo apt-get install yum $SAYYES  #yum updater
-	
-	sudo apt-get install htop $SAYYES  #display system daemons
-	sudo apt-get install g++ $SAYYES #C compiler
-	sudo apt-get install wine $SAYYES  #wine windows compatibility
-	#sudo apt-get install chkconfig #manage services not available
-	sudo apt-get install dmidecode $SAYYES  #view BIOS Information
-	sudo apt-get install baobab $SAYYES  #disc usage
-	
-	
-	
-	### other
-	#sudo apt-get install gnumeric $SAYYES 
-	sudo apt-get install nmap $SAYYES 
-	sudo apt-get install pinta $SAYYES #paint-like
-	#sudo apt-get install freemind $SAYYES 
-	
-	#libroffice kde stuff integration
-	sudo apt-get install libreoffice-kde
-	
-	#midnight commander
-	#sudo apt-get install mc $SAYYES
-	
-	# program for mutation detection: Staden computer package
-	sudo apt-get install libtrace-tools
-	
+	L="$L ncbi-blast+"
 fi
+
+# Thunderbird mail agent
+if [ 0 ];then echo -e "\n added: Thunderbird"
+	L="$L thunderbird"
+fi
+
+# Filezilla FTP agent
+if [ 0 ];then echo -e "\n added: Filezilla"
+	L="$L filezilla"
+fi
+
+#
+echo "$L"
+echo "install those packages? (yes)"
+read q
+if [ "$q" == "yes" ]; then sudo apt-get install $yes; fi
+
+# fix dependencies problems
+#sudo apt-get install -f
+
+#sudo apt-get build-dep build-essential
+
 
 # RepeatMasker
 if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
@@ -283,10 +198,10 @@ fi
 if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	
 	#dependencies required
-	sudo apt-get install libjpeg62 $SAYYES 
+	sudo apt-get install libjpeg62 $Y 
 	
 	# R
-	sudo apt-get install r-base r-base-dev r-base-html r-doc-html $SAYYES  #libjpeg62 required
+	sudo apt-get install r-base r-base-dev r-base-html r-doc-html $Y  #libjpeg62 required
 	
 	# RStudio
 	VERSION=0.99.441
@@ -368,7 +283,7 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
 		rm -r tiff-4.0.3
 	fi
 	
-	sudo apt-get install imagemagick $SAYYES 
+	sudo apt-get install imagemagick $Y 
 	sudo ldconfig /usr/local/lib #to fix shared library problems
 	
 	#check some variables
@@ -397,27 +312,6 @@ if [ 0 ];then cd $HOME; echo -e "\n G install: imageMagick"
 	
 fi
 
-############################################################################
-
-
-
-
-
-
-
-
-
-
-
-#Filezilla
-if [ ];then echo -e "\n G install: Filezilla"
-	sudo apt-get install filezilla $SAYYES  
-fi
-
-#Thunderbird
-if [ ];then echo -e "\n G install: Thunderbird"
-	sudo apt-get install thunderbird $SAYYES 
-fi
 
 # Zotero
 if [ ];then cd $HOME; echo -e "\n G install: zotero"
@@ -438,7 +332,7 @@ fi
 
 # Dropbox
 if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
-	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $SAYYES 
+	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $Y 
 	echo "TODO: nemo --quit #need to quit the daemon"
 	echo "TODO dropbox start -i"
 	#gilou_on_net@hotmail.com
@@ -447,7 +341,7 @@ fi
 
 # PERL
 if [ ];then cd $HOME; echo -e "\n G install: perl modules"
-	sudo apt-get install perl-doc $SAYYES 
+	sudo apt-get install perl-doc $Y 
 	#search modules -> http://search.cpan.org/
 	# perl modules
 	sudo cpan install Base
@@ -457,34 +351,39 @@ if [ ];then cd $HOME; echo -e "\n G install: perl modules"
 fi
 
 ################################################################################
-################################################################################
-################################################################################
-
 
 ## FIREFOX sync: gildas.lepennetier@hotmail.fr
 
 # cmd to know - MEMO
 if [ ];then cd $HOME; echo -e "\n G install: commands to know / master"
-	
+	### commands to know
+	sudo apt-get install -f	# fix brocken packages
+	sudo apt-get update		# update
+	sudo apt-get upgrade $Y	# upgrade
+	sudo apt-get autoremove	# remove
+
+	hostname NewName		# change computer name
+	lscpu				# cpu infos
+
 	echo uname #unix name
 	echo arch #achitecture
 	echo rsync #synchronization
 	echo fdisk #checkdisk
-	
+
 	echo which #where is the command located
 	echo du #disl use
 	echo df #disk free
 	echo dd #copy data
 	echo find #do not forget the -name option
 	echo locate #using index to search
-	
+
 	echo !! #!! is replaced by the previous command / potential error of execution: echo $(!!)
 	echo useradd and adduser
-	
+
 	#gestion of the volume sound
 	echo alsamixer
 	
-	echo ping 128.176.213.35 -c 5 #ping...
+	echo ping 128.176.213.35 -c 5 #ping my office
 fi
 # tips, techniques and so on
 if [ ];then cd $HOME; echo -e "\n G install: little notes"
@@ -550,69 +449,8 @@ if [ ];then cd $HOME; echo -e "\n G install: little notes"
 fi
 
 #
-# non-necessary
+# non-necessary / memo
 #
-
-#Apach internet :80 httpd - not required except to emit as webserver
-if [ ];then cd $HOME; echo -e "\n G install: build apach server httpd from sources"
-	
-	#http://httpd.apache.org/docs/2.4/install.html
-	exit "not working"
-	
-	if [ ];then echo "apr required for apache"
-		
-		mkdir -p $HOME/tmp
-		cd $HOME/tmp
-		echo "download"
-		wget -nc -c http://mirror.dkd.de/apache/apr/apr-1.5.1.tar.gz
-		tar -xzf apr-1.5.1.tar.gz
-		wget -nc -c http://mirror.dkd.de/apache/apr/apr-util-1.5.4.tar.gz
-		tar -xzf apr-util-1.5.4.tar.gz
-		
-		echo "install - apr"
-		cd $HOME/tmp/apr-1.5.1
-		./configure --prefix=$HOME/.srclib/apr
-		make
-		make test
-		sudo make install
-	fi
-	if [ ];then echo "apr-util required for apache"
-		echo "install - apr-util"
-		cd $HOME/tmp/apr-util-1.5.4
-		./configure --prefix=$HOME/.srclib/apr-util --with-apr $HOME/.srclib/apr
-		make
-		make test
-		#sudo make install
-	fi
-		
-	if [ ];then echo "download the daemon httpd"
-		cd $HOME/.srclib/apr
-		./configure --prefix=$HOME/.srclib/apr
-		make
-		mkdir -p $HOME/.srclib
-	
-		#download the httpd daemon
-		wget -nc -c http://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/httpd/httpd-2.4.12.tar.gz
-		tar -xvzf httpd-2.4.12.tar.gz
-		rm httpd-2.4.12.tar.gz
-		cd httpd-2.4.12
-		./configure --prefix=$HOME --with-included-apr
-		#make
-		#make install
-		#$HOME/bin/apachectl start
-    fi
-fi
-# my SQL - not really required
-if [ ];then cd $HOME; echo -e "\n G install: my SQL"
-	sudo apt-get install mysql-server
-fi
-# PDF - use sumatra or another, useful only if problems with forms
-if [ ];then cd $HOME; echo -e "\n G install: Adobe reader"
-	read -p "Did you update the version in the script?"
-	wget -nc -c ftp://ftp.adobe.com/pub/adobe/reader/unix/9.x/9.5.5/enu/AdbeRdr9.5.5-1_i386linux_enu.deb
-	sudo dpkg -i AdbeRdr9.5.5-1_i386linux_enu.deb
-	rm AdbeRdr9.5.5-1_i386linux_enu.deb
-fi
 # libreoffice - manual installation
 if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
 	#install kde integration for libreoffice
@@ -627,38 +465,93 @@ if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
 	rm -r LibreOffice_4.3.7.2_Linux_x86-64_deb
 	rm LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
 fi
-# FTP - filezilla works also
-if [ ];then cd $HOME; echo -e "\n G install: FTP Port 21"
 
-	sudo apt-get install vsftpd
-	if [ ];then echo "configuration"
-		
-		#http://computernetworkingnotes.com/network-administration/how-to-configure-ftp-server-in-rhel6.html
-		
-		service vsftpd status #start restart stop
-		
-		#firewall
-		#iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 21 -j ACCEPT
-		
-		#main ftp configuration file 
-		sudo nano /etc/vsftpd.conf
-		sudo nano /etc/vsftpd/user_list
-		
-		#test:
-		ftp 128.176.213.35
-		
-		anonymous
-		
-		#commands
-		put  To upload files on server
-		get  To download files from server
-		mput To upload all files
-		mget To download all files
-		?    To see all available command on ftp prompts
-		cd   To change remote directory
-		lcd  To change local directory.
-		exit To exit
-		
-		
-	fi
+#sudo apt-get install gnumeric	#excel 
+
+# git
+if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
+	sudo apt-get install git $Y
+	
+	#exemple: clone the pirate bay
+	#git clone https://github.com/isohuntto/openbay.git
+	#git clone https://github.com/GildasLepennetier/GildasSources.git
+	#git clone https://github.com/GildasLepennetier/smartPySpider.git
+fi
+
+#SSH: to know
+if [ ];then
+	#############################
+	## ssh : programme client permetant de se connecter au serveur
+	## sshd : daemon écoutant sur un port (default=22)
+	#sudo service ssh start
+	#sudo service ssh stop
+	#sudo service ssh restart
+	#service ssh status
+	
+	echo "internet protocol address: "
+	ifconfig | grep "inet addr:"
+	
+	## log file: 
+	grep ssh /var/log/auth.log
+	
+	## config: 
+	cat /etc/ssh/sshd_config #exemple: Port 1 to 65535; PermitRootLogin no
+	## sudo to modify
+	sudo nano /etc/ssh/sshd_config
+	
+	
+	## Test connection
+	#ssh gildas@localhost #to self
+	#ssh glepe_01@palma1.uni-muenster.de # Connection to PALMA ( 128.176.188.146 )
+	#ssh glepe_01@zivsmp.uni-muenster.de
+	#ssh glepe_01@vpnserver.uni-muenster.de # Connection to the ZIV, gateway
+	#ssh -p 55555 glepe_01@ebbgateway.uni-muenster.de #then ssh ebbsrv02
+	#ssh  caine@92.228.253.168
+	#other ip for home: 92.231.13.161
+	#*********
+	#PBS -o /scratch/tmp/glepe_01/COMPUTED/output.dat
+	#PBS -l walltime=02:00:00,nodes=4:westmere:ppn=12
+	#PBS -A r0catani
+	#PBS -M glepe_01@uni-muenster.de
+	#PBS -m e
+	#PBS -q default
+	#PBS -N Job_001
+	#PBS -j oe
+	#cd path/to/script and files
+	#python file arg1 arg2
+	#*********
+	#qsub submit.cmd
+	# qstat : Affiche la file d'attente actuelle - Zeigt die derzeitige Warteschlange an
+	# qstat -a : Pareil, seulement avec le nombre de nœuds demandés - Selbiges, nur mit Anzahl der angeforderten Knoten
+	# qstat -n : Tous les nœuds sont affectés aux emplois sont brisés - Alle Knoten, die den Jobs zugeordnet sind, werden aufgeschlüsselt
+	# qdel Jobnummer : Supprime les travaux de la file d'attente - Löscht Jobs aus der Warteschlange
+	# showbf : Affiche le nombre de cœurs de processeur disponibles - Zeigt die Anzahl der freien Prozessorkerne
+	# showres : Indique quand un travail est lancé - Zeigt an, wann ein Job gestartet wird
+	#*********
+	#### regeneration des keys: in ~ /.ssh/id_rsa
+	#ssh-keygen
+	#Your identification has been saved in /home/gildas/.ssh/id_rsa.
+	#Your public key has been saved in /home/gildas/.ssh/id_rsa.pub.
+	#ssh-copy-id log@server
+fi
+
+if [ ];then
+	sudo easy_install weblogo			# weblogo
+	sudo easy_install --upgrade weblogo
+	sudo pip install cutadapt			# cutadapt
+	
+	# blat for x86_64
+	wget -nc -c http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/blat/blat
+	sudo chmod +x blat
+	sudo mv blat /usr/bin/blat
+	
+	
+	#sudo apt-get install pinta $Y #paint-like
+	#sudo apt-get install freemind $Y 
+	
+	#midnight commander
+	#sudo apt-get install mc $Y
+	
+	#L="$L dmidecode"	#view BIOS Information
+	#L="$L baobab"	#disc usage
 fi
