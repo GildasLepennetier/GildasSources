@@ -42,7 +42,7 @@ if [ 0 ];then echo -e "\n added: python extra tools"
 	L="$L python-dev python-setuptools"	#python setup tools: easy_install
 	L="$L python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose"	# scipy and numpy
 	L="$L python-biopython python-biopython-doc python-biopython-sql"	# biopython
-	#L="$L idle idle-python2.7" # IDLE
+	L="$L idle idle3" # IDLE for python3
 	#L="$L python-pip"	# pip for cutadapt
 fi
 
