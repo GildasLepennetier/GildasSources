@@ -26,7 +26,7 @@ OS=$(uname -s)
 L=""						# list of programs to install
 ################################################################################
 
-# OTHER packages mannagers
+# OTHER packages managers
 #sudo apt-get install rpm	#package manager
 #sudo apt-get install yum	#yum updater
 
@@ -248,7 +248,7 @@ if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
 # 		install.packages("boot",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# bootstrap
 # 		install.packages("raster",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# modal value, ...
 # 		install.packages("VennDiagram",dependencies=T,repos="http://mirrors.softliste.de/cran/")				# Venn Diagram
-# 		
+# 		package for map and GPS handling?
 	fi
 
 fi
