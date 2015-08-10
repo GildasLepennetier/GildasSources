@@ -170,8 +170,17 @@ for line in Lines:
     #careful: order in list
     chro  =lineSplit[chr_index]
     strand=lineSplit[strand_index]
-    start =int(lineSplit[starts_index]) -1 #here ici : -1 because of python string
-    end   =int(lineSplit[ends_index])
+    try:
+        start =int(lineSplit[starts_index]) -1 #here ici : -1 because of python string
+    except ValueError:
+        print("Error: column %s can not be converted to integer on line %s -> did you forget the header option?"%(starts_index,kk))
+        exit()
+    try
+        end   =int(lineSplit[ends_index])
+    except ValueError:
+        print("Error: column %s can not be converted to integer on line %s -> did you forget the header option?"%(ends_index,kk))
+        exit()
+        
     if chro in DICO:
         SEQ=DICO[chro]
     else:
