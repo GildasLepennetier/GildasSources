@@ -173,12 +173,16 @@ for line in Lines:
     try:
         start =int(lineSplit[starts_index]) -1 #here ici : -1 because of python string
     except ValueError:
-        print("Error: column %s can not be converted to integer on line %s -> did you forget the header option?"%(starts_index,kk))
+        sys.stderr.write("Error: column %s can not be converted to integer on line %s\n"%(starts_index,kk))
+        if kk == 1:
+            sys.stderr.write(" -> did you forget the header option?\n")
         exit()
     try:
         end   =int(lineSplit[ends_index])
     except ValueError:
-        print("Error: column %s can not be converted to integer on line %s -> did you forget the header option?"%(ends_index,kk))
+        sys.stderr.write("Error: column %s can not be converted to integer on line %s\n"%(ends_index,kk))
+        if kk == 1:
+            sys.stderr.write(" -> did you forget the header option?\n")
         exit()
         
     if chro in DICO:
