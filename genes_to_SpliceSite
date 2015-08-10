@@ -175,7 +175,7 @@ for line in Lines:
     except ValueError:
         print("Error: column %s can not be converted to integer on line %s -> did you forget the header option?"%(starts_index,kk))
         exit()
-    try
+    try:
         end   =int(lineSplit[ends_index])
     except ValueError:
         print("Error: column %s can not be converted to integer on line %s -> did you forget the header option?"%(ends_index,kk))
