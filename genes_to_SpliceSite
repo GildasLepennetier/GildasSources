@@ -19,6 +19,9 @@ parser.add_argument('-a3',type=int,required=False,default=3,help ="after  3' spl
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have an header')
 parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. This also put verbosity to 1')
 
+#parser.add_argument('-rmNinSS',default=False,action='store_true',help='add this flag to remove intron containing N in splice sites')
+#parser.add_argument('-rmNinintron',default=False,action='store_true',help='add this flag to remove intron containing N in it sequence')
+
 parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s v1.2')#version display
@@ -235,7 +238,7 @@ for line in Lines:
         continue
     if 'n' in SS3 or 'N' in SS3:
         if VERB_LVL > 0:
-            sys.stderr.write("WARNING: empty splice site (skipped)(%s %s-%s)"%(chro,start,end))
+            sys.stderr.write("WARNING: N or n present in 3' splice site (skipped)(%s %s-%s)"%(chro,start,end))
         continue
     if len(SS5) != b5+a5:
         if VERB_LVL > 0:
