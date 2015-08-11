@@ -19,7 +19,7 @@ USAGE="usage: $(basename $0) file.csv filename [-h]\
 #if filename given
 if [ -e $1 ];then
 	#X=$(head -n 1 $1 | wc -w)
-	X=`awk -F"\t" '{ if(NR==1) { print NF }}' $1`
+	X=`awk -F"\t" '{print NF;exit}' $1`
 	for i in $(seq 1 $X); do
 		head -n 1 $1 | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}" #tab separated
 	done
