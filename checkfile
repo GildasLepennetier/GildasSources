@@ -1,2 +1,0 @@
-#!/bin/bash
-if [ -e $1 ]; then echo -e "\noutput file already exists.\n\t$1"; read -p "Press [Enter] to overwrite, otherwise: ctrl-c" ; fi
