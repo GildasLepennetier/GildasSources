@@ -121,12 +121,25 @@ if [[ "$SkipFirst" != "skip" && "$SkipFirst" != "keep" ]];then echo "Error, plea
 
 #check for Ns in the sequences
 if [[ "$SkipFirst" == "skip" ]];then
-	NB=$(cat "$IN" | tail -n +2 | grep -n N | wc -l)
-	if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences";exit; fi 
+	if [ $indexCol5ss ];then #check n N in donor
+		NB=$(cut -f $indexCol5ss $IN | tail -n +2 | grep -in N | wc -l)
+		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB";exit; fi
+	fi
+	if [ $indexCol3ss ];then #check n N in donor
+		NB=$(cut -f $indexCol3ss $IN | tail -n +2 | grep -in N | wc -l)
+		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB";exit; fi
+	fi
 fi
+
 if [[ "$SkipFirst" == "keep" ]];then
-	NB=$(cat "$IN" | grep -n N | wc -l)
-	if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences";exit; fi 
+	if [ $indexCol5ss ];then #check n N in donor
+		NB=$(cut -f $indexCol5ss $IN | grep -in N | wc -l)
+		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB";exit; fi
+	fi
+	if [ $indexCol3ss ];then #check n N in donor
+		NB=$(cut -f $indexCol3ss $IN | grep -in N | wc -l)
+		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB";exit; fi
+	fi
 fi
 
 
