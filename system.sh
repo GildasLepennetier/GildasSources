@@ -31,7 +31,9 @@ L=""						# list of programs to install
 #sudo apt-get install rpm	#package manager
 #sudo apt-get install yum	#yum updater
 
-if [ ];then echo -e "\n\nStarting: $0 ... system update and set up\n"
+echo -e "\nInstall system update? (yes)"
+read q
+if [ "$q" == "yes" ];then echo -e "\n\nStarting: $0 ... system update and set up\n"
 
 	if [ 0 ];then echo -e "\n added: system (compiler and compatibility)"
 		#L="$L htop"	#display system daemons
@@ -84,16 +86,18 @@ if [ ];then echo -e "\n\nStarting: $0 ... system update and set up\n"
 	echo "$L"
 	echo "install those packages? (yes)"
 	read q
-	if [ "$q" == "yes" ]; then sudo apt-get install $L $yes; else echo "Cancelled"; fi
+	if [ "$q" == "yes" ]; then sudo apt-get $yes install $L ; else echo "Cancelled"; fi
 
 	# fix dependencies problems
 	sudo apt-get install -f
-	#sudo apt-get build-dep "package" $yes #specifically build dependencies for the package
+	#sudo apt-get $yes build-dep "package" #specifically build dependencies for the package
 
 fi
 
 # RepeatMasker
-if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
+echo -e "\nInstall RepeatMasker? (yes)"
+read q
+if [ "$q" == "yes" ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
 	
 	echo "careful, this is not finished - enter to continue"
 	echo "todo: repeatmasker in a better place than home, same for hmmer and so one"
@@ -270,27 +274,40 @@ if [ "$q" == "yes" ];then cd $HOME
 	
 	if [ 0 ];then echo -e "\n tiff support - need to be installed first"
 		
-		rm -fr tiff-4.0.3 #because we want clean
+		rm -fr tiff-4.0.4 #because we want clean
 		
-		$WGET "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.3.tar.gz"
-		tar xzf "tiff-4.0.3.tar.gz"
-		rm -v "tiff-4.0.3.tar.gz"
-		cd "tiff-4.0.3"
+		$WGET "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.4.tar.gz"
+		tar xzf "tiff-4.0.4.tar.gz"
+		rm -v "tiff-4.0.4.tar.gz"
+		cd "tiff-4.0.4"
 		
-		echo "patching the stuff..."
-		$WGET "http://www.linuxfromscratch.org/patches/blfs/svn/tiff-4.0.3-fixes-1.patch"
-		patch -Np1 -i tiff-4.0.3-fixes-1.patch
-		
-		rm tiff-4.0.3-fixes-1.patch
+		#echo "patching the stuff...this was for version 4.0.3"
+		#$WGET "http://www.linuxfromscratch.org/patches/blfs/svn/tiff-4.0.3-fixes-1.patch"
+		#patch -Np1 -i tiff-4.0.3-fixes-1.patch
+		#rm tiff-4.0.3-fixes-1.patch
 		
 		./configure
-		make clean
-		make
-		make check
 		sudo make install
+		make check
+		make clean
+		
+		#Libraries have been installed in: /usr/local/lib
+# 		If you ever happen to want to link against installed libraries
+# 		in a given directory, LIBDIR, you must either use libtool, and
+# 		specify the full pathname of the library, or use the '-LLIBDIR'
+# 		flag during linking and do at least one of the following:
+# 		- add LIBDIR to the 'LD_LIBRARY_PATH' environment variable
+# 			during execution
+# 		- add LIBDIR to the 'LD_RUN_PATH' environment variable
+# 			during linking
+# 		- use the '-Wl,-rpath -Wl,LIBDIR' linker flag
+# 		- have your system administrator add LIBDIR to '/etc/ld.so.conf'
+# 
+# 		See any operating system documentation about shared libraries for
+# 		more information, such as the ld(1) and ld.so(8) manual pages.
 		
 		cd $HOME
-		rm -r tiff-4.0.3
+		rm -r tiff-4.0.4
 	fi
 	
 	sudo apt-get install imagemagick $Y 
@@ -300,7 +317,7 @@ if [ "$q" == "yes" ];then cd $HOME
 	#convert -list configure
 	#convert -list format
 	
-	if [ ];then echo "manual (hope it works, if the previous option do not)"
+	if [ ];then echo "manualy, compile from sources (hope it works, if the previous option do not)"
 		cd $HOME
 		VERSION_MAGICK="6.9.1-3"
 		$WGET "ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-$VERSION_MAGICK.tar.gz"
@@ -322,7 +339,6 @@ if [ "$q" == "yes" ];then cd $HOME
 	
 fi
 
-
 # Zotero
 echo -e "\nInstall zotero? (yes)"
 read q
@@ -340,26 +356,6 @@ if [ "$q" == "yes" ];then cd $HOME
 	rm "Zotero-4.0.19_linux-$VERSION.tar.bz2"
 	
 	#preferences: user: gildas.lepennetier@hotmail.fr (sy)
-fi
-
-# Dropbox
-if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
-	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $Y 
-	echo "TODO: nemo --quit #need to quit the daemon"
-	echo "TODO dropbox start -i"
-	#gilou_on_net@hotmail.com
-	#sy...
-fi
-
-# PERL
-if [ ];then cd $HOME; echo -e "\n G install: perl modules"
-	sudo apt-get install perl-doc $Y 
-	#search modules -> http://search.cpan.org/
-	# perl modules
-	sudo cpan install Base
-	sudo cpan HTTP
-	echo "TODO: install CPAN"
-	echo "TODO: reload cpan"
 fi
 
 ################################################################################
@@ -479,6 +475,27 @@ if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
 fi
 
 #sudo apt-get install gnumeric	#excel 
+
+# Dropbox
+if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
+	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $Y 
+	echo "TODO: nemo --quit #need to quit the daemon"
+	echo "TODO dropbox start -i"
+	#gilou_on_net@hotmail.com
+	#sy...
+fi
+
+# PERL
+if [ ];then cd $HOME; echo -e "\n G install: perl modules"
+	sudo apt-get install perl-doc $Y 
+	#search modules -> http://search.cpan.org/
+	# perl modules
+	sudo cpan install Base
+	sudo cpan HTTP
+	echo "TODO: install CPAN"
+	echo "TODO: reload cpan"
+fi
+
 
 # git
 if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
