@@ -16,7 +16,7 @@
 #
 #			options
 #
-set -e						# to stop this script if error
+#set -e						# to stop this script if error
 workDir=$(pwd)				# current working directory
 yes="--assume-yes"			# to say yes during install
 WGET="wget -N"				# option for the wget: Turn on time-stamping, download if new version
@@ -344,18 +344,26 @@ echo -e "\nInstall zotero? (yes)"
 read q
 if [ "$q" == "yes" ];then cd $HOME
 	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
+	V="4.0.28"
 	if [ "$processorType" == "i386" ];then VERSION=i386; fi
 	if [ "$processorType" == "i686" ];then VERSION=i386; fi
-	if [ "$processorType" == "x86_64" ];then VERSION=x86_64;	fi
-	$WGET "https://download.zotero.org/standalone/4.0.19/Zotero-4.0.19_linux-$VERSION.tar.bz2"
-	tar -xjf "Zotero-4.0.19_linux-$VERSION.tar.bz2"
+	if [ "$processorType" == "x86_64" ];then VERSION=x86_64; fi
+	$WGET "https://download.zotero.org/standalone/$V/Zotero-$V""_linux-$VERSION.tar.bz2"
+	tar -xjf "Zotero-$V""_linux-$VERSION.tar.bz2"
 	cd "Zotero_linux-$VERSION/"
-	echo "id: gildas.lepennetier@hotmail.fr"
-	./run-zotero.sh
-	cd ..
-	rm "Zotero-4.0.19_linux-$VERSION.tar.bz2"
+	echo "id: gildas.lepennetier@hotmail.fr" #preferences: user: gildas.lepennetier@hotmail.fr (sy)
 	
-	#preferences: user: gildas.lepennetier@hotmail.fr (sy)
+	
+	echo -e "\nAdd zotero to PATH? (yes)"
+	read q
+	if [ "$q" == "yes" ];then echo -e "\n#Zotero - added $(date)\nPATH=\$PATH:$(pwd)" >> "$HOME/.bashrc";fi
+	
+	echo -e "\nTo run: $(pwd)/run-zotero.sh"
+	cd ..
+	rm "Zotero-$V""_linux-$VERSION.tar.bz2"
+	
+	
+	
 fi
 
 ################################################################################
