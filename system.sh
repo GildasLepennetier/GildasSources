@@ -19,8 +19,9 @@
 set -e						# to stop this script if error
 workDir=$(pwd)				# current working directory
 yes="--assume-yes"			# to say yes during install
-wgetOpt="-nc -c"			# option for the wget
+WGET="wget -N"				# option for the wget: Turn on time-stamping, download if new version
 processorType=$(arch)		# processor type: i386, amd64...
+if [[ -z "$processorType" ]];then echo "architecture not found with arch command: please enter: i386, i686 or x86_64..."; read processorType; fi
 archi=$(getconf LONG_BIT)	# computer's architechture: return 32 or 64
 OS=$(uname -s)
 L=""						# list of programs to install
@@ -30,64 +31,66 @@ L=""						# list of programs to install
 #sudo apt-get install rpm	#package manager
 #sudo apt-get install yum	#yum updater
 
+if [ ];then echo -e "\n\nStarting: $0 ... system update and set up\n"
 
-if [ 0 ];then echo -e "\n added: system (compiler and compatibility)"
-	#L="$L htop"	#display system daemons
-	L="$L g++"	#C compiler
-	L="$L wine"	#wine windows compatibility
+	if [ 0 ];then echo -e "\n added: system (compiler and compatibility)"
+		#L="$L htop"	#display system daemons
+		L="$L g++"	#C compiler
+		L="$L wine"	#wine windows compatibility
+	fi
+
+	# python packages
+	if [ 0 ];then echo -e "\n added: python extra tools"
+		L="$L python-dev python-setuptools"	#python setup tools: easy_install
+		L="$L python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose"	# scipy and numpy
+		L="$L python-biopython python-biopython-doc python-biopython-sql"	# biopython
+		L="$L idle idle3" # IDLE for python3
+		#L="$L python-pip"	# pip for cutadapt
+	fi
+
+	# SSH
+	if [ 0 ];then echo -e "\n added: ssh and sshd"
+		L="$L openssh-server"
+	fi
+
+	#internet tools
+	if [ 0 ];then echo -e "\n added: internet tools"
+		L="$L curl"	#internet function: download pages
+		L="$L whois"	#link ip and domain
+		L="$L nmap"	#Network Mapper
+		#L="$L apache2-bin" # Apache system ???
+	fi
+
+	#bioinfo
+	if [ 0 ];then echo -e "\n added: (bio)informatic tools"
+		L="$L libncurses-dev"			# required by tuxedo ?
+		L="$L tophat bowtie cufflinks"	# tuxedo programs
+		L="$L bedtools"					# bam to fastq
+		# blast
+		L="$L ncbi-blast+"
+	fi
+
+	# Thunderbird mail agent
+	if [ 0 ];then echo -e "\n added: Thunderbird"
+		L="$L thunderbird"
+	fi
+
+	# Filezilla FTP agent
+	if [ 0 ];then echo -e "\n added: Filezilla"
+		L="$L filezilla"
+	fi
+
+	#
+	echo "$L"
+	echo "install those packages? (yes)"
+	read q
+	if [ "$q" == "yes" ]; then sudo apt-get install $L $yes; else echo "Cancelled"; fi
+
+	# fix dependencies problems
+	sudo apt-get install -f
+	#sudo apt-get build-dep "package" $yes #specifically build dependencies for the package
+
 fi
-
-# python packages
-if [ 0 ];then echo -e "\n added: python extra tools"
-	L="$L python-dev python-setuptools"	#python setup tools: easy_install
-	L="$L python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose"	# scipy and numpy
-	L="$L python-biopython python-biopython-doc python-biopython-sql"	# biopython
-	L="$L idle idle3" # IDLE for python3
-	#L="$L python-pip"	# pip for cutadapt
-fi
-
-# SSH
-if [ 0 ];then echo -e "\n added: ssh and sshd"
-	L="$L openssh-server"
-fi
-
-#internet tools
-if [ 0 ];then echo -e "\n added: internet tools"
-	L="$L curl"	#internet function: download pages
-	L="$L whois"	#link ip and domain
-	L="$L nmap"	#Network Mapper
-	#L="$L apache2-bin" # Apache system ???
-fi
-
-#bioinfo
-if [ 0 ];then echo -e "\n added: (bio)informatic tools"
-	L="$L libncurses-dev"			# required by tuxedo ?
-	L="$L tophat bowtie cufflinks"	# tuxedo programs
-	L="$L bedtools"					# bam to fastq
-	# blast
-	L="$L ncbi-blast+"
-fi
-
-# Thunderbird mail agent
-if [ 0 ];then echo -e "\n added: Thunderbird"
-	L="$L thunderbird"
-fi
-
-# Filezilla FTP agent
-if [ 0 ];then echo -e "\n added: Filezilla"
-	L="$L filezilla"
-fi
-
-#
-echo "$L"
-echo "install those packages? (yes)"
-read q
-if [ "$q" == "yes" ]; then sudo apt-get install $L $yes; else echo "Cancelled"; fi
-
-# fix dependencies problems
-sudo apt-get install -f
-#sudo apt-get build-dep "package" $yes #specifically build dependencies for the package
-
 
 # RepeatMasker
 if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
@@ -107,14 +110,14 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 	fi
 	
 	if [ ! -d RepeatMasker ];then echo "get RepeatMasker"
-		wget -nc -c http://www.repeatmasker.org/RepeatMasker-open-4-0-5.tar.gz
+		$WGET "http://www.repeatmasker.org/RepeatMasker-open-4-0-5.tar.gz"
 		tar -xf RepeatMasker-open-4-0-5.tar.gz
 		rm RepeatMasker-open-4-0-5.tar.gz
 	fi
 	
 
 	if [ 0 ];then echo "install Hmmer"
-		wget -nc -c http://selab.janelia.org/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-ia32.tar.gz
+		$WGET "http://selab.janelia.org/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-ia32.tar.gz"
 		tar -xf hmmer-3.1b1-linux-intel-ia32.tar.gz
 		cd hmmer-3.1b1-linux-intel-ia32
 		
@@ -131,13 +134,13 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 	
 		echo "downloading RMBlast Binaries"
 		
-		wget -nc -c ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST/ncbi-rmblastn-2.2.28-ia32-linux.tar.gz
+		$WGET "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST/ncbi-rmblastn-2.2.28-ia32-linux.tar.gz"
 		tar zxvf ncbi-rmblastn-2.2.28-ia32-linux.tar.gz
 		rm ncbi-rmblastn-2.2.28-ia32-linux.tar.gz
 
 		echo "downloading BLAST+ Binaries"
 		
-		wget -nc -c ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.2.30+-ia32-linux.tar.gz
+		$WGET "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.2.30+-ia32-linux.tar.gz"
 		tar zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz
 		rm ncbi-blast-2.2.30+-ia32-linux.tar.gz
 		
@@ -158,16 +161,16 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 		LOGIN=gildas
 		PASS=edr6qv
 		VERSION=20.04
-		wget -nc -c --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase$VERSION.embl.tar.gz
+		$WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase$VERSION.embl.tar.gz"
 		tar -xvf RepBase$VERSION.embl.tar.gz
-		wget -nc -c --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/repeatmaskerlibraries/repeatmaskerlibraries-20140131.tar.gz
+		$WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/repeatmaskerlibraries/repeatmaskerlibraries-20140131.tar.gz"
 		tar -xvf repeatmaskerlibraries-20140131.tar.gz
-		wget -nc -c --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/REPET/RepBase19.06_REPET.embl.tar.gz
+		$WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/REPET/RepBase19.06_REPET.embl.tar.gz"
 		tar -xvf RepBase19.06_REPET.embl.tar.gz
-		wget -nc -c --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/openaccess/dfamrepref.embl.tgz
+		$WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/openaccess/dfamrepref.embl.tgz"
 		gzip -dvk dfamrepref.embl.tgz
 		### duplicate with embl
-		### wget -nc -c --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase19.12.fasta.tar.gz
+		### $WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase19.12.fasta.tar.gz"
 		### tar -xvf RepBase19.12.fasta.tar.gz
 	fi
 	
@@ -194,7 +197,9 @@ if [ ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search 
 fi
 
 # R
-if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
+echo -e "\nInstall R and RStudio? (yes)"
+read q
+if [ "$q" == "yes" ];then cd $HOME
 	
 	#dependencies required
 	sudo apt-get install libjpeg62 $Y 
@@ -203,23 +208,27 @@ if [ ];then cd $HOME; echo -e "\n G install: R and RStudio"
 	sudo apt-get install r-base r-base-dev r-base-html r-doc-html $Y  #libjpeg62 required
 	
 	# RStudio
-	VERSION=0.99.441
-	if [ "$ARCH" == "i386" ];then V=$VERSION-i386; fi
-	if [ "$ARCH" == "i686" ];then V=$VERSION-i386; fi #http://download1.rstudio.org/rstudio-0.99.441-i386.deb
-	if [ "$ARCH" == "x86_64" ];then V=$VERSION-amd64; fi #http://download1.rstudio.org/rstudio-0.99.441-amd64.deb
+	#VERSION=0.99.473 # August 2015
+	VERSION="$(curl -s "https://www.rstudio.com/products/rstudio/release-notes/" | grep "<h2>RStudio v" | awk '{print $2}' | sed -e 's/v//')"
+	#wget -q some-url -O - | grep something
 	
-	wget -nc -c http://download1.rstudio.org/rstudio-$V.deb
+	if [[ -z "$VERSION" ]];then echo "Could not find automaticaly RStudio version, please check https://www.rstudio.com/products/rstudio and enter 0.99.473"; read VERSION; fi
 	
+	if [ "$processorType" == "i386" ];then V="$VERSION-i386"; fi
+	if [ "$processorType" == "i686" ];then V="$VERSION-i386"; fi #http://download1.rstudio.org/rstudio-0.99.441-i386.deb
+	if [ "$processorType" == "x86_64" ];then V="$VERSION-amd64"; fi #http://download1.rstudio.org/rstudio-0.99.441-amd64.deb
+	$WGET "http://download1.rstudio.org/rstudio-$V.deb"
 	sudo dpkg -i rstudio-$V.deb
 	rm rstudio-$V.deb
 	
-	#java compiler ? r-java
-	#sudo apt-get install gcj-aarch64-linux-gnu r-cran-rjava
-	
-	#exporting variable
-	#R CMD javareconf -e
-	
 	if [ ];then 
+			
+		#java compiler ? r-java
+		#sudo apt-get install gcj-aarch64-linux-gnu r-cran-rjava
+		
+		#exporting variable
+		#R CMD javareconf -e
+	
 		echo "run sudo R"
 		
 		#for Bioconductor
@@ -255,19 +264,21 @@ fi
 
 # imageMagick - tiff support
 # imageMagick - cmd line
-if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
+echo -e "\nInstall imageMagick? (yes)"
+read q
+if [ "$q" == "yes" ];then cd $HOME
 	
-	if [ ];then echo -e "\n tiff support - need to be installed first"
+	if [ 0 ];then echo -e "\n tiff support - need to be installed first"
 		
 		rm -fr tiff-4.0.3 #because we want clean
 		
-		wget -nc -c "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.3.tar.gz"
+		$WGET "ftp://ftp.remotesensing.org/libtiff/tiff-4.0.3.tar.gz"
 		tar xzf "tiff-4.0.3.tar.gz"
 		rm -v "tiff-4.0.3.tar.gz"
 		cd "tiff-4.0.3"
 		
 		echo "patching the stuff..."
-		wget -nc -c "http://www.linuxfromscratch.org/patches/blfs/svn/tiff-4.0.3-fixes-1.patch"
+		$WGET "http://www.linuxfromscratch.org/patches/blfs/svn/tiff-4.0.3-fixes-1.patch"
 		patch -Np1 -i tiff-4.0.3-fixes-1.patch
 		
 		rm tiff-4.0.3-fixes-1.patch
@@ -292,7 +303,7 @@ if [ ];then cd $HOME; echo -e "\n G install: imageMagick"
 	if [ ];then echo "manual (hope it works, if the previous option do not)"
 		cd $HOME
 		VERSION_MAGICK="6.9.1-3"
-		wget -nc -c "ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-$VERSION_MAGICK.tar.gz"
+		$WGET "ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-$VERSION_MAGICK.tar.gz"
 		
 		#ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick.tar.gz
 		
@@ -313,18 +324,20 @@ fi
 
 
 # Zotero
-if [ ];then cd $HOME; echo -e "\n G install: zotero"
+echo -e "\nInstall zotero? (yes)"
+read q
+if [ "$q" == "yes" ];then cd $HOME
 	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
-	if [ "$ARCH" == "i386" ];then VERSION=i386; fi
-	if [ "$ARCH" == "i686" ];then VERSION=i386; fi
-	if [ "$ARCH" == "x86_64" ];then VERSION=x86_64;	fi
-	wget -nc -c https://download.zotero.org/standalone/4.0.19/Zotero-4.0.19_linux-$VERSION.tar.bz2
-	tar -xjf Zotero-4.0.19_linux-$VERSION.tar.bz2
-	cd Zotero_linux-$VERSION/
-	./run-zotero.sh
+	if [ "$processorType" == "i386" ];then VERSION=i386; fi
+	if [ "$processorType" == "i686" ];then VERSION=i386; fi
+	if [ "$processorType" == "x86_64" ];then VERSION=x86_64;	fi
+	$WGET "https://download.zotero.org/standalone/4.0.19/Zotero-4.0.19_linux-$VERSION.tar.bz2"
+	tar -xjf "Zotero-4.0.19_linux-$VERSION.tar.bz2"
+	cd "Zotero_linux-$VERSION/"
 	echo "id: gildas.lepennetier@hotmail.fr"
+	./run-zotero.sh
 	cd ..
-	rm Zotero-4.0.19_linux-$VERSION.tar.bz2
+	rm "Zotero-4.0.19_linux-$VERSION.tar.bz2"
 	
 	#preferences: user: gildas.lepennetier@hotmail.fr (sy)
 fi
@@ -456,7 +469,7 @@ if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
 	sudo apt-get install libreoffice-kde
 	#download libreoffice - last version
 	read -p "Did you update the version in the script?"
-	wget -nc -c http://donate.libreoffice.org/fr/dl/deb-x86_64/4.3.7/fr/LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
+	$WGET "http://donate.libreoffice.org/fr/dl/deb-x86_64/4.3.7/fr/LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz"
 	tar -xvzf LibreOffice_4.3.7_Linux_x86-64_deb.tar.gz
 	cd LibreOffice_4.3.7.2_Linux_x86-64_deb/DEBS
 	sudo dpkg -i *.deb
@@ -540,7 +553,7 @@ if [ ];then
 	sudo pip install cutadapt			# cutadapt
 	
 	# blat for x86_64
-	wget -nc -c http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/blat/blat
+	$WGET "http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/blat/blat"
 	sudo chmod +x blat
 	sudo mv blat /usr/bin/blat
 	
