@@ -1,26 +1,10 @@
 #!/bin/bash
-USAGE="usage: $(basename $0) file.csv filename [-h]\
+USAGE="usage: $(basename $0) filename [-h for help]\
 \n\n\tReturn column number and column name from a TAB-delimited file\
 \n\nCopyright 2014 LEPENNETIER Gildas\
 \nAuthor: Gildas Lepennetier - gildas.lepennetier@hotmail.fr\\"
-[[ $1 == "-h" ]] && echo -e $USAGE && exit 0
-[[ $# -eq 0 ]] && echo "Error in $(basename $0) : piping is forbidden" && exit 0
-#[[ $# -eq 0 ]] && echo "Error $(basename $0) when piping to $(basename $0) function, use '-' as first argument" && exit 0
-# if read from stdin : error, the tab disappear
-#if [ "$1" == "-" ];then
-#	File=$(cat /dev/stdin | head -n 1)
-#	#X=$(echo $File | wc -w)
-#	X=`echo $File | awk -F"\t" '{ if(NR==1) { print NF }}'`
-#	for i in $(seq 1 $X); do
-#		echo $File | head -n 1 | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}" #tab separated
-#	done
-#fi
-
-#if filename given
-if [ -e $1 ];then
-	#X=$(head -n 1 $1 | wc -w)
-	X=`awk -F"\t" '{print NF;exit}' $1`
-	for i in $(seq 1 $X); do
-		head -n 1 $1 | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}" #tab separated
-	done
-fi
+[[ $1 == "-h" ]] && >&2 echo -e $USAGE && exit 0
+[[ $# -eq 0 ]] && >&2 echo "Error in $(basename $0): first argument have to be the file name (and piping is forbidden)" && exit 1 #for piping: File=$(cat /dev/stdin | head -n 1)
+[ ! -s $1 ] && >&2 echo "Error in $(basename $0): File does not exist or is empty" && exit 1
+X=$(awk -F"\t" '{print NF;exit}' $1)
+for i in $(seq 1 $X); do head -n 1 $1 | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}"; done
