@@ -539,10 +539,27 @@ if [ ];then
 	
 	## Test connection
 	#ssh gildas@localhost #to self
+	
 	#ssh glepe_01@palma1.uni-muenster.de # Connection to PALMA ( 128.176.188.146 )
+	
 	#ssh glepe_01@zivsmp.uni-muenster.de
+	
 	#ssh glepe_01@vpnserver.uni-muenster.de # Connection to the ZIV, gateway
+	
 	#ssh -p 55555 glepe_01@ebbgateway.uni-muenster.de #then ssh ebbsrv02
+	
+	#=== DIAG
+	#load VPN: check vpn.som.umaryland.edu
+	#/opt/cisco/anyconnect/bin/vpnui
+	###address:
+	#SOM-UMIGS
+	#vpn.som.umaryland.edu
+	#pass: myRoot
+	#ssh gildas@diag-gateway.igs.umaryland.edu
+	#http://wiki.diagcomputing.org/index.php/Submitting_a_grid_job
+	#http://wiki.diagcomputing.org/index.php/DIAG_Grid_Layout
+	#=== DIAG
+	
 	#ssh  caine@92.228.253.168
 	#other ip for home: 92.231.13.161
 	#*********
