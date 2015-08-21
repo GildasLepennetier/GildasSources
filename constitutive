@@ -1,0 +1,35 @@
+#!/bin/env python3
+
+import sys
+
+lines=open(sys.argv[1],"r").readlines()
+
+index_iso=int(sys.argv[2])-1
+index_gen=int(sys.argv[3])-1
+
+try:
+    if(sys.argv[4]=="-header"):
+        lines=lines[1:]
+except IndexError:
+    pass
+
+#load file
+D={}
+sys.stdout.write("isoform_id\tgene_id\n")
+for line in lines:
+    Li=line.split("\t")
+    iso_id=Li[index_iso]
+    gen_id=Li[index_gen]
+    if(gen_id) in D.keys():
+        D[gen_id].append(iso_id)
+    else:
+        D[gen_id]=[iso_id]
+
+for k in D.keys():
+    if len(D[k])==1:
+        sys.stdout.write("%s\t%s\n"%(D[k][0],k))
+
+#print the constitutives lines (genes with only 1 isoform)
+
+
+
