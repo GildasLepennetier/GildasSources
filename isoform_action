@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/bin/python
 
 import sys,os,argparse
 parser = argparse.ArgumentParser(description='Perform actions .',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
