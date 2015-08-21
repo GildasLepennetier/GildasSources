@@ -1,0 +1,75 @@
+#!/bin/env python3
+
+import sys,os,argparse
+parser = argparse.ArgumentParser(description='Perform actions .',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='Input file')
+parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='Output file')
+
+parser.add_argument('-parent',default=1,type=int,required=False,help='Parent (default=1)')
+parser.add_argument('-child',default=2,type=int,required=False,help='Child (default=2)')
+parser.add_argument('-header',action='store_true',default=False,help='If you have an header (fist line with names of columns)')
+
+ACTIONS=['count_child','list_child','extract_single_child']
+parser.add_argument('-action',type=str,required=True,help='Action to perform on the file: '+','.join([el for el in ACTIONS]))
+
+parser.add_argument('-sort',action='store_true',help='Sort the output by parent ids')
+
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='Separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='End of line (default: unix \\n)')
+parser.add_argument('--version', action='version', version='%(prog)s 21-08-2015')#version display
+parser.add_argument('--verbose','-v',action='count',default=0,help='Verbosity - display more or less message, warnings. Additive')# count the level of verbosity, +1 for each -v flag
+
+args=vars(parser.parse_args())
+
+if args['author']:
+    sys.stderr.write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+    exit()
+if args['copy']:
+    sys.stderr.write("Copyright 2014 LEPENNETIER Gildas")
+    exit()
+if args['action'] not in ACTIONS:
+    sys.stderr.write('Error: action "'+args['action']+'" not recognized')
+    exit()
+    
+index_iso=int(args['child'])-1
+index_gen=int(args['parent'])-1
+
+lines=args['in'].readlines()
+if args['header']:
+    lines=lines[1:]
+
+#load file of links parent-child(s)
+D={}
+args['out'].write("parent%s%s\n"%(args['sep'],args['action']))
+for line in lines:
+    Li=line.split(args['sep'])
+    iso_id=Li[index_iso]
+    gen_id=Li[index_gen]
+    if(gen_id) in D.keys():
+        D[gen_id].append(iso_id)
+    else:
+        D[gen_id]=[iso_id]
+
+if args['sort']:
+    KEYS=sorted(D.keys())
+else:
+    KEYS=D.keys()
+
+
+if args['action']=='count_child':
+    for k in KEYS:
+        args['out'].write("%s%s%s\n"%(k,args['sep'],len(D[k])))
+
+if args['action']=='list_child':
+    for k in KEYS:
+        args['out'].write("%s%s%s\n"%(k,args['sep'],','.join([el for el in D[k] ])))
+        
+if args['action']=='extract_single_child':
+    for k in KEYS:
+        if len(D[k])==1:
+            args['out'].write("%s%s%s\n"%(k,args['sep'],D[k][0]))
+            
+
+
