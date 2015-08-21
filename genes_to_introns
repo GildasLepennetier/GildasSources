@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 #OUTPUT: not only starts ends
 import sys,os,argparse
-parser = argparse.ArgumentParser(description='Extract feature from .genes file.',epilog='Author: Gildas Lepennetier: glepe_01@wwu.de')
-parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='input file')
-parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser = argparse.ArgumentParser(description='Extract feature from .genes file.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='Input file')
+parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='Output file')
 
-parser.add_argument('-chr',default=1,type=int,required=False,help='column number for chromosome name (default=1)')
-parser.add_argument('-id',default=2,type=int,required=False,help='column number for identifiant (default=2)')
-parser.add_argument('-parent',default=3,type=int,required=False,help='column number for parent (default=3)')
-parser.add_argument('-strand',default=4,type=int,required=False,help='column number for strand (default=4)')
-parser.add_argument('-starts',default=5,type=int,required=False,help='column number for start of exons (coma-separated) (default=5)')
-parser.add_argument('-ends',default=6,type=int,required=False,help='column number for ends of exons (coma-separated) (default=6)')
+parser.add_argument('-chr',default=1,type=int,required=False,help='Chromosome name (default=1)')
+parser.add_argument('-id',default=2,type=int,required=False,help='Identifiant (default=2)')
+parser.add_argument('-parent',default=3,type=int,required=False,help='Parent (default=3)')
+parser.add_argument('-strand',default=4,type=int,required=False,help='Strand (default=4)')
+parser.add_argument('-starts',default=5,type=int,required=False,help='Start of exons (coma-separated) (default=5)')
+parser.add_argument('-ends',default=6,type=int,required=False,help='Ends of exons (coma-separated) (default=6)')
 
 parser.add_argument('-header',action='store_true',default=False,help='If you have an header (fist line with names of columns)')
 parser.add_argument('-extra',action='store_true',default=False,help='If you want extended informations')
@@ -20,17 +20,17 @@ parser.add_argument('-keepNoIntron',action='store_true',default=False,help='If y
 
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
-parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
-parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+parser.add_argument('-sep',type=str,default='\t',required=False,help='Separator (default: \\t)')
+parser.add_argument('-endline',type=str,default='\n',required=False,help='End of line (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s 04-30-2014')#version display
-parser.add_argument('--verbose','-v',action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+parser.add_argument('--verbose','-v',action='count',default=0,help='Verbosity - display more or less message, warnings. Additive')# count the level of verbosity, +1 for each -v flag
 
 args=vars(parser.parse_args())
 if args['author']:
 	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
 	exit()
 if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
+	print ("Copyright 2014-2015 LEPENNETIER Gildas")
 	exit()
 VERB_LVL=args['verbose']
 IN=args['in']
