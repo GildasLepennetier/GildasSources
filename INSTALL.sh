@@ -9,13 +9,14 @@ echo "# -> update PATH variable"
 echo "#====================================="
 ADD="$(pwd)" #in case we want another directory
 if [ ! -e $HOME/.bashrc ];then echo "No .bashrc file in the home directory -> this script is useless";exit 1;fi
-CMD='chmod +x *'
-echo "giving execution rights || $CMD"
-$CMD
-CMD='export PATH="$PATH:$ADD"'
-echo "exporting current directory || $CMD"
-$CMD
+echo "giving execution rights"
+read -p "press enter to continue, ctrl+c to cancel"
+chmod +x *
+echo "exporting current directory"
+read -p "press enter to continue, ctrl+c to cancel"
+export PATH="$PATH:$ADD"
 #add current path
 echo "Updating $HOME/.bashrc file (append at the end)"
-echo "#GildasSources funtions" >> $HOME/.bashrc
-echo "PATH=\$PATH:$ADD" >> $HOME/.bashrc
+read -p "press enter to continue, ctrl+c to cancel"
+echo -e "\n#GildasSources funtions\nPATH=\$PATH:$ADD" >> $HOME/.bashrc
+echo "DONE. Please execute this script only once, or you will have to clean your .bashrc file..."
