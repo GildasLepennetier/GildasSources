@@ -71,7 +71,14 @@ if [ "$q" == "yes" ];then echo -e "\n\nStarting: $0 ... system update and set up
 		# blast
 		L="$L ncbi-blast+"
 	fi
+	
+	#utilities
+	if [ 0 ];then echo -e "\n added: #utilities"
+		L="$L parallel"			# to perform parallel operations
 
+	fi
+	
+	
 	# Thunderbird mail agent
 	if [ 0 ];then echo -e "\n added: Thunderbird"
 		L="$L thunderbird"
