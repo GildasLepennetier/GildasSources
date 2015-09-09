@@ -4,7 +4,7 @@ import sys,argparse,random
 parser = argparse.ArgumentParser(description='Return random selection of lines if duplicate in col',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='Input file - any tab-separated file containing duplicats in a column')
 parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='Output file')
-parser.add_argument('-col',type=int,required=True,help='Column number for the selection')
+parser.add_argument('-col',type=int,required=True,help='Column of duplicated items, used for the random selection (ex: gene ids)')
 parser.add_argument('-header',default=False,action='store_true',help='If you have an header')
 parser.add_argument('-sorted',default=False,action='store_true',help='Sort the output')
 parser.add_argument('-excludeSingle',default=False,action='store_true',help='In case of single element, should we pick it or exclude it? No random possible.')
