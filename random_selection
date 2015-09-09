@@ -50,5 +50,5 @@ for K in KEYS:
     if len(DICO[K]) > 1: #if more than 1 element, choose one randomly
         OUT.write(random.choice(DICO[K]) + args['endline'])
     else:
-        if ! args['excludeSingle']:#if not exclusion of single elements (in this case no random possible)
+        if not args['excludeSingle']:#if not exclusion of single elements (in this case no random possible)
             OUT.write(DICO[K][0] + args['endline'])
