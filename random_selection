@@ -7,7 +7,7 @@ parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sy
 parser.add_argument('-col',type=int,required=True,help='Column of duplicated items, used for the random selection (ex: gene ids)')
 parser.add_argument('-header',default=False,action='store_true',help='If you have an header')
 parser.add_argument('-sorted',default=False,action='store_true',help='Sort the output')
-parser.add_argument('-excludeSingle',default=False,action='store_true',help='In case of single element, should we pick it or exclude it? No random possible.')
+parser.add_argument('-keepSingle',default=False,action='store_true',help='In case of single element, should we keep it? No random possible if keeped.')
 parser.add_argument('-sep',type=str,default='\t',required=False,help='Separator (default: \\t)')
 parser.add_argument('-endline',type=str,default='\n',required=False,help='End of the line (default: unix \\n)')
 parser.add_argument('--version',action='version', version='%(prog)s 30-04-2014')#version display
@@ -50,5 +50,5 @@ for K in KEYS:
     if len(DICO[K]) > 1: #if more than 1 element, choose one randomly
         OUT.write(random.choice(DICO[K]) + args['endline'])
     else:
-        if not args['excludeSingle']:#if not exclusion of single elements (in this case no random possible)
+        if args['keepSingle']:#if not exclusion of single elements (in this case no random possible)
             OUT.write(DICO[K][0] + args['endline'])
