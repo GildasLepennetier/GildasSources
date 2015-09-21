@@ -131,11 +131,11 @@ for rline in LINES:
     except: # ValueError =string, empty or not, instead of int in column
         if VERB_LVL > 0:
             sys.stderr.write("WARNING: Failed line %s%s"%(lineNB,args['endline']))
-        if not args['printFasta']:
+        if not args['printFasta']: #otherwise just skip it
             if args['append']:
                 args['out'].write( sep.join( line+[""] )+ args['endline']) #put empty if no sequence to extract
             else:
-                args['out'].write( args['endline'] ) #put empty if no sequence to extract
+                args['out'].write( args['endline'] ) #put empty line if no sequence to extract
                 continue
     try:
         SEQ = DICOChrom[Chr][Start:End]
