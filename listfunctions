@@ -1,4 +1,5 @@
 #!/bin/bash
-
-# This function list the current directory
-ls $HOME/GildasSources "$*"
+cur=$(pwd)
+cd $(dirname $0) #need to be in directory to use the * substitution (like ls gene*)
+ls $*
+cd $cur
