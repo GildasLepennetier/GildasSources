@@ -6,17 +6,19 @@ echo "#====================================="
 echo "# installation (linux)"
 echo "# -> execution right"
 echo "# -> update PATH variable"
-echo "#====================================="
 ADD="$(pwd)" #in case we want another directory
 if [ ! -e $HOME/.bashrc ];then echo "No .bashrc file in the home directory -> this script is useless";exit 1;fi
-echo "giving execution rights"
+P=$(grep "#GildasSources funtions" "$HOME/.bashrc")
+if [ -z "$P" ];then echo "Updating $HOME/.bashrc file and export PATH variable"
+	read -p "press enter to continue, ctrl+c to cancel"
+	echo -e "PATH=\$PATH:$ADD #GildasSources funtions - do not modify this line" >> $HOME/.bashrc
+	export PATH="$PATH:$ADD"
+else
+	echo ".bashrc file in $(pwd) already up to date"
+fi
+
+echo "Giving execution rights to files in $(pwd)"
 read -p "press enter to continue, ctrl+c to cancel"
-chmod +x *
-echo "exporting current directory"
-read -p "press enter to continue, ctrl+c to cancel"
-export PATH="$PATH:$ADD"
-#add current path
-echo "Updating $HOME/.bashrc file (append at the end)"
-read -p "press enter to continue, ctrl+c to cancel"
-echo -e "\n#GildasSources funtions\nPATH=\$PATH:$ADD" >> $HOME/.bashrc
-echo "DONE. Please execute this script only once, or you will have to clean your .bashrc file..."
+sudo chmod +x *
+echo "DONE."
+echo "#====================================="
