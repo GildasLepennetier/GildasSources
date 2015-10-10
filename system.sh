@@ -332,7 +332,7 @@ if [ "$q" == "yes" ];then cd $HOME
 # 		more information, such as the ld(1) and ld.so(8) manual pages.
 		
 		cd $HOME
-		rm -r tiff-4.0.4
+		sudo rm -rv tiff-4.0.4
 	fi
 	
 	sudo apt-get install imagemagick $Y 
