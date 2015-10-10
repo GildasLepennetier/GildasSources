@@ -43,11 +43,12 @@ if [ "$q" == "yes" ];then echo -e "\n\nStarting: $0 ... system update and set up
 
 	# python packages
 	if [ 0 ];then echo -e "\n added: python extra tools"
-		L="$L python-dev python-setuptools"	#python setup tools: easy_install
+		L="$L python-dev python-setuptools"	#python setup tools: sudo easy_install
 		L="$L python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose"	# scipy and numpy
 		L="$L python-biopython python-biopython-doc python-biopython-sql"	# biopython
 		L="$L idle idle3" # IDLE for python3
-		#L="$L python-pip"	# pip for cutadapt
+		L="$L python-pip"	# pip for cutadapt
+		L="$L python3-pip"	# pip for python3
 	fi
 
 	# SSH
@@ -128,8 +129,9 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\n G install: RepeatMasker, librari
 	
 
 	if [ 0 ];then echo "install Hmmer"
+		cd $HOME
 		$WGET "http://selab.janelia.org/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-ia32.tar.gz"
-		tar -xf hmmer-3.1b1-linux-intel-ia32.tar.gz
+		tar -xvf hmmer-3.1b1-linux-intel-ia32.tar.gz
 		cd hmmer-3.1b1-linux-intel-ia32
 		
 		./configure
@@ -139,47 +141,63 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\n G install: RepeatMasker, librari
 		cd $HOME
 		rm hmmer-3.1b1-linux-intel-ia32.tar.gz
 		rm -r hmmer-3.1b1-linux-intel-ia32
+		
+		echo -e "\n\nHMMER in /usr/local/bin if everything was fine during install\n\n"
 	fi
 	
 	if [ 0 ];then echo "search program RMVlast / Blast"
-	
+		
+		
+		cd $HOME
 		echo "downloading RMBlast Binaries"
-		
-		$WGET "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST/ncbi-rmblastn-2.2.28-ia32-linux.tar.gz"
-		tar zxvf ncbi-rmblastn-2.2.28-ia32-linux.tar.gz
-		rm ncbi-rmblastn-2.2.28-ia32-linux.tar.gz
-
-		echo "downloading BLAST+ Binaries"
-		
-		$WGET "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.2.30+-ia32-linux.tar.gz"
-		tar zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz
-		rm ncbi-blast-2.2.30+-ia32-linux.tar.gz
-		
-		cd $HOME/ncbi-blast-2.2.30+/bin/
+		read -p "please enter program name exemple: 'ncbi-rmblastn-2.2.28-x64-linux.tar.gz' found at ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST" VERSION
+		$WGET "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST/$VERSION"
+		tar zxvf $VERSION
+		rm $VERSION
+		mkdir -p $HOME/bin/
+		cd ncbi-rmblastn*/bin
 		sudo chmod +x *
-		cp -v $HOME/ncbi-rmblastn-2.2.28/bin/rmblastn .
-				
-		echo "move everything in usr/local/bin"
-		cp $HOME/ncbi-blast-2.2.30+/bin/* usr/local/bin
+		cp * $HOME/bin/
 		
-		read X
+		cd $HOME
+		echo "downloading BLAST+ Binaries"
+		read -p "please enter name for program exemple: 'ncbi-blast-2.2.31+-x64-linux.tar.gz' found at ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/" VERSION
+		$WGET ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/$VERSION
+		tar zxvf $VERSION
+		rm $VERSION
+		cd $HOME/ncbi-blast*/bin/
+		sudo chmod +x *
+		cp -v $HOME/ncbi-rmblastn-*/bin/rmblastn .
+		
+		echo "move everything in usr/local/bin"
+		mkdir -p $HOME/bin/
+		cp $HOME/${VERSION%+*}+/bin/* $HOME/bin/
+		
+		echo -e "\n\nALL BINARIES ARE IN $HOME/bin --don't forget to put it in the path if you wana use blast or the other program later!\n\n"
+		echo "you can also remove the ncbi-blast-***  and  ncbi-rmblastn-*** folders in your home"
+		read -p "execute rm -vr ncbi-blast-* ncbi-rmblastn-* ? (yes)??" yesno
+		if [ "$yesno" == "yes" ]; then rm -vr ncbi-blast-* ncbi-rmblastn-*; fi
+		
 	fi
 	
-	if [ 0 ];then echo "downloading Libraries - if error -> check versions"
+	if [ 0 ];then echo "downloading Libraries"
 		cd RepeatMasker
 		#repbase require login
 		#echo "You should register to access the RepBase libraries. it is not allowed to use gildas's password, legally";exit
 		LOGIN=gildas
 		PASS=edr6qv
-		VERSION=20.04
-		$WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase$VERSION.embl.tar.gz"
+		read -p "please enter version for libraries exemple: '20.09' found at http://www.girinst.org" VERSION
+		
+		$WGET --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase$VERSION.embl.tar.gz
 		tar -xvf RepBase$VERSION.embl.tar.gz
-		$WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/repeatmaskerlibraries/repeatmaskerlibraries-20140131.tar.gz"
-		tar -xvf repeatmaskerlibraries-20140131.tar.gz
-		$WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/REPET/RepBase19.06_REPET.embl.tar.gz"
-		tar -xvf RepBase19.06_REPET.embl.tar.gz
-		$WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/openaccess/dfamrepref.embl.tgz"
-		gzip -dvk dfamrepref.embl.tgz
+		rm RepBase$VERSION.embl.tar.gz
+		#$WGET --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/repeatmaskerlibraries/repeatmaskerlibraries-20140131.tar.gz
+		#tar -xvf repeatmaskerlibraries-20140131.tar.gz
+		#$WGET --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/REPET/RepBase$VERSION"_REPET.embl.tar.gz"
+		#tar -xvf RepBase19.06_REPET.embl.tar.gz
+		$WGET --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/openaccess/dfamrepref.embl.tgz
+		tar -xvf dfamrepref.embl.tgz
+		rm dfamrepref.embl.tgz
 		### duplicate with embl
 		### $WGET "--user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase19.12.fasta.tar.gz"
 		### tar -xvf RepBase19.12.fasta.tar.gz
@@ -191,7 +209,7 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\n G install: RepeatMasker, librari
 	echo "hammer: /usr/local/bin"
 	echo "rmbalst: $HOME/ncbi-blast-2.2.30+/bin"
 	
-	read X
+	read -p "remember those addresses, the configuration will start after you press enter" X
 	cd $HOME/RepeatMasker/
 	perl configure
 	
