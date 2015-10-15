@@ -551,6 +551,8 @@ if [ ];then
 	sudo mv blat /usr/bin/blat
 	
 	
+	sudo apt-get install mysql-server
+	
 	#sudo apt-get install pinta $Y #paint-like
 	#sudo apt-get install freemind $Y 
 	
