@@ -52,6 +52,7 @@ ARGUMENTS:
 	-A		Display author
 	-h		Display help and exit
 	-s		Scripts for MaxEnt			(default: $MaxEntScript)
+			For Drosophila, you may want to change this address
 	-t		Separator				(default: tab >$SEP<)
 	
 	-----------------------
@@ -154,6 +155,9 @@ if [ ! -d $MaxEntScript ];then
 	rm fordownload.tar.gz
 	mv "fordownload" "$HOME/MaxEnt"
 	MaxEntScript="$HOME/MaxEnt"
+	
+	
+	
 fi
 
 ####################### MAIN #########################################
