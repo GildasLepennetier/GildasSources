@@ -73,7 +73,7 @@ if [ $# -lt 1 ];then
 	exit 1
 fi
 
-while getopts "i:d:a:o:f:t:VAh" OPTION; do
+while getopts "i:d:a:s:o:f:t:VAh" OPTION; do
 	case $OPTION in
 		i) IN="$OPTARG";  ;;
 		d) indexCol5ss="$OPTARG";;
