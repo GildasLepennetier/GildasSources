@@ -2,26 +2,32 @@
 #first release 19 March 2014
 ############################ default values
 CUR="$(pwd)"
-VERSION="1.1 - 29.04.2015"
+VERSION="2.0 - 08.12.2015"
 AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
-COPY="Copyright 2014 2015 LEPENNETIER Gildas"
-MaxEntScript="$HOME/MaxEnt/"
-MAXENTSCRIPTS="http://genes.mit.edu/burgelab/maxent/download/fordownload.tar.gz"
+COPY="Copyright 2014-2015 LEPENNETIER Gildas"
+SCRIPTSPATH="$HOME/MaxEnt_Humain/"
+SPECIES="human"
+SPECIESLIST="human drosophila"
 SEP="\t"
+
+header="no"	#default: no header: keep 
+
 ############################ define usage / help function
 usage()
 {
 cat << EOF
-usage: $(basename $0) -i path/to/file [-d donor | -a acceptor] [-f skip|keep header] [options]
+USAGE: $(basename $0)
+	-i path/to/file 
+	-d donorColumn OR -a acceptorColumn
+	[ options: -o outputName -s species -S path/to/scripts -t sep -H if header -V print version -A print author -h HELP ]
 
-	Output in the same file name with .MaxEnt extension
-
-DESCRIPTION
-
-	This script calculate splice site scores using the maximum entropy scoring.
-	Only one splice site at a time: call the function with -a [acceptor] first, and then -d [donor].
-	You can easily use the cut and paste function to keep only what you need.
+	Calculate the donor OR acceptor splice site strength based on Maximum Entropy model.
 	
+	The given file will be tested (Ns, length of sequence, GT- AG presence)
+	The default output is <given file name>.MaxEnt
+	Please provide information about header presence, or you may have an error.
+	
+INFORMATION
 	The donor splice site should be:
 		-3 +6 (GT)
 		Ex:
@@ -30,36 +36,33 @@ DESCRIPTION
 		-20 +3 (AG)
 		Ex:
 		CCCGAATTCGTCATCTGCAGCAG
-	This script check the size of the sequence, and the position of GT and AG.
-	
-ADVICE:
-
-	Not tested in presence of Ns in splice site. -> perl script return nothing, so move all following results up -_-'
-
-ARGUMENTS:
-
+		
+ARGUMENTS
 	OBLIGATORILY
-	
 	-i		Input file name
 	-d		Donor splice site sequence index in the input file (first column = column 1)
 	-a		Acceptor splice site sequence index in the input file
-	-f keep|skip		Skip or not the first line in file (useful for name of columns, if you have an header, please use skip to avoid inclusion)
-	
 	OPTIONALS
-
-	-o		Output file name			(default: <infile>.MaxEnt)
+	-H 		Header 		Flag to add if there is a header (first line with names) defaul: $header
+	-o		Output 		(default: <infile>.MaxEnt)
+	-s		Species		[ available:  $SPECIESLIST ] default: $SPECIES
+	-S		Scripts		path to the perl scripts default: $SCRIPTSPATH
+	-t		Separator	(default: tab >$SEP<)
 	-V		Display version
 	-A		Display author
 	-h		Display help and exit
-	-s		Scripts for MaxEnt			(default: $MaxEntScript)
-			For Drosophila, you may want to change this address
-	-t		Separator				(default: tab >$SEP<)
-	
-	-----------------------
+-----------------------
+	This function wrap the usage of scripts created by:
+	1) For Humans:
+		Gene Yeo : geneyeo@mit.edu
+		see also http://genes.mit.edu/burgelab/maxent/Xmaxentscan_scoreseq.html
+	2) For Drosophila
+		Joel McManus : mcmanus@andrew.cmu.edu
+		(personnal communication)
+-----------------------
 	$AUTHOR
 	$VERSION
 	$COPY
-
 EOF
 }
 
@@ -69,18 +72,19 @@ EOF
 # put colon ":" after arguments that need a value in a variable. Ex: the flag -h don't need a value. same for V and A
 if [ $# -lt 1 ];then
 	echo "Error, please give arguments"
-	echo "Usage: $(basename $0) -i infile [-d index | -a index] [options, -h for help]"
+	echo "For help, type: $(basename $0) -h"
 	exit 1
 fi
 
-while getopts "i:d:a:s:o:f:t:VAh" OPTION; do
+while getopts "i:d:a:s:o:t:VAhH" OPTION; do
 	case $OPTION in
 		i) IN="$OPTARG";  ;;
 		d) indexCol5ss="$OPTARG";;
 		a) indexCol3ss="$OPTARG";;
-		s) MaxEntScript="$OPTARG";;
+		s) SPECIES="$OPTARG";;
+		S) SCRIPTSPATH="$OPTARG";;
 		o) OUT="$OPTARG";;
-		f) SkipFirst="$OPTARG";;
+		H) header="yes";;
 		t) SEP="$OPTARG";;
 		V) echo $VERSION; exit 1;;
 		A) echo $AUTHOR;  exit 1;;
@@ -89,6 +93,30 @@ while getopts "i:d:a:s:o:f:t:VAh" OPTION; do
 done
 
 ######## tests before run
+# species in list of available species
+if [[ ! $SPECIESLIST =~ $SPECIES ]];then echo "$SPECIES is not in available species list: $SPECIESLIST"; exit 1; fi
+
+# check script folder
+if [ ];then
+fi
+if [ ];then
+fi
+exit
+
+# get from sources
+#first: scripts are there
+if [ ! -d $SCRIPTSPATH ];then
+	echo "Error, scripts not found at: $MaxEntScript"
+	echo -e "Downloading perl wrapers MaxEnt package:\nhttp://genes.mit.edu/burgelab/maxent/download/"
+	wget -v "$MAXENTSCRIPTS" # MAXENTSCRIPTS="http://genes.mit.edu/burgelab/maxent/download/fordownload.tar.gz"
+	tar -xf fordownload.tar.gz
+	rm fordownload.tar.gz
+	mv "fordownload" "$HOME/MaxEnt"
+	MaxEntScript="$HOME/MaxEnt"
+fi
+
+echo "using scripts at $MaxEntScript"
+
 # input file exist
 if [ ! -e "$IN" ];then
 	echo "Error, infile not found: '$IN'"
@@ -118,10 +146,10 @@ else
 fi
 
 #check for skip first line
-if [[ "$SkipFirst" != "skip" && "$SkipFirst" != "keep" ]];then echo "Error, please give skip/keep to -f"; exit 1; fi
+#if [[ "$header" != "skip" && "$header" != "keep" ]];then echo "Error, please give skip/keep to -f (skip if you have a header, otherwise keep the first line)"; exit 1; fi
 
 #check for Ns in the sequences
-if [[ "$SkipFirst" == "skip" ]];then
+if [[ "$header" == "yes" ]];then
 	if [ $indexCol5ss ];then #check n N in donor
 		NB=$(cut -f $indexCol5ss $IN | tail -n +2 | grep -in N | wc -l)
 		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB";exit; fi
@@ -132,7 +160,7 @@ if [[ "$SkipFirst" == "skip" ]];then
 	fi
 fi
 
-if [[ "$SkipFirst" == "keep" ]];then
+if [[ "$header" == "no" ]];then
 	if [ $indexCol5ss ];then #check n N in donor
 		NB=$(cut -f $indexCol5ss $IN | grep -in N | wc -l)
 		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB";exit; fi
@@ -146,25 +174,12 @@ fi
 
 
 
-#scripts are there
-if [ ! -d $MaxEntScript ];then
-	echo "Error, scripts not found at: $MaxEntScript"
-	echo -e "Downloading perl wrapers MaxEnt package:\nhttp://genes.mit.edu/burgelab/maxent/download/"
-	wget -v "$MAXENTSCRIPTS"
-	tar -xf fordownload.tar.gz
-	rm fordownload.tar.gz
-	mv "fordownload" "$HOME/MaxEnt"
-	MaxEntScript="$HOME/MaxEnt"
-	
-	
-	
-fi
 
 ####################### MAIN #########################################
 if [ $TODO == "donor" ];then
 	#echo "donor"
 	#extraction
-	if [ $SkipFirst == "skip" ]; then
+	if [ $header == "yes" ]; then
 		awk "BEGIN { FS=\"$SEP\"}{if(NR > 1) print \$$indexCol5ss }" $IN > "five"
 	else
 		awk "BEGIN { FS=\"$SEP\"}{print \$$indexCol5ss }" $IN > "five"
@@ -178,7 +193,7 @@ if [ $TODO == "donor" ];then
 	if [ $GT != "GT" ];then echo "Error: your donor sequence does not have the correct GT ($GT)"; exit 1; fi
 	#check number of lines
 	REF=$(wc -l <$IN)
-	if [ $SkipFirst == "skip" ]; then
+	if [ $header == "yes" ]; then
 		COUNT=$(( $(wc -l <"five") +1))
 	else
 		COUNT=$(( $(wc -l <"five") ))
@@ -192,7 +207,7 @@ if [ $TODO == "donor" ];then
 	mv "five" "$MaxEntScript"
 	cd "$MaxEntScript"
 	#first line name
-	if [ $SkipFirst == "skip" ];then
+	if [ $header == "skip" ];then
 		echo -e "seq5\tMaxEnt5" > "five.MaxEnt"
 	fi
 	#compute
@@ -213,7 +228,7 @@ else
 if [ $TODO == "acceptor" ];then
 	#echo "acceptor"
 	#extraction
-	if [ $SkipFirst == "skip" ]; then
+	if [ $header == "yes" ]; then
 		awk "BEGIN { FS=\"$SEP\"}{if(NR > 1) print \$$indexCol3ss }" $IN > "three"
 	else
 		awk "BEGIN { FS=\"$SEP\"}{print \$$indexCol3ss }" $IN > "three"
@@ -227,7 +242,7 @@ if [ $TODO == "acceptor" ];then
 	if [ $AG != "AG" ];then echo "Error: your donor sequence does not have the correct AG ($AG) exit!"; exit 1; fi
 	#check number of lines
 	REF=$(wc -l <$IN)
-	if [ $SkipFirst == "skip" ]; then
+	if [ $header == "yes" ]; then
 		COUNT=$(( $(wc -l <"three") +1))
 	else
 		COUNT=$(( $(wc -l <"three") ))
@@ -241,7 +256,7 @@ if [ $TODO == "acceptor" ];then
 	mv "three" "$MaxEntScript"
 	cd "$MaxEntScript"
 	#first line name
-	if [ $SkipFirst == "skip" ];then
+	if [ $header == "skip" ];then
 		echo -e "seq3\tMaxEnt3"> "three.MaxEnt"
 	fi
 	#compute
