@@ -5,16 +5,15 @@ CUR="$(pwd)"
 VERSION="2.0 - 08.12.2015"
 AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
 COPY="Copyright 2014-2015 LEPENNETIER Gildas"
-SCRIPTSPATH="$HOME/MaxEnt_Humain/"
+SCRIPTSPATH="$HOME"
 SPECIES="human"
-SPECIESLIST="human drosophila"
+SPECIESLIST=(human drosophila)
 SEP="\t"
 
 header="no"	#default: no header: keep 
 
 ############################ define usage / help function
-usage()
-{
+usage(){
 cat << EOF
 USAGE: $(basename $0)
 	-i path/to/file 
@@ -45,7 +44,7 @@ ARGUMENTS
 	OPTIONALS
 	-H 		Header 		Flag to add if there is a header (first line with names) defaul: $header
 	-o		Output 		(default: <infile>.MaxEnt)
-	-s		Species		[ available:  $SPECIESLIST ] default: $SPECIES
+	-s		Species		[ available:  ${SPECIESLIST[@]} ] default: $SPECIES
 	-S		Scripts		path to the perl scripts default: $SCRIPTSPATH
 	-t		Separator	(default: tab >$SEP<)
 	-V		Display version
@@ -65,17 +64,23 @@ ARGUMENTS
 	$COPY
 EOF
 }
-
+# function "is element in array?"
+containsElement(){
+  local e
+  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+  return 1
+}
 
 
 ############################ parse arguments
-# put colon ":" after arguments that need a value in a variable. Ex: the flag -h don't need a value. same for V and A
+
 if [ $# -lt 1 ];then
 	echo "Error, please give arguments"
 	echo "For help, type: $(basename $0) -h"
 	exit 1
 fi
 
+# put colon ":" after arguments that need a value in a variable. Ex: the flag -h don't need a value. same for V and A
 while getopts "i:d:a:s:o:t:VAhH" OPTION; do
 	case $OPTION in
 		i) IN="$OPTARG";  ;;
@@ -93,14 +98,31 @@ while getopts "i:d:a:s:o:t:VAhH" OPTION; do
 done
 
 ######## tests before run
-# species in list of available species
-if [[ ! $SPECIESLIST =~ $SPECIES ]];then echo "$SPECIES is not in available species list: $SPECIESLIST"; exit 1; fi
+# test if species is in list of available species, else print error and exit 1
+! containsElement "$SPECIES" "${SPECIESLIST[@]}" && echo "$SPECIES is not in available species list: ${SPECIESLIST[@]}" && exit 1
+
 
 # check script folder
-if [ ];then
+if [ "$SPECIES" == "${SPECIESLIST[0]}" ];then # human
+	if [ ! -d ];then echo "downloading scripts for $SPECIES"
+		cd $SCRIPTSPATH
+		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Human.zip
+		unzip MaxEnt_Human.zip
+		echo "using MaxEnt_Human folder at $SCRIPTSPATH"
+	fi
 fi
-if [ ];then
+
+if [ "$SPECIES" == "${SPECIESLIST[1]}" ];then # drosophila
+	if [ ! -d ];then echo "downloading scripts for $SPECIES"
+		cd $SCRIPTSPATH
+		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Drosophila.zip
+		unzip MaxEnt_Drosophila.zip
+		echo "using MaxEnt_Drosophila folder at $SCRIPTSPATH"
+	fi
 fi
+
+
+
 exit
 
 # get from sources
@@ -115,15 +137,17 @@ if [ ! -d $SCRIPTSPATH ];then
 	MaxEntScript="$HOME/MaxEnt"
 fi
 
-echo "using scripts at $MaxEntScript"
 
-# input file exist
+echo "using scripts at $MaxEntScript for $SPECIES"
+
+
+# chack that input file exist
 if [ ! -e "$IN" ];then
 	echo "Error, infile not found: '$IN'"
     exit 1
 fi
 
-# if oufile not set, make the default output name
+# if oufile not set by options, make the default output name
 if [ ! $OUT ];then
 	OUT="$IN.MaxEnt"
 fi
