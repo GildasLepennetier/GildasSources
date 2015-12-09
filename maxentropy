@@ -5,9 +5,10 @@ CUR="$(pwd)"
 VERSION="2.0 - 08.12.2015"
 AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
 COPY="Copyright 2014-2015 LEPENNETIER Gildas"
-SCRIPTSPATH="$HOME"
+SCRIPTSPATH="$HOME" 
 SPECIES="human"
 SPECIESLIST=(human drosophila)
+FOLDERNAMES=(MaxEnt_Human MaxEnt_Drosophila)
 SEP="\t"
 
 header="no"	#default: no header: keep 
@@ -104,44 +105,36 @@ done
 
 # check script folder
 if [ "$SPECIES" == "${SPECIESLIST[0]}" ];then # human
-	if [ ! -d ];then echo "downloading scripts for $SPECIES"
+	if [ ! -d $SCRIPTSPATH/${FOLDERNAMES[0]} ];then echo "downloading scripts for $SPECIES"
 		cd $SCRIPTSPATH
 		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Human.zip
-		unzip MaxEnt_Human.zip
+		unzip -q MaxEnt_Human.zip
+		rm MaxEnt_Human.zip
 		echo "using MaxEnt_Human folder at $SCRIPTSPATH"
 	fi
+	
+	SCRIPTPATH="$SCRIPTSPATH/${FOLDERNAMES[0]}"
+	SCRIPT5="score5.pl"
+	SCRIPT3="score3.pl"
 fi
 
 if [ "$SPECIES" == "${SPECIESLIST[1]}" ];then # drosophila
-	if [ ! -d ];then echo "downloading scripts for $SPECIES"
+	if [ ! -d $SCRIPTSPATH/${FOLDERNAMES[1]} ];then echo "downloading scripts for $SPECIES"
 		cd $SCRIPTSPATH
 		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Drosophila.zip
-		unzip MaxEnt_Drosophila.zip
+		unzip -q MaxEnt_Drosophila.zip
+		rm MaxEnt_Drosophila.zip
 		echo "using MaxEnt_Drosophila folder at $SCRIPTSPATH"
 	fi
+	
+	SCRIPTPATH="$SCRIPTSPATH/${FOLDERNAMES[1]}"
+	SCRIPT5="score5_fly.pl"
+	SCRIPT3="score3_fly.pl"
 fi
 
+cd $CUR
 
-
-exit
-
-# get from sources
-#first: scripts are there
-if [ ! -d $SCRIPTSPATH ];then
-	echo "Error, scripts not found at: $MaxEntScript"
-	echo -e "Downloading perl wrapers MaxEnt package:\nhttp://genes.mit.edu/burgelab/maxent/download/"
-	wget -v "$MAXENTSCRIPTS" # MAXENTSCRIPTS="http://genes.mit.edu/burgelab/maxent/download/fordownload.tar.gz"
-	tar -xf fordownload.tar.gz
-	rm fordownload.tar.gz
-	mv "fordownload" "$HOME/MaxEnt"
-	MaxEntScript="$HOME/MaxEnt"
-fi
-
-
-echo "using scripts at $MaxEntScript for $SPECIES"
-
-
-# chack that input file exist
+# check that input file exist
 if [ ! -e "$IN" ];then
 	echo "Error, infile not found: '$IN'"
     exit 1
@@ -195,10 +188,6 @@ if [[ "$header" == "no" ]];then
 	fi
 fi
 
-
-
-
-
 ####################### MAIN #########################################
 if [ $TODO == "donor" ];then
 	#echo "donor"
@@ -228,14 +217,14 @@ if [ $TODO == "donor" ];then
 		exit 1
 	fi
 	#move
-	mv "five" "$MaxEntScript"
-	cd "$MaxEntScript"
+	mv "five" "$SCRIPTPATH"
+	cd "$SCRIPTPATH"
 	#first line name
 	if [ $header == "skip" ];then
 		echo -e "seq5\tMaxEnt5" > "five.MaxEnt"
 	fi
 	#compute
-	perl score5.pl "five" >> "five.MaxEnt"
+	perl $SCRIPT5 "five" >> "five.MaxEnt"
 	#clean
 	rm "five"
 	#move back
@@ -277,14 +266,14 @@ if [ $TODO == "acceptor" ];then
 		exit 1
 	fi
 	#move
-	mv "three" "$MaxEntScript"
-	cd "$MaxEntScript"
+	mv "three" "$SCRIPTPATH"
+	cd "$SCRIPTPATH"
 	#first line name
 	if [ $header == "skip" ];then
 		echo -e "seq3\tMaxEnt3"> "three.MaxEnt"
 	fi
 	#compute
-	perl score3.pl "three" >> "three.MaxEnt"
+	perl $SCRIPT3 "three" >> "three.MaxEnt"
 	#clean
 	rm "three"
 	#move back
