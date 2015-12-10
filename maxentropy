@@ -216,7 +216,7 @@ if [ $TODO == "donor" ];then
 	#move
 	mv "five" "$SCRIPTPATH"
 	cd "$SCRIPTPATH"
-	rm "five.MaxEnt"
+	rm -r "five.MaxEnt"
 	#first line name
 	if [ "$HEADER" == "yes" ];then
 		echo -e "seq5\tMaxEnt5" > "five.MaxEnt"
@@ -266,7 +266,7 @@ if [ $TODO == "acceptor" ];then
 	#move
 	mv "three" "$SCRIPTPATH"
 	cd "$SCRIPTPATH"
-	rm "three.MaxEnt"
+	rm -r "three.MaxEnt"
 	#first line name
 	if [ "$HEADER" == "yes" ];then
 		echo -e "seq3\tMaxEnt3"> "three.MaxEnt"
