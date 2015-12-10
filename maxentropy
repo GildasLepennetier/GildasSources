@@ -58,7 +58,7 @@ ARGUMENTS
 		see also http://genes.mit.edu/burgelab/maxent/Xmaxentscan_scoreseq.html
 	2) For Drosophila
 		Joel McManus : mcmanus@andrew.cmu.edu
-		(personnal communication)
+		(personnal communication, modify to avoid the print of an extra \n in score5_fly.pl line 33 and in score3_fly.pl line 27)
 -----------------------
 	$AUTHOR
 	$VERSION
