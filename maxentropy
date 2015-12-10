@@ -11,7 +11,7 @@ SPECIESLIST=(human drosophila)
 FOLDERNAMES=(MaxEnt_Human MaxEnt_Drosophila)
 SEP="\t"
 
-header="no"	#default: no header: keep 
+HEADER="no"	#default: no header: keep 
 
 ############################ define usage / help function
 usage(){
@@ -43,7 +43,7 @@ ARGUMENTS
 	-d		Donor splice site sequence index in the input file (first column = column 1)
 	-a		Acceptor splice site sequence index in the input file
 	OPTIONALS
-	-H 		Header 		Flag to add if there is a header (first line with names) defaul: $header
+	-H 		Header 		Flag to add if there is a header (first line with names) default: $HEADER
 	-o		Output 		(default: <infile>.MaxEnt)
 	-s		Species		[ available:  ${SPECIESLIST[@]} ] default: $SPECIES
 	-S		Scripts		path to the perl scripts default: $SCRIPTSPATH
@@ -90,7 +90,7 @@ while getopts "i:d:a:s:o:t:VAhH" OPTION; do
 		s) SPECIES="$OPTARG";;
 		S) SCRIPTSPATH="$OPTARG";;
 		o) OUT="$OPTARG";;
-		H) header="yes";;
+		H) HEADER="yes";;
 		t) SEP="$OPTARG";;
 		V) echo $VERSION; exit 1;;
 		A) echo $AUTHOR;  exit 1;;
@@ -106,7 +106,7 @@ done
 # check script folder
 if [ "$SPECIES" == "${SPECIESLIST[0]}" ];then # human
 	if [ ! -d $SCRIPTSPATH/${FOLDERNAMES[0]} ];then echo "downloading scripts for $SPECIES"
-		cd $SCRIPTSPATH
+		cd $SCRIPTSPATHD_melanogaster.RANDOM.introns.seq.PA.ss.check.sss.tmp
 		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Human.zip
 		unzip -q MaxEnt_Human.zip
 		rm MaxEnt_Human.zip
@@ -162,11 +162,8 @@ else
 	fi
 fi
 
-#check for skip first line
-#if [[ "$header" != "skip" && "$header" != "keep" ]];then echo "Error, please give skip/keep to -f (skip if you have a header, otherwise keep the first line)"; exit 1; fi
-
 #check for Ns in the sequences
-if [[ "$header" == "yes" ]];then
+if [[ "$HEADER" == "yes" ]];then
 	if [ $indexCol5ss ];then #check n N in donor
 		NB=$(cut -f $indexCol5ss $IN | tail -n +2 | grep -in N | wc -l)
 		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB";exit; fi
@@ -177,7 +174,7 @@ if [[ "$header" == "yes" ]];then
 	fi
 fi
 
-if [[ "$header" == "no" ]];then
+if [[ "$HEADER" == "no" ]];then
 	if [ $indexCol5ss ];then #check n N in donor
 		NB=$(cut -f $indexCol5ss $IN | grep -in N | wc -l)
 		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB";exit; fi
@@ -192,7 +189,7 @@ fi
 if [ $TODO == "donor" ];then
 	#echo "donor"
 	#extraction
-	if [ $header == "yes" ]; then
+	if [ $HEADER == "yes" ]; then
 		awk "BEGIN { FS=\"$SEP\"}{if(NR > 1) print \$$indexCol5ss }" $IN > "five"
 	else
 		awk "BEGIN { FS=\"$SEP\"}{print \$$indexCol5ss }" $IN > "five"
@@ -206,7 +203,7 @@ if [ $TODO == "donor" ];then
 	if [ $GT != "GT" ];then echo "Error: your donor sequence does not have the correct GT ($GT)"; exit 1; fi
 	#check number of lines
 	REF=$(wc -l <$IN)
-	if [ $header == "yes" ]; then
+	if [ $HEADER == "yes" ]; then
 		COUNT=$(( $(wc -l <"five") +1))
 	else
 		COUNT=$(( $(wc -l <"five") ))
@@ -220,7 +217,7 @@ if [ $TODO == "donor" ];then
 	mv "five" "$SCRIPTPATH"
 	cd "$SCRIPTPATH"
 	#first line name
-	if [ $header == "skip" ];then
+	if [ $HEADER == "yes" ];then
 		echo -e "seq5\tMaxEnt5" > "five.MaxEnt"
 	fi
 	#compute
@@ -241,7 +238,7 @@ else
 if [ $TODO == "acceptor" ];then
 	#echo "acceptor"
 	#extraction
-	if [ $header == "yes" ]; then
+	if [ $HEADER == "yes" ]; then
 		awk "BEGIN { FS=\"$SEP\"}{if(NR > 1) print \$$indexCol3ss }" $IN > "three"
 	else
 		awk "BEGIN { FS=\"$SEP\"}{print \$$indexCol3ss }" $IN > "three"
@@ -255,7 +252,7 @@ if [ $TODO == "acceptor" ];then
 	if [ $AG != "AG" ];then echo "Error: your donor sequence does not have the correct AG ($AG) exit!"; exit 1; fi
 	#check number of lines
 	REF=$(wc -l <$IN)
-	if [ $header == "yes" ]; then
+	if [ $HEADER == "yes" ]; then
 		COUNT=$(( $(wc -l <"three") +1))
 	else
 		COUNT=$(( $(wc -l <"three") ))
@@ -269,7 +266,7 @@ if [ $TODO == "acceptor" ];then
 	mv "three" "$SCRIPTPATH"
 	cd "$SCRIPTPATH"
 	#first line name
-	if [ $header == "skip" ];then
+	if [ $HEADER == "yes" ];then
 		echo -e "seq3\tMaxEnt3"> "three.MaxEnt"
 	fi
 	#compute
