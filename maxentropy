@@ -189,7 +189,7 @@ fi
 if [ $TODO == "donor" ];then
 	#echo "donor"
 	#extraction
-	if [ $HEADER == "yes" ]; then
+	if [ "$HEADER" == "yes" ]; then
 		awk "BEGIN { FS=\"$SEP\"}{if(NR > 1) print \$$indexCol5ss }" $IN > "five"
 	else
 		awk "BEGIN { FS=\"$SEP\"}{print \$$indexCol5ss }" $IN > "five"
@@ -203,7 +203,7 @@ if [ $TODO == "donor" ];then
 	if [ $GT != "GT" ];then echo "Error: your donor sequence does not have the correct GT ($GT)"; exit 1; fi
 	#check number of lines
 	REF=$(wc -l <$IN)
-	if [ $HEADER == "yes" ]; then
+	if [ "$HEADER" == "yes" ]; then
 		COUNT=$(( $(wc -l <"five") +1))
 	else
 		COUNT=$(( $(wc -l <"five") ))
@@ -217,7 +217,7 @@ if [ $TODO == "donor" ];then
 	mv "five" "$SCRIPTPATH"
 	cd "$SCRIPTPATH"
 	#first line name
-	if [ $HEADER == "yes" ];then
+	if [ "$HEADER" == "yes" ];then
 		echo -e "seq5\tMaxEnt5" > "five.MaxEnt"
 	fi
 	#compute
@@ -238,7 +238,7 @@ else
 if [ $TODO == "acceptor" ];then
 	#echo "acceptor"
 	#extraction
-	if [ $HEADER == "yes" ]; then
+	if [ "$HEADER" == "yes" ]; then
 		awk "BEGIN { FS=\"$SEP\"}{if(NR > 1) print \$$indexCol3ss }" $IN > "three"
 	else
 		awk "BEGIN { FS=\"$SEP\"}{print \$$indexCol3ss }" $IN > "three"
@@ -252,7 +252,7 @@ if [ $TODO == "acceptor" ];then
 	if [ $AG != "AG" ];then echo "Error: your donor sequence does not have the correct AG ($AG) exit!"; exit 1; fi
 	#check number of lines
 	REF=$(wc -l <$IN)
-	if [ $HEADER == "yes" ]; then
+	if [ "$HEADER" == "yes" ]; then
 		COUNT=$(( $(wc -l <"three") +1))
 	else
 		COUNT=$(( $(wc -l <"three") ))
@@ -266,7 +266,7 @@ if [ $TODO == "acceptor" ];then
 	mv "three" "$SCRIPTPATH"
 	cd "$SCRIPTPATH"
 	#first line name
-	if [ $HEADER == "yes" ];then
+	if [ "$HEADER" == "yes" ];then
 		echo -e "seq3\tMaxEnt3"> "three.MaxEnt"
 	fi
 	#compute
