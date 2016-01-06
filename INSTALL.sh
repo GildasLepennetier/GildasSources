@@ -4,7 +4,6 @@
 # Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr
 echo "#====================================="
 echo "# installation (linux)"
-echo "# -> execution right"
 echo "# -> update PATH variable"
 ADD="$(pwd)" #in case we want another directory
 if [ ! -e $HOME/.bashrc ];then echo "No .bashrc file in the home directory -> this script is useless";exit 1;fi
@@ -16,9 +15,11 @@ if [ -z "$P" ];then echo "Updating $HOME/.bashrc file and export PATH variable"
 else
 	echo ".bashrc file in $(pwd) already up to date"
 fi
-
+echo "# -> execution right"
 echo "Giving execution rights to files in $(pwd)"
 read -p "press enter to continue, ctrl+c to cancel"
 sudo chmod +x *
+echo "# -> temporary update PATH, otherwise a reload of bash is necessary"
+PATH="$PATH:`pwd`"
 echo "DONE."
 echo "#====================================="
