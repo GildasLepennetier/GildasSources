@@ -16,10 +16,10 @@
 #
 #			options
 #
-#set -e						# to stop this script if error
+#set -e					# to stop this script if error
 workDir=$(pwd)				# current working directory
 yes="--assume-yes"			# to say yes during install
-WGET="wget -N"				# option for the wget: Turn on time-stamping, download if new version
+WGET="wget -N"			# option for the wget: Turn on time-stamping, download if new version, and quiet
 processorType=$(arch)		# processor type: i386, amd64...
 if [[ -z "$processorType" ]];then echo "architecture not found with arch command: please enter: i386, i686 or x86_64..."; read processorType; fi
 archi=$(getconf LONG_BIT)	# computer's architechture: return 32 or 64
@@ -105,28 +105,30 @@ fi
 # RepeatMasker
 echo -e "\nInstall RepeatMasker? (yes)"
 read q
-if [ "$q" == "yes" ];then cd $HOME; echo -e "\n G install: RepeatMasker, libraries and search programs"
+if [ "$q" == "yes" ];then cd $HOME; echo -e "\nRepeatMasker, libraries and search programs"
 	
 	echo "careful, this is not finished - enter to continue"
 	echo "todo: repeatmasker in a better place than home, same for hmmer and so one"
 	read X
 	
-	if [ ! -d trf ];then echo "get tandem repeat finder - trf"
+	if [ ! -d $HOME/trf ];then echo "init -- get tandem repeat finder - trf"
 		mkdir -p "$HOME/trf"
-		echo "Download the program by clicking on the button, then put it in the directory called 'trf' in your home"
-		echo "go to : http://tandem.bu.edu/trf/trf407b.linux.download.html"
-		echo "when done, press here enter. trf address should be: $HOME/trf"
+		echo "1) Go to : http://tandem.bu.edu/trf/trf407b.linux.download.html"
+		echo "2) Download the program by clicking on the download button (name: trf407b.linux)"
+		echo "3) Put it in the directory called 'trf' in your home (it was created)"
+		echo "4) When done, press here enter."
+		echo "trf address should be: $HOME/trf/trf407b.linux the program called trf"
+		echo "the programm will be renamed trf, since it is required by RepeatMasker"
 		read X
 		mv -v $HOME/trf/trf407b.linux $HOME/trf/trf
 		sudo chmod +x $HOME/trf/trf
 	fi
 	
-	if [ ! -d RepeatMasker ];then echo "get RepeatMasker"
+	if [ ! -d $HOME/RepeatMasker ];then echo "get RepeatMasker"
 		$WGET "http://www.repeatmasker.org/RepeatMasker-open-4-0-5.tar.gz"
 		tar -xf RepeatMasker-open-4-0-5.tar.gz
 		rm RepeatMasker-open-4-0-5.tar.gz
 	fi
-	
 
 	if [ 0 ];then echo "install Hmmer"
 		cd $HOME
@@ -137,12 +139,13 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\n G install: RepeatMasker, librari
 		./configure
 		make #build
 		make check #automated tests
+		echo "installation of hammer requires root"
 		sudo make install #automated install
 		cd $HOME
 		rm hmmer-3.1b1-linux-intel-ia32.tar.gz
 		rm -r hmmer-3.1b1-linux-intel-ia32
 		
-		echo -e "\n\nHMMER in /usr/local/bin if everything was fine during install\n\n"
+		echo -e "\n\nHMMER in /usr/local/bin (if everything was fine during install)"
 	fi
 	
 	if [ 0 ];then echo "search program RMVlast / Blast"
@@ -150,47 +153,57 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\n G install: RepeatMasker, librari
 		
 		cd $HOME
 		echo "downloading RMBlast Binaries"
-		read -p "please enter program name exemple: 'ncbi-rmblastn-2.2.28-x64-linux.tar.gz' found at ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST" VERSION
-		$WGET "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST/$VERSION"
-		tar zxvf $VERSION
-		rm $VERSION
+		VERSION_RMBlast=ncbi-rmblastn-2.2.28-x64-linux.tar.gz
+		echo -e "\n!! I need the name of the most up-to-date program !! \n\nExemple: '$VERSION_RMBlast' found at ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST\nplease enter program name: (ENTER=default)"
+		read VERSION_RMBlast
+		if [ -z "$VERSION_RMBlast" ];then VERSION_RMBlast=ncbi-rmblastn-2.2.28-x64-linux.tar.gz; fi
+		$WGET "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST/$VERSION_RMBlast"
+		tar zxvf $VERSION_RMBlast
+		rm $VERSION_RMBlast
 		mkdir -p $HOME/bin/
 		cd ncbi-rmblastn*/bin
 		sudo chmod +x *
 		cp * $HOME/bin/
 		
+		
 		cd $HOME
 		echo "downloading BLAST+ Binaries"
-		read -p "please enter name for program exemple: 'ncbi-blast-2.2.31+-x64-linux.tar.gz' found at ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/" VERSION
-		$WGET ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/$VERSION
-		tar zxvf $VERSION
-		rm $VERSION
+		VERSION_blast=ncbi-blast-2.3.0+-x64-linux.tar.gz
+		echo -e "\n!! I need the name of the most up-to-date program !! \n\nExemple: '$VERSION_blast' found at ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST\nplease enter program name: (ENTER=default)"
+		read VERSION_blast
+		if [ -z "$VERSION_blast" ];then VERSION_blast=ncbi-blast-2.3.0+-x64-linux.tar.gz; fi
+		$WGET ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/$VERSION_blast
+		tar zxvf $VERSION_blast
+		rm $VERSION_blast
 		cd $HOME/ncbi-blast*/bin/
 		sudo chmod +x *
 		cp -v $HOME/ncbi-rmblastn-*/bin/rmblastn .
 		
 		echo "move everything in usr/local/bin"
 		mkdir -p $HOME/bin/
-		cp $HOME/${VERSION%+*}+/bin/* $HOME/bin/
+		cp $HOME/${VERSION_blast%+*}+/bin/* $HOME/bin/
 		
 		echo -e "\n\nALL BINARIES ARE IN $HOME/bin --don't forget to put it in the path if you wana use blast or the other program later!\n\n"
-		echo "you can also remove the ncbi-blast-***  and  ncbi-rmblastn-*** folders in your home"
-		read -p "execute rm -vr ncbi-blast-* ncbi-rmblastn-* ? (yes)??" yesno
-		if [ "$yesno" == "yes" ]; then rm -vr ncbi-blast-* ncbi-rmblastn-*; fi
+		
+		echo "you can also remove the ncbi-blast-*  and  ncbi-rmblastn-* folders in your home"
+		read -p "execute rm -vr ncbi-blast-* ncbi-rmblastn-* ? (yes)" yesno
+		if [ "$yesno" == "yes" ]; then rm -vr $HOME/ncbi-blast-* $HOME/ncbi-rmblastn-*; fi
 		
 	fi
 	
 	if [ 0 ];then echo "downloading Libraries"
-		cd RepeatMasker
+		cd $HOME/RepeatMasker
 		#repbase require login
-		#echo "You should register to access the RepBase libraries. it is not allowed to use gildas's password, legally";exit
-		LOGIN=gildas
-		PASS=edr6qv
-		read -p "please enter version for libraries exemple: '20.09' found at http://www.girinst.org" VERSION
+		echo -e "you should register to access the RepBase libraries. it is not allowed to use my login.\n\tRegister here: http://www.girinst.org/accountservices/register.php";
+		read -p "your RepBase login (mine is gildas): " LOGIN
+		read -p "your RepBase password (mine is edr6qv): " PASS
+		VERSION_lib=20.12
+		read -p "please enter version for libraries exemple: '$VERSION_lib' ( @ http://www.girinst.org ):" VERSION_lib
+		if [[ -z "$VERSION_lib" ]];then VERSION_lib=20.12; fi
+		$WGET --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase$VERSION_lib.embl.tar.gz
 		
-		$WGET --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/RepBase$VERSION.embl.tar.gz
-		tar -xvf RepBase$VERSION.embl.tar.gz
-		rm RepBase$VERSION.embl.tar.gz
+		tar -xvf RepBase$VERSION_lib.embl.tar.gz
+		rm RepBase$VERSION_lib.embl.tar.gz
 		#$WGET --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/repeatmaskerlibraries/repeatmaskerlibraries-20140131.tar.gz
 		#tar -xvf repeatmaskerlibraries-20140131.tar.gz
 		#$WGET --user=$LOGIN --password=$PASS http://www.girinst.org/server/RepBase/protected/REPET/RepBase$VERSION"_REPET.embl.tar.gz"
@@ -206,23 +219,17 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\n G install: RepeatMasker, librari
 	echo "configure RepeatMasker"
 	
 	#sudo find / -name nhmmer
+	echo "perl: /usr/bin/perl"
+	echo "RepeatMasker: $HOME/RepeatMasker"
+	
+	echo "trf: $HOME/trf"
 	echo "hammer: /usr/local/bin"
-	echo "rmbalst: $HOME/ncbi-blast-2.2.30+/bin"
+	echo "rmbalst: $HOME/bin"
 	
 	read -p "remember those addresses, the configuration will start after you press enter" X
 	cd $HOME/RepeatMasker/
 	perl configure
-	
-	#RepeatMasker version open-4.0.5
-	#WARNING: The first version of Dfam is a human database. Searching
-	#with other species will only search for ancestral repeats shared
-	#with human and your species ( if any exist ).
-	#Search Engine: HMMER [ 3.1b1 (May 2013) ]
-	#Master RepeatMasker Database: /home/caine/RepeatMasker/Libraries/Dfam.hmm ( Complete Database: Dfam_1.2 )
-	#Building general libraries in: /home/caine/RepeatMasker/Libraries/Dfam_1.2/general
-	#Building species libraries in: /home/caine/RepeatMasker/Libraries/Dfam_1.2/drosophila_fruit_fly_genus
-	#- 70 ancestral and ubiquitous sequence(s) for drosophila fruit fly genus
-	#- 0 lineage specific sequence(s) for drosophila fruit fly genus
+	#Further documentation on the program may be found here: /home/gildas/RepeatMasker/repeatmasker.help
 fi
 
 # R
@@ -241,7 +248,7 @@ if [ "$q" == "yes" ];then cd $HOME
 	VERSION="$(curl -s "https://www.rstudio.com/products/rstudio/release-notes/" | grep "<h2>RStudio v" | awk '{print $2}' | sed -e 's/v//')"
 	#wget -q some-url -O - | grep something
 	
-	if [[ -z "$VERSION" ]];then echo "Could not find automaticaly RStudio version, please check https://www.rstudio.com/products/rstudio and enter 0.99.473"; read VERSION; fi
+	if [ -z "$VERSION" ];then echo "Could not find automaticaly RStudio version, please check https://www.rstudio.com/products/rstudio and enter 0.99.473"; read VERSION; fi
 	
 	if [ "$processorType" == "i386" ];then V="$VERSION-i386"; fi
 	if [ "$processorType" == "i686" ];then V="$VERSION-i386"; fi #http://download1.rstudio.org/rstudio-0.99.441-i386.deb
@@ -368,27 +375,20 @@ fi
 echo -e "\nInstall zotero? (yes)"
 read q
 if [ "$q" == "yes" ];then cd $HOME
-	## to run directly from bash, you should add the address to the PATH, OR a file called zotero that run it (ex: #!/bin/bash\nbash PathToZotero)
-	V="4.0.28"
-	if [ "$processorType" == "i386" ];then VERSION=i386; fi
-	if [ "$processorType" == "i686" ];then VERSION=i386; fi
-	if [ "$processorType" == "x86_64" ];then VERSION=x86_64; fi
-	$WGET "https://download.zotero.org/standalone/$V/Zotero-$V""_linux-$VERSION.tar.bz2"
-	tar -xjf "Zotero-$V""_linux-$VERSION.tar.bz2"
-	cd "Zotero_linux-$VERSION/"
-	echo "id: gildas.lepennetier@hotmail.fr" #preferences: user: gildas.lepennetier@hotmail.fr (sy)
 	
-	
-	echo -e "\nAdd zotero to PATH? (yes)"
+	echo "1) go to https://www.zotero.org/download/"
+	echo "2) save the file (having the .tar.bz2) in $HOME and press ENTER when finished"
 	read q
-	if [ "$q" == "yes" ];then echo -e "\n#Zotero - added $(date)\nPATH=\$PATH:$(pwd)" >> "$HOME/.bashrc";fi
-	
-	echo -e "\nTo run: $(pwd)/run-zotero.sh"
-	cd ..
-	rm "Zotero-$V""_linux-$VERSION.tar.bz2"
-	
-	
-	
+	echo "3) extracting the archive"
+	tar -xjf Zotero*.tar.bz2
+	rm -vr Zotero*.tar.bz2
+		
+# 	read -p "Do you want to add zotero to PATH? (yes)" q
+# 	if [ "$q" == "yes" ];then
+# 		cd $HOME/Zotero*
+# 		echo -e "\n#Zotero - added $(date)\nPATH=\$PATH:$(pwd)" >> "$HOME/.bashrc" #pwd is supposed to be something like /home/gildas/Zotero_linux-i686
+# 		echo -e "\nTo run Zotero: $(pwd)/run-zotero.sh"
+# 	fi
 fi
 
 ################################################################################
