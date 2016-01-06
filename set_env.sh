@@ -396,7 +396,7 @@ fi
 ## FIREFOX sync: gildas.lepennetier@hotmail.fr
 
 # cmd to know - MEMO
-if [ ];then cd $HOME; echo -e "\n G install: commands to know / master"
+if [ ];then cd $HOME; echo -e "\n install: commands to know / master"
 	### commands to know
 	sudo apt-get install -f	# fix brocken packages
 	sudo apt-get update		# update
@@ -427,7 +427,7 @@ if [ ];then cd $HOME; echo -e "\n G install: commands to know / master"
 	echo ping 128.176.213.35 -c 5 #ping my office
 fi
 # tips, techniques and so on
-if [ ];then cd $HOME; echo -e "\n G install: little notes"
+if [ ];then cd $HOME; echo -e "\n install: little notes"
 	exit
 	############################################################################
 	######## mount a disk
@@ -493,7 +493,7 @@ fi
 # non-necessary / memo
 #
 # libreoffice - manual installation
-if [ ];then cd $HOME; echo -e "\n G install: libreoffice"
+if [ ];then cd $HOME; echo -e "\n install: libreoffice"
 	#install kde integration for libreoffice
 	sudo apt-get install libreoffice-kde
 	#download libreoffice - last version
@@ -510,16 +510,17 @@ fi
 #sudo apt-get install gnumeric	#excel 
 
 # Dropbox
-if [ ];then cd $HOME; echo -e "\n G install: Dropbox"
+if [ ];then cd $HOME; echo -e "\n install: Dropbox"
 	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $Y 
-	echo "TODO: nemo --quit #need to quit the daemon"
-	echo "TODO dropbox start -i"
+	echo "need to quit the daemon, and restart/start"
+	echo "nemo --quit "
+	echo "dropbox start -i"
 	#gilou_on_net@hotmail.com
 	#sy...
 fi
 
 # PERL
-if [ ];then cd $HOME; echo -e "\n G install: perl modules"
+if [ ];then cd $HOME; echo -e "\n install: perl modules"
 	sudo apt-get install perl-doc $Y 
 	#search modules -> http://search.cpan.org/
 	# perl modules
@@ -531,7 +532,7 @@ fi
 
 
 # git
-if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
+if [ ];then cd $HOME; echo -e "\n install: Git - supposed to be there already"
 	sudo apt-get install git $Y
 	
 	#exemple: clone the pirate bay
@@ -540,7 +541,7 @@ if [ ];then cd $HOME; echo -e "\n G install: Git - supposed to be there already"
 	#git clone https://github.com/GildasLepennetier/smartPySpider.git
 fi
 
-if [ ];then
+if [ ];then echo "other"
 	sudo easy_install weblogo			# weblogo
 	sudo easy_install --upgrade weblogo
 	sudo pip install cutadapt			# cutadapt
