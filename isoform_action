@@ -103,7 +103,7 @@ if args['action']=='extract_longest':
 			if float ( line[ COL ] ) > limit: #selection: should be > stictly, equal case not supported: first greater
 				selected=line
 				limit=int( line[ COL ] ) #new limit. if equal limit: only first one
-		args['out'].write("%s"%( args['sep'].join[k,  selected[ index_iso ] , chr(limit) , '\n']))
+		args['out'].write("%s"%( args['sep'].join[k,  selected[ index_iso ] , '%s'%(limit) , '\n']))
             
 if args['action']=='extract_shortest':
 	for k in KEYS:
@@ -113,7 +113,7 @@ if args['action']=='extract_shortest':
 			if float ( line[ COL ] ) < limit: #selection: should be > stictly, equal case not supported: first greater
 				selected=line
 				limit=int( line[ COL ] ) #new limit. if equal limit: only first one
-		args['out'].write("%s"%( args['sep'].join[k,  selected[ index_iso ] , chr(limit) , '\n']))
+		args['out'].write("%s"%( args['sep'].join[k,  selected[ index_iso ] , '%s'%(limit) , '\n']))
 
 
 if args['action']=='extract_random':
