@@ -9,8 +9,11 @@ parser.add_argument('-parent',default=1,type=int,required=False,help='Parent (de
 parser.add_argument('-child',default=2,type=int,required=False,help='Child (default=2)')
 parser.add_argument('-header',action='store_true',default=False,help='If you have an header (fist line with names of columns)')
 
-ACTIONS=['count_child','list_child','extract_single_child']
+ACTIONS=['count_child','list_child','extract_single_child','extract_longest','extract_shortest']
+
 parser.add_argument('-action',type=str,required=True,help='Action to perform on the file: '+','.join([el for el in ACTIONS]))
+
+parser.add_argument('-col',type=str,required=True,help='Column for action (ex: size for selection of short/large isoform)')
 
 parser.add_argument('-sort',action='store_true',help='Sort the output by parent ids')
 
@@ -24,52 +27,93 @@ parser.add_argument('--verbose','-v',action='count',default=0,help='Verbosity - 
 args=vars(parser.parse_args())
 
 if args['author']:
-    sys.stderr.write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-    exit()
+	sys.stderr.write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
 if args['copy']:
-    sys.stderr.write("Copyright 2014 LEPENNETIER Gildas")
-    exit()
+	sys.stderr.write("Copyright 2014 LEPENNETIER Gildas")
+	exit()
 if args['action'] not in ACTIONS:
-    sys.stderr.write('Error: action "'+args['action']+'" not recognized')
-    exit()
+	sys.stderr.write('Error: action "'+args['action']+'" not recognized')
+	exit()
     
 index_iso=int(args['child'])-1
 index_gen=int(args['parent'])-1
 
 lines=args['in'].readlines()
 if args['header']:
-    lines=lines[1:]
+	lines=lines[1:]
 
 #load file of links parent-child(s)
-D={}
-args['out'].write("parent%s%s\n"%(args['sep'],args['action']))
+Dico_parent={} #Dico_parent is dico : { id_parent : [ list of child ] }
+#only saving dico of lines if necessary
+if args['action'] in ['extract_longest','extract_shortest','extract_random']:
+	Dico_lines={}  #Dico_lines is dico : { id_parent : [ split of the lines = isoforms lines ] }
+
+if args['header']:
+	HEADER= args['sep'].join[ 'parent',args['action'], '\n' ]
+	if args['action'] in ['extract_longest','extract_shortest']:
+		HEADER=HEADER+['value']
+	args['out'].write("%s"%(HEADER)) #parent <sep> result of action (id of child)
+
 for line in lines:
-    Li=line.split(args['sep'])
-    iso_id=Li[index_iso]
-    gen_id=Li[index_gen]
-    if(gen_id) in D.keys():
-        D[gen_id].append(iso_id)
-    else:
-        D[gen_id]=[iso_id]
+	Li=line.split(args['sep']) #each line is Li
+	iso_id=Li[index_iso]
+	gen_id=Li[index_gen]
+	if(gen_id) in Dico_parent.keys():
+		Dico_parent[gen_id].append(iso_id)
+	else:
+		Dico_parent[gen_id]=[iso_id]
+		
+	if args['action'] in ['extract_longest','extract_shortest','extract_random']:
+		if(gen_id) in Dico_lines.keys():
+			Dico_lines[gen_id].append(Li)
+		else:
+			Dico_lines[gen_id]=[Li]
 
 if args['sort']:
-    KEYS=sorted(D.keys())
+	KEYS=sorted(Dico_parent.keys())
 else:
-    KEYS=D.keys()
+	KEYS=Dico_parent.keys()
 
 
 if args['action']=='count_child':
-    for k in KEYS:
-        args['out'].write("%s%s%s\n"%(k,args['sep'],len(D[k])))
+	for k in KEYS: #k is the parent ids
+		args['out'].write( "%s"%(args['sep'].join[k,len(Dico_parent[k]),'\n']) )
 
 if args['action']=='list_child':
-    for k in KEYS:
-        args['out'].write("%s%s%s\n"%(k,args['sep'],','.join([el for el in D[k] ])))
+	for k in KEYS:
+		args['out'].write("%s%s%s\n"%(k,args['sep'],','.join([el for el in Dico_parent[k] ])))
         
 if args['action']=='extract_single_child':
-    for k in KEYS:
-        if len(D[k])==1:
-            args['out'].write("%s%s%s\n"%(k,args['sep'],D[k][0]))
+	for k in KEYS:
+		if len(Dico_parent[k])==1:
+			args['out'].write("%s"%(args['sep'].join[k,Dico_parent[k][0],'\n' ]) )
+
+if args['action']=='extract_longest':
+	for k in KEYS:
+		cur_lines = Dico_lines[ k ] #extract all lines (isoforms) related to the gene id, obtain from the parent dico
+		limit=float('-inf')
+		for line in cur_lines:
+			if float ( line[ args['col'] ] ) > limit: #selection: should be > stictly, equal case not supported: first greater
+				selected=line
+				limit=int( line[ args['col'] ] ) #new limit. if equal limit: only first one
+		args['out'].write("%s"%( args['sep'].join[k,  selected[ index_iso ] , chr(limit) , '\n']))
             
+if args['action']=='extract_shortest':
+	for k in KEYS:
+		cur_lines = Dico_lines[ k ]
+		limit=float('inf')
+		for line in cur_lines:
+			if float ( line[ args['col'] ] ) < limit: #selection: should be > stictly, equal case not supported: first greater
+				selected=line
+				limit=int( line[ args['col'] ] ) #new limit. if equal limit: only first one
+		args['out'].write("%s"%( args['sep'].join[k,  selected[ index_iso ] , chr(limit) , '\n']))
+
+
+if args['action']=='extract_random':
+	import random
+	for k in KEYS:
+		selected= random.choice ( Dico_lines[ k ] )
+		args['out'].write("%s"%(args['sep'].join[k, selected[ index_iso ] ,'\n'] ))
 
 
