@@ -100,9 +100,9 @@ if args['action']=='extract_longest':
 		cur_lines = Dico_lines[ k ] #extract all lines (isoforms) related to the gene id, obtain from the parent dico
 		limit=float('-inf')
 		for line in cur_lines:
-			if float ( line[ args['col'] ] ) > limit: #selection: should be > stictly, equal case not supported: first greater
+			if float ( line[ COL ] ) > limit: #selection: should be > stictly, equal case not supported: first greater
 				selected=line
-				limit=int( line[ args['col'] ] ) #new limit. if equal limit: only first one
+				limit=int( line[ COL ] ) #new limit. if equal limit: only first one
 		args['out'].write("%s"%( args['sep'].join[k,  selected[ index_iso ] , chr(limit) , '\n']))
             
 if args['action']=='extract_shortest':
@@ -110,9 +110,9 @@ if args['action']=='extract_shortest':
 		cur_lines = Dico_lines[ k ]
 		limit=float('inf')
 		for line in cur_lines:
-			if float ( line[ args['col'] ] ) < limit: #selection: should be > stictly, equal case not supported: first greater
+			if float ( line[ COL ] ) < limit: #selection: should be > stictly, equal case not supported: first greater
 				selected=line
-				limit=int( line[ args['col'] ] ) #new limit. if equal limit: only first one
+				limit=int( line[ COL ] ) #new limit. if equal limit: only first one
 		args['out'].write("%s"%( args['sep'].join[k,  selected[ index_iso ] , chr(limit) , '\n']))
 
 
