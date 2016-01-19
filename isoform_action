@@ -13,7 +13,7 @@ ACTIONS=['count_child','list_child','extract_single_child','extract_longest','ex
 
 parser.add_argument('-action',type=str,required=True,help='Action to perform on the file: '+','.join([el for el in ACTIONS]))
 
-parser.add_argument('-col',type=str,required=True,help='Column for action (ex: size for selection of short/large isoform)')
+parser.add_argument('-col',type=int,required=True,help='Column for action (ex: size for selection of short/large isoform)')
 
 parser.add_argument('-sort',action='store_true',help='Sort the output by parent ids')
 
