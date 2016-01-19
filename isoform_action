@@ -56,7 +56,7 @@ if args['action'] in ['extract_longest','extract_shortest','extract_random']:
 		exit(1)
 	
 if args['header']:
-	HEADER= args['sep'].join([ 'parent',args['action'], '\n' ])
+	HEADER= args['sep'].join( [ 'parent',args['action'] ] ) +'\n'
 	if args['action'] in ['extract_longest','extract_shortest']:
 		HEADER=HEADER+['value']
 	args['out'].write("%s"%(HEADER)) #parent <sep> result of action (id of child)
@@ -84,7 +84,7 @@ else:
 
 if args['action']=='count_child':
 	for k in KEYS: #k is the parent ids
-		args['out'].write( "%s"%(args['sep'].join([k,len(Dico_parent[k]),'\n'])) )
+		args['out'].write( "%s"%(args['sep'].join( [k,len(Dico_parent[k])] )  +'\n' ) )
 
 if args['action']=='list_child':
 	for k in KEYS:
@@ -93,7 +93,7 @@ if args['action']=='list_child':
 if args['action']=='extract_single_child':
 	for k in KEYS:
 		if len(Dico_parent[k])==1:
-			args['out'].write("%s"%(args['sep'].join([k,Dico_parent[k][0],'\n' ])) )
+			args['out'].write("%s"%(args['sep'].join([k,Dico_parent[k][0] ]) +'\n' ) )
 
 if args['action']=='extract_longest':
 	for k in KEYS:
@@ -103,7 +103,7 @@ if args['action']=='extract_longest':
 			if float ( line[ COL ] ) > limit: #selection: should be > stictly, equal case not supported: first greater
 				selected=line
 				limit=int( line[ COL ] ) #new limit. if equal limit: only first one
-		args['out'].write("%s"%( args['sep'].join([k,  selected[ index_iso ] , '%s'%(limit) , '\n' ]) ) )
+		args['out'].write("%s"%( args['sep'].join([k,  selected[ index_iso ] , '%s'%(limit) ]) +'\n' ) )
             
 if args['action']=='extract_shortest':
 	for k in KEYS:
@@ -113,13 +113,13 @@ if args['action']=='extract_shortest':
 			if float ( line[ COL ] ) < limit: #selection: should be > stictly, equal case not supported: first greater
 				selected=line
 				limit=int( line[ COL ] ) #new limit. if equal limit: only first one
-		args['out'].write("%s"%( args['sep'].join([k,  selected[ index_iso ] , '%s'%(limit) , '\n' ]) ) )
+		args['out'].write("%s"%( args['sep'].join([k,  selected[ index_iso ] , '%s'%(limit) ]) +'\n' ) )
 
 
 if args['action']=='extract_random':
 	import random
 	for k in KEYS:
 		selected= random.choice ( Dico_lines[ k ] )
-		args['out'].write("%s"%(args['sep'].join([k, selected[ index_iso ] ,'\n']) ))
+		args['out'].write("%s"%(args['sep'].join([k, selected[ index_iso ] ]) +'\n' ))
 
 
