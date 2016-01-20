@@ -84,16 +84,16 @@ else:
 
 if args['action']=='count_child':
 	for k in KEYS: #k is the parent ids
-		args['out'].write( "%s"%(args['sep'].join( [str(k),len(Dico_parent[k])] )  +'\n' ) )
+		args['out'].write( "%s"%(args['sep'].join( str(e) for e in [k,len(Dico_parent[k])] )  +'\n' ) )
 
 if args['action']=='list_child':
 	for k in KEYS:
-		args['out'].write("%s%s%s\n"%(k,args['sep'],','.join([el for el in Dico_parent[k] ])))
+		args['out'].write("%s%s%s\n"%(k,args['sep'],','.join( str(e) for e in Dico_parent[k] )))
         
 if args['action']=='extract_single_child':
 	for k in KEYS:
 		if len(Dico_parent[k])==1:
-			args['out'].write("%s"%(args['sep'].join([k,Dico_parent[k][0] ]) +'\n' ) )
+			args['out'].write("%s"%(args['sep'].join( str(e) for e in [k, Dico_parent[k][0] ]) +'\n' ) )
 
 if args['action']=='extract_longest':
 	for k in KEYS:
@@ -103,7 +103,7 @@ if args['action']=='extract_longest':
 			if float ( line[ COL ] ) > limit: #selection: should be > stictly, equal case not supported: first greater
 				selected=line
 				limit=int( line[ COL ] ) #new limit. if equal limit: only first one
-		args['out'].write("%s"%( args['sep'].join([str(k),  selected[ index_iso ] , '%s'%(limit) ]) +'\n' ) )
+		args['out'].write("%s"%( args['sep'].join( str(e) for e in [k, selected[ index_iso ], limit ]) +'\n' ) )
             
 if args['action']=='extract_shortest':
 	for k in KEYS:
@@ -113,13 +113,13 @@ if args['action']=='extract_shortest':
 			if float ( line[ COL ] ) < limit: #selection: should be > stictly, equal case not supported: first greater
 				selected=line
 				limit=int( line[ COL ] ) #new limit. if equal limit: only first one
-		args['out'].write("%s"%( args['sep'].join([str(k),  selected[ index_iso ] , '%s'%(limit) ]) +'\n' ) )
+		args['out'].write("%s"%( args['sep'].join( str(e) for e in [k,  selected[ index_iso ] , limit ]) +'\n' ) )
 
 
 if args['action']=='extract_random':
 	import random
 	for k in KEYS:
 		selected= random.choice ( Dico_lines[ k ] )
-		args['out'].write("%s"%(args['sep'].join([str(k), selected[ index_iso ] ]) +'\n' ))
+		args['out'].write("%s"%(args['sep'].join( str (e) for e in [k, selected[ index_iso ] ]) +'\n' ))
 
 
