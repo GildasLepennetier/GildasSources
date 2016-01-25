@@ -96,7 +96,7 @@ if args['header']:
 kk=0
 nbTot=len(Lines)
 for line in Lines:
-	splitLINE=line.stip().split(sep)
+	splitLINE=line.strip().split(sep)
 	kk+=1
 	if kk % 100 == 0 and args['progress']:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
