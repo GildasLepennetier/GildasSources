@@ -87,16 +87,16 @@ seq_index=int(args['sequence'])-1
 # MAIN #
 Lines = IN.readlines()
 if args['header']:
-	FirtLineNameCol=Lines[0].strip().split(sep)[seq_index] #get first line: extract name of the column (remove spaces)
+	FirtLineNameCol=Lines[0].split('\n')[0].split(sep)[seq_index] #get first line: extract name of the column (remove spaces)
 	if NOTINFILE:
 		OUT.write( sep.join( [ "%s_%s_%s"%(FirtLineNameCol,e,args['action']) for e in PATTERNS ] ) + args['endline'] ) 
 	else:
-		OUT.write( sep.join( Lines[0].strip().split(sep) + [ "%s_%s_%s"%(FirtLineNameCol,e,args['action']) for e in PATTERNS ] ) + args['endline'] )
+		OUT.write( sep.join( Lines[0].split('\n')[0].split(sep) + [ "%s_%s_%s"%(FirtLineNameCol,e,args['action']) for e in PATTERNS ] ) + args['endline'] )
 	Lines=Lines[1:] #skip first line
 kk=0
 nbTot=len(Lines)
 for line in Lines:
-	splitLINE=line.strip().split(sep)
+	splitLINE=line.split('\n')[0].split(sep)
 	kk+=1
 	if kk % 100 == 0 and args['progress']:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
