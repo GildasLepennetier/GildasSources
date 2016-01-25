@@ -1,12 +1,49 @@
 #!/usr/bin/python
 import sys,re,os,argparse,datetime
+#### function to count pattern in string
+def countPatternREGEXP(string,pattern):
+	nb=0
+	for m in re.finditer(pattern,string):
+		nb+=1
+	return nb
+def posiStartPatternREGEXP(string,pattern):
+	LIST=[]
+	for m in re.finditer(pattern,string): #(m.start(), m.end(), m.group(0)) #position start, position end, object matched
+		LIST.append( m.start() +1 ) #need to add 1 in the position match because start at 0
+	return LIST
+def posiEndPatternREGEXP(string,pattern):
+	LIST=[]
+	for m in re.finditer(pattern,string):
+		LIST.append( m.end() +1 ) #need to add 1 in the position match because start at 0
+	return LIST
+#### Give the reverse complement of a DNA sequence, change also if iupac nucleotide ####
+def revCompl_DNA(seq):
+    reverse = []
+    if seq:
+        for letter in seq: #remplir avec le complementaire
+            COR={"A":"T","a":"t","C":"G","c":"g","G":"C","g":"c","T":"A","t":"a",#usual ACGT, case conserve
+                "R":"Y","r":"y","Y":"R","y":"r",#iupac R=A/G, Y=C/T
+                "S":"W","s":"w","W":"S","w":"s",#S=G/C, W=A/T
+                "K":"M","k":"m","M":"K","m":"k",#K=G/T, M=A/C
+                "B":"V","b":"v","V":"B","v":"b",# B=C/G/T, V=A/C/G
+                "D":"H","d":"h","H":"D","h":"d"}# D=A/G/T, H=A/C/T
+            if letter in COR.keys():
+                reverse.append(COR[letter])
+            elif letter in ['u','U']:
+                print ('error, must work on DNA, and I found nome U or u')
+            else:
+                reverse.append(letter)
+        return ''.join(reverse[::-1]) #inverser
+    else:
+        return ""
 parser = argparse.ArgumentParser(description='Find motif (pattern) in a csv-like file. Choose -action count to have the number of match OR -action position to get the coordinate (base 1) where the motif start',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',type=argparse.FileType('r'),default=sys.stdin, help='input file')
 parser.add_argument('-out',type=argparse.FileType('w'),default=sys.stdout, help='output file')
 parser.add_argument('-action',default="count",type=str,help='which function to use? [ count ; position ]')
 parser.add_argument('-sequence',type=int,help='column number for sequence')
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have a header')
-parser.add_argument('-pattern','-e',type=str,help='pattern to search for (ex: CG for CpG). Handle regular expression, exemple. A[AT]A for AAA or ATA. ') #action='append', -> create a list
+parser.add_argument('-pattern','-e',type=str,help='pattern to search for (ex: CG for CpG). Handle regular expression, exemple. A[AT]A for AAA or ATA. You can give it in coma-separated values.') #action='append', -> create a list
+parser.add_argument('-rc',default=False,action='store_true',help='search also the reverse complement.')
 parser.add_argument('-separated',default=False,action='store_true',required=False,help='add this flag to get an output with only the result (default: add column in the file)')
 parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. this put also one flag --verbose')
 parser.add_argument('-sep',type=str,default='\t',help='separator (default: \\t)')
@@ -37,25 +74,16 @@ VERB_LVL=args['verbose']
 IN=args['in']
 OUT=args['out']
 sep=args['sep']
-PATTERN=args['pattern']
+PATTERNS=[]
+if args['rc']:
+	for p in args['pattern'].split(','):
+		PATTERNS.append(p)
+		PATTERNS.append( revCompl_DNA(p) )
+else:
+	PATTERNS=args['pattern'].split(',')
+
 NOTINFILE=args['separated']
 seq_index=int(args['sequence'])-1
-#### function to count pattern in string
-def countPatternREGEXP(string,pattern):
-	nb=0
-	for m in re.finditer(pattern,string):
-		nb+=1
-	return nb
-def posiStartPatternREGEXP(string,pattern):
-	LIST=[]
-	for m in re.finditer(pattern,string): #(m.start(), m.end(), m.group(0)) #position start, position end, object matched
-		LIST.append( m.start() +1 ) #need to add 1 in the position match because start at 0
-	return LIST
-def posiEndPatternREGEXP(string,pattern):
-	LIST=[]
-	for m in re.finditer(pattern,string):
-		LIST.append( m.end() +1 ) #need to add 1 in the position match because start at 0
-	return LIST
 # MAIN #
 Lines = IN.readlines()
 if args['header']:
@@ -68,23 +96,23 @@ if args['header']:
 kk=0
 nbTot=len(Lines)
 for line in Lines:
+	splitLINE=line.stip().split(sep)
 	kk+=1
 	if kk % 100 == 0 and args['progress']:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 	if kk == nbTot and args['progress']:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
 	###################
-	SEQ=line.split(args['endline'])[0].split(sep)[seq_index]
-	if args['action'] == "count":
-		OUTVALUE=str(countPatternREGEXP(SEQ,PATTERN))
-	if args['action'] == "position":
-		SepReturn=","
-		POSITIONS=posiStartPatternREGEXP(SEQ,PATTERN) #using only the start, but possible to search also for the end, can then return the middle etc.
-		OUTVALUE=SepReturn.join([str(el) for el in POSITIONS]) #no need to add 1 at the coordinates: already done
-	if not OUTVALUE:
-		OUTVALUE=""
+	SEQ=splitLINE[seq_index]
+	OUTVALUE=[]
+	for PATTERN in PATTERNS:
+		if args['action'] == "count":
+			OUTVALUE.append( countPatternREGEXP(SEQ,PATTERN) )
+		if args['action'] == "position":
+			POSITIONS=posiStartPatternREGEXP(SEQ,PATTERN) #using only the start, but possible to search also for the end, can then return the middle etc.
+			OUTVALUE.append( ",".join([str(el) for el in POSITIONS]) ) #no need to add 1 at the coordinates: already done
 	###################
 	if NOTINFILE:
-		OUT.write( str(OUTVALUE) + args['endline'])
+		OUT.write( sep,join( [str(e) for e in OUTVALUE ] ) + args['endline'])
 	else:
-		OUT.write( sep.join( line.split(args['endline'])[0].split(sep) + [str(OUTVALUE)]) + args['endline'])
+		OUT.write( sep.join( [str(e) for e in splitLINE + OUTVALUE ] ) + args['endline'])
