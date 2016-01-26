@@ -1,0 +1,5 @@
+#!/usr/bin/python
+#coding: utf-8
+import itertools,sys
+for e in itertools.permutations(sys.argv[1]):
+	sys.stdout.write(''.join(e)+'\n')
