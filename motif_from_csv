@@ -120,11 +120,12 @@ for line in Lines:
 		SEQ= SEQ[ args['trim_before'] : len(SEQ)-args['trim_after'] ] #trim before and after
 	OUTVALUE=[]
 	for PATTERN in PATTERNS:
-		if args['action'] == "count":
-			OUTVALUE.append( countPatternREGEXP(SEQ,PATTERN) )
-		if args['action'] == "position":
-			POSITIONS=posiStartPatternREGEXP(SEQ,PATTERN) #using only the start, but possible to search also for the end, can then return the middle etc.
-			OUTVALUE.append( ",".join([str(el) for el in POSITIONS]) ) #no need to add 1 at the coordinates: already done
+		if PATTERN not in ['']:
+			if args['action'] == "count":
+				OUTVALUE.append( countPatternREGEXP(SEQ,PATTERN) )
+			if args['action'] == "position":
+				POSITIONS=posiStartPatternREGEXP(SEQ,PATTERN) #using only the start, but possible to search also for the end, can then return the middle etc.
+				OUTVALUE.append( ",".join([str(el) for el in POSITIONS]) ) #no need to add 1 at the coordinates: already done
 	###################
 	if NOTINFILE:
 		OUT.write( sep,join( [str(e) for e in OUTVALUE ] ) + args['endline'])
