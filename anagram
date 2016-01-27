@@ -4,9 +4,7 @@ import itertools
 def print_anagram(w):
 	for e in itertools.permutations(w):
 		yield ''.join(e)
-
-#using this to allow the import of the functions in another script
-if __name__ == "__main__":
+if __name__ == "__main__": #using this to allow the import of the functions in another script
 	import sys,argparse
 	parser = argparse.ArgumentParser(description='The %(prog)s function takes a word or a coma-separated list of words and print all the possible anagrams of those words.\
 This function does not remove (yet) the duplicated anagrams, so use something like %(prog)s -w myword | sort | uniq to do it yourself',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
@@ -37,14 +35,3 @@ This function does not remove (yet) the duplicated anagrams, so use something li
 			for line in ifile.readlines():
 				for a in print_anagram(line.split('\n')[0]):
 					args['o'].write(a+'\n')
-#def getwordsfromfile(f):
-	#with open(f,'r') as fi:
-		#for line in fi.readlines():
-			#yield line.split('\n')[0]
-#if args['i']:
-	#if args['v']:
-		#sys.stderr.write("Taking list from %s\n"%(args['i']))
-	#print_anagram(getwordsfromfile(args['i']))
-
-
-
