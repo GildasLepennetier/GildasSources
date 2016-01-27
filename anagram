@@ -1,5 +1,50 @@
 #!/usr/bin/python
 #coding: utf-8
-import itertools,sys
-for e in itertools.permutations(sys.argv[1]):
-	sys.stdout.write(''.join(e)+'\n')
+import itertools
+def print_anagram(w):
+	for e in itertools.permutations(w):
+		yield ''.join(e)
+
+#using this to allow the import of the functions in another script
+if __name__ == "__main__":
+	import sys,argparse
+	parser = argparse.ArgumentParser(description='The %(prog)s function takes a word or a coma-separated list of words and print all the possible anagrams of those words.\
+This function does not remove (yet) the duplicated anagrams, so use something like %(prog)s -w myword | sort | uniq to do it yourself',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+	parser.add_argument('-i',type=str,help='Take intput from this file (path)')
+	parser.add_argument('-o',type=argparse.FileType('w'),default=sys.stdout,help='Print output in this file (path)')
+	parser.add_argument('-w',type=str,help='Word, or coma separated (default) list of word to make anagrams')
+	parser.add_argument('-sep',type=str,default=',',help='Separator (default: , )')
+	parser.add_argument('-v',action='store_true',help='Verbose, print extra information')
+	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+	parser.add_argument('--author',action='store_true',help='Display author informations')
+	args=vars(parser.parse_args())
+	if args['author']:
+		print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+		exit()
+	if args['copy']:
+		print ("Copyright 2016 LEPENNETIER Gildas")
+		exit()
+	if not args['w'] or args['i']:
+		parser.print_help()
+	if args['w']:
+		for word in args['w'].split(args['sep']):
+			for a in print_anagram(word):
+				args['o'].write(a+'\n')
+	if args['i']:
+		if args['v']:
+			sys.stderr.write('Taking list of words from the file: %s\n'%(args['i']))
+		with open(args['i'], 'r') as ifile:
+			for line in ifile.readlines():
+				for a in print_anagram(line.split('\n')[0]):
+					args['o'].write(a+'\n')
+#def getwordsfromfile(f):
+	#with open(f,'r') as fi:
+		#for line in fi.readlines():
+			#yield line.split('\n')[0]
+#if args['i']:
+	#if args['v']:
+		#sys.stderr.write("Taking list from %s\n"%(args['i']))
+	#print_anagram(getwordsfromfile(args['i']))
+
+
+
