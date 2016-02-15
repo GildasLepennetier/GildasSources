@@ -78,7 +78,7 @@ OUT=args['out']
 sep=args['sep']
 PATTERNS=[]
 for p in args['pattern'].split(','):
-	if PATTERN and PATTERN not in ['','\n']:
+	if p and p not in ['','\n']:
 		PATTERNS.append(p)
 		if args['rc']:
 			PATTERNS.append( revCompl_DNA(p) )
