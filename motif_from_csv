@@ -44,8 +44,6 @@ parser.add_argument('-sequence',type=int,help='column number for sequence')
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have a header')
 parser.add_argument('-pattern','-e',type=str,help='pattern to search for (ex: CG for CpG). Handle regular expression, exemple. A[AT]A for AAA or ATA. You can give it in coma-separated values.') #action='append', -> create a list
 parser.add_argument('-rc',default=False,action='store_true',help='search also the reverse complement.')
-parser.add_argument('-trim_before',type=int,default=0,help="To trim the sequence before/at the 5' end. Integer representing the number of nucleotides to remove. Careful: returned motif positions are from this trimmed point, not from the beginning of the sequence")
-parser.add_argument('-trim_after',type=int,default=0,help="To trim the sequence after/at the 3' end. Integer representing the number of nucleotides to remove. Careful: returned motif positions are from this trimmed point, not from the beginning of the sequence")
 parser.add_argument('-separated',default=False,action='store_true',required=False,help='add this flag to get an output with only the result (default: add column in the file)')
 parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. this put also one flag --verbose')
 parser.add_argument('-sep',type=str,default='\t',help='separator (default: \\t)')
@@ -89,12 +87,7 @@ seq_index=int(args['sequence'])-1
 Lines = IN.readlines()
 if args['header']:
 	FirtLineNameCol=Lines[0].split('\n')[0].split(sep)[seq_index] #get first line: extract name of the column (remove spaces)
-	
-	if args['trim_before'] > 0 or args['trim_after'] >0:
-		COL_NAME=[ "%s_%s_%s_trim%s:%s"%(FirtLineNameCol,e,args['action'],args['trim_before'],args['trim_after']) for e in PATTERNS ]
-	else:
-		COL_NAME=[ "%s_%s_%s"%(FirtLineNameCol,e,args['action']) for e in PATTERNS ]
-	
+	COL_NAME=[ "%s_%s_%s"%(FirtLineNameCol,e,args['action']) for e in PATTERNS ]
 	if NOTINFILE:
 		OUT.write( sep.join( COL_NAME ) + args['endline'] ) 
 	else:
@@ -111,12 +104,8 @@ for line in Lines:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 	if kk == nbTot and args['progress']:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
-	# sequence / trim
+	# sequence
 	SEQ=splitLINE[seq_index]
-	if len(SEQ) <= args['trim_before']+args['trim_after']:
-		SEQ=""
-	else:
-		SEQ= SEQ[ args['trim_before'] : len(SEQ)-args['trim_after'] ] #trim before and after
 	OUTVALUE=[]
 	for PATTERN in PATTERNS:
 		if args['action'] == "count":
