@@ -227,7 +227,7 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\nRepeatMasker, libraries and searc
 	
 	echo "trf: $HOME/trf"
 	echo "hammer: /usr/local/bin"
-	echo "rmbalst: $HOME/bin"
+	echo "rmblast: $HOME/bin"
 	
 	read -p "remember those addresses, the configuration will start after you press enter" X
 	cd $HOME/RepeatMasker/
