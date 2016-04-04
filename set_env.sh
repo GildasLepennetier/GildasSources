@@ -166,7 +166,7 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\nRepeatMasker, libraries and searc
 		mkdir -p $HOME/bin/
 		cd ncbi-rmblastn*/bin
 		sudo chmod +x *
-		cp * $HOME/bin/
+		cp * $HOME/bin//usr/local/bin
 		
 		
 		cd $HOME
@@ -379,19 +379,21 @@ echo -e "\nInstall zotero? (yes)"
 read q
 if [ "$q" == "yes" ];then cd $HOME
 	
-	echo "1) go to https://www.zotero.org/download/"
-	echo "2) save the file (having the .tar.bz2) in $HOME and press ENTER when finished"
-	read q
-	echo "3) extracting the archive"
-	tar -xjf Zotero*.tar.bz2
-	rm -vr Zotero*.tar.bz2
-		
-# 	read -p "Do you want to add zotero to PATH? (yes)" q
-# 	if [ "$q" == "yes" ];then
-# 		cd $HOME/Zotero*
-# 		echo -e "\n#Zotero - added $(date)\nPATH=\$PATH:$(pwd)" >> "$HOME/.bashrc" #pwd is supposed to be something like /home/gildas/Zotero_linux-i686
-# 		echo -e "\nTo run Zotero: $(pwd)/run-zotero.sh"
-# 	fi
+# 	echo "1) go to https://www.zotero.org/download/"
+# 	echo "2) save the file (having the .tar.bz2) in $HOME and press ENTER when finished"
+# 	read q
+# 	echo "3) extracting the archive"
+# 	tar -xjf Zotero*.tar.bz2
+# 	rm -vr Zotero*.tar.bz2
+	
+	read -p "Do you want to add zotero to PATH? (yes)" q
+	if [ "$q" == "yes" ];then
+		cd $HOME/Zotero*
+		chmod +x run-zotero.sh
+		echo -e "\n#Zotero - added $(date)\nPATH=\$PATH:$(pwd)" >> "$HOME/.bashrc" #pwd is supposed to be something like /home/gildas/Zotero_linux-i686
+		PATH=$PATH:$(pwd)
+		echo -e "\nTo run Zotero: run-zotero.sh"
+	fi
 fi
 
 ################################################################################
