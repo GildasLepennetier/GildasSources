@@ -41,7 +41,7 @@ if [ "$q" == "yes" ];then echo -e "\n\nStarting: $0 ... system update and set up
 		L="$L wine"	#wine windows compatibility
 	fi
 
-	# python packages
+	# pythttp://tandem.bu.edu/trf/trf407b.linux.download.htmlhon packages
 	if [ 0 ];then echo -e "\n added: python extra tools"
 		L="$L python-dev python-setuptools"	#python setup tools: sudo easy_install
 		L="$L python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose"	# scipy and numpy
@@ -68,7 +68,7 @@ if [ "$q" == "yes" ];then echo -e "\n\nStarting: $0 ... system update and set up
 	if [ 0 ];then echo -e "\n added: (bio)informatic tools"
 		L="$L libncurses-dev"			# required by tuxedo ?
 		L="$L tophat bowtie cufflinks"	# tuxedo programs
-		L="$L bedtools"					# bam to fastq
+		L="$L bedtools"		http://tandem.bu.edu/trf/trf407b.linux.download.html			# bam to fastq
 		# blast
 		L="$L ncbi-blast+"
 	fi
@@ -107,9 +107,7 @@ echo -e "\nInstall RepeatMasker? (yes)"
 read q
 if [ "$q" == "yes" ];then cd $HOME; echo -e "\nRepeatMasker, libraries and search programs"
 	
-	echo "careful, this is not finished - enter to continue"
-	echo "todo: repeatmasker in a better place than home, same for hmmer and so one"
-	read X
+	#echo "todo: repeatmasker in a better place than home, same for hmmer and so one"
 	
 	if [ ! -d $HOME/trf ];then echo "init -- get tandem repeat finder - trf"
 		mkdir -p "$HOME/trf"
@@ -132,9 +130,14 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\nRepeatMasker, libraries and searc
 
 	if [ 0 ];then echo "install Hmmer"
 		cd $HOME
-		$WGET "http://selab.janelia.org/software/hmmer3/3.1b1/hmmer-3.1b1-linux-intel-ia32.tar.gz"
-		tar -xvf hmmer-3.1b1-linux-intel-ia32.tar.gz
-		cd hmmer-3.1b1-linux-intel-ia32
+		VERSION_Hmmer=hmmer-3.1b2-linux-intel-x86_64
+		echo -e "\n!! I need the name of the most up-to-date program !! \n\nExemple: '$VERSION_Hmmer' \nplease enter program name: (ENTER=default)"
+		read VERSION_Hmmer
+		if [ -z "$VERSION_Hmmer" ];then VERSION_Hmmer=hmmer-3.1b2-linux-intel-x86_64; fi
+		
+		$WGET "http://eddylab.org/software/hmmer3/3.1b2/$VERSION_Hmmer.tar.gz"
+		tar -xvf $VERSION_Hmmer.tar.gz
+		cd $VERSION_Hmmer
 		
 		./configure
 		make #build
@@ -142,8 +145,8 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\nRepeatMasker, libraries and searc
 		echo "installation of hammer requires root"
 		sudo make install #automated install
 		cd $HOME
-		rm hmmer-3.1b1-linux-intel-ia32.tar.gz
-		rm -r hmmer-3.1b1-linux-intel-ia32
+		rm $VERSION_Hmmer.tar.gz
+		rm -r $VERSION_Hmmer
 		
 		echo -e "\n\nHMMER in /usr/local/bin (if everything was fine during install)"
 	fi
