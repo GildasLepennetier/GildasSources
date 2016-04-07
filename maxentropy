@@ -2,7 +2,7 @@
 #first release 19 March 2014
 ############################ default values
 CUR="$(pwd)"
-VERSION="2.0 - 08.12.2015"
+VERSION="2.0 - 2016"
 AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
 COPY="Copyright 2014-2015 LEPENNETIER Gildas"
 SCRIPTSPATH="$HOME" 
@@ -106,11 +106,11 @@ done
 # check script folder
 if [ "$SPECIES" == "${SPECIESLIST[0]}" ];then # human
 	if [ ! -d $SCRIPTSPATH/${FOLDERNAMES[0]} ];then echo "downloading scripts for $SPECIES"
-		cd $SCRIPTSPATHD_melanogaster.RANDOM.introns.seq.PA.ss.check.sss.tmp
+		cd $SCRIPTSPATH
 		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Human.zip
 		unzip -q MaxEnt_Human.zip
 		rm MaxEnt_Human.zip
-		echo "using MaxEnt_Human folder at $SCRIPTSPATH"
+		echo "using ${FOLDERNAMES[1]} folder at $SCRIPTSPATH for $SPECIES"
 	fi
 	
 	SCRIPTPATH="$SCRIPTSPATH/${FOLDERNAMES[0]}"
@@ -124,7 +124,7 @@ if [ "$SPECIES" == "${SPECIESLIST[1]}" ];then # drosophila
 		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Drosophila.zip
 		unzip -q MaxEnt_Drosophila.zip
 		rm MaxEnt_Drosophila.zip
-		echo "using MaxEnt_Drosophila folder at $SCRIPTSPATH"
+		echo "using ${FOLDERNAMES[1]} folder at $SCRIPTSPATH for $SPECIES"
 	fi
 	
 	SCRIPTPATH="$SCRIPTSPATH/${FOLDERNAMES[1]}"
