@@ -236,16 +236,38 @@ if [ "$q" == "yes" ];then cd $HOME; echo -e "\nRepeatMasker, libraries and searc
 fi
 
 # R
-echo -e "\nInstall R and RStudio? (yes)"
+echo -e "\nInstall R? (yes)"
 read q
 if [ "$q" == "yes" ];then cd $HOME
 	
 	#dependencies required
 	sudo apt-get install libjpeg62 $Y 
 	
+	#check infos
+	#https://cran.uni-muenster.de/bin/linux/ubuntu/
+	
+	echo "add repository for updates using the following depository: https://cran.uni-muenster.de/"
+	sudo add-apt-repository "deb https://cran.uni-muenster.de/bin/linux/ubuntu trusty/"
+	
+	#The Ubuntu archives on CRAN are signed with the key of “Michael Rutter marutter@gmail.com” with key ID E084DAB9
+	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+	
 	# R
 	sudo apt-get install r-base r-base-dev r-base-html r-doc-html $Y  #libjpeg62 required
 	
+	# maintenance later:
+	#sudo apt-get update
+	#sudo apt-get upgrade
+
+	
+	#Users who need to compile R packages from source [e.g. package maintainers, or anyone installing packages with install.packages()] should also install the r-base-dev package:
+	#sudo apt-get install r-base-dev
+
+fi
+
+echo -e "\nInstall RStudio? (yes)"
+read q
+if [ "$q" == "yes" ];then cd $HOME
 	# RStudio
 	#VERSION=0.99.473 # August 2015
 	VERSION="$(curl -s "https://www.rstudio.com/products/rstudio/release-notes/" | grep "<h2>RStudio v" | awk '{print $2}' | sed -e 's/v//')"
@@ -396,6 +418,17 @@ if [ "$q" == "yes" ];then cd $HOME
 	fi
 fi
 
+
+# Dropbox
+if [ ];then cd $HOME; echo -e "\n install: Dropbox"
+	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $Y 
+	echo "need to quit the daemon, and restart/start"
+	echo "nemo --quit "
+	echo "dropbox start -i"
+	#gilou_on_net@hotmail.com
+	#sy...
+fi
+
 ################################################################################
 
 ## FIREFOX sync: gildas.lepennetier@hotmail.fr
@@ -514,15 +547,7 @@ fi
 
 #sudo apt-get install gnumeric	#excel 
 
-# Dropbox
-if [ ];then cd $HOME; echo -e "\n install: Dropbox"
-	sudo apt-get install nemo python-gpgme libnemo-extension1 nemo-dropbox $Y 
-	echo "need to quit the daemon, and restart/start"
-	echo "nemo --quit "
-	echo "dropbox start -i"
-	#gilou_on_net@hotmail.com
-	#sy...
-fi
+
 
 # PERL
 if [ ];then cd $HOME; echo -e "\n install: perl modules"
