@@ -21,7 +21,6 @@ You can use the set_env.sh script to install additionnal bioinformatics tools.
 
 All functions are called from the terminal, since they are on the PATH environment variable
 Exemple: 
-> joinsep
 > joinsep - 1 2 3
 
 All functions have an integrated help. 
