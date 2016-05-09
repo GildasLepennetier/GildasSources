@@ -592,4 +592,10 @@ if [ ];then echo "other"
 	
 	#L="$L dmidecode"	#view BIOS Information
 	#L="$L baobab"	#disc usage
+	
+	
+	#sound problem : cannot open mixer: No such file or directory
+	#lspci -nnk | grep -iEA3 audio
+	#mplayer -i audio.mp3
+	#lsmod | grep snd
 fi
