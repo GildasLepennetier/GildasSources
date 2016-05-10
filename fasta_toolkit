@@ -105,232 +105,232 @@ def insert_in_string(string,insert="\n",each=80):
 			string2=string2+letter
 	return string2
 
+if __name__ == '__main__':
+	COMMANDES=["csv_to_fasta","fasta_to_csv","fasta_freq","fasta_extract_ids","fasta_translate"]
+	RULES="MAX_SEQ_NB=1000;MAX_CHAR_NB=100000;MAX_SEQ_LENGTH=3000"
 
-COMMANDES=["csv_to_fasta","fasta_to_csv","fasta_freq","fasta_extract_ids","fasta_translate"]
-RULES="MAX_SEQ_NB=1000;MAX_CHAR_NB=100000;MAX_SEQ_LENGTH=3000"
+	##########################################
+	parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,description="""%(prog)s -cmd [command] to use a specific tool
+	\n\t-cmd csv_to_fasta
+	\t\tConversion from fasta file to csv
+	\t\t-seqCol specify the column where is the sequence
+	\t\t-id in which column are the ids, can be coma separated list if you want to use several ids (example: gene id + isoform id...)
+	\t\t-idJoin allows to change the separator when several ids are used
+	\n\t-cmd fasta_to_csv
+	\t\tConversion from cvs to fasta file.
+	\t\tThe sequences are, by befaut, 80 char-long, but can be changed with -CharPerLine option
+	\t\t-rmId allows to remove the id of the sequence
+	\n\t-cmd fasta_freq
+	\t\tFrom a fasta file, calculate the nucleotid frequency.
+	\n\t-cmd fasta_extract_ids
+	\t\tFrom a fasta file, this command extract only the record of the given ids.
+	\t\t-id_file <file>
+	\t\t-id id1,id2 
+	\n\t-cmd fasta_translate
+	\t\tTranslate, from a fasta file, the DNA sequence in Eukaryotic proteins (stop codons are : TAA, TAG and TGA)
+	\t\tThe sequence should then be in DNA
+	\t\t-rmTxErrors will check some basics errors: Start, premature stop, unknown codon
+	\n\t-cmd fasta_divide [NOT AVAILABLE]
+	\t\tDivide the fasta file in sub-files according to some rules. Some programes are annoying with limitations, this command try to help.
+	\t\tCareful: since we divide a fasta file, the output will be save in several files with name: selection_<int>.fa, with int a growing integer.
+	\t\t-rules should be provided with a string of NAME=VALUE separated by ;
+	\t\t\tMAX_SEQ_NB integer for a maximum number of record
+	\t\t\tMAX_CHAR_NB integer for the maximum number of charater in a single sequence
+	\t\t\tMAX_SEQ_LENGTH integer for the maximum sequence length
 
-##########################################
-parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,description="""%(prog)s -cmd [command] to use a specific tool
-\n\t-cmd csv_to_fasta
-\t\tConversion from fasta file to csv
-\t\t-seqCol specify the column where is the sequence
-\t\t-id in which column are the ids, can be coma separated list if you want to use several ids (example: gene id + isoform id...)
-\t\t-idJoin allows to change the separator when several ids are used
-\n\t-cmd fasta_to_csv
-\t\tConversion from cvs to fasta file.
-\t\tThe sequences are, by befaut, 80 char-long, but can be changed with -CharPerLine option
-\t\t-rmId allows to remove the id of the sequence
-\n\t-cmd fasta_freq
-\t\tFrom a fasta file, calculate the nucleotid frequency.
-\n\t-cmd fasta_extract_ids
-\t\tFrom a fasta file, this command extract only the record of the given ids.
-\t\t-id_file <file>
-\t\t-id id1,id2 
-\n\t-cmd fasta_translate
-\t\tTranslate, from a fasta file, the DNA sequence in Eukaryotic proteins (stop codons are : TAA, TAG and TGA)
-\t\tThe sequence should then be in DNA
-\t\t-rmTxErrors will check some basics errors: Start, premature stop, unknown codon
-\n\t-cmd fasta_divide [NOT AVAILABLE]
-\t\tDivide the fasta file in sub-files according to some rules. Some programes are annoying with limitations, this command try to help.
-\t\tCareful: since we divide a fasta file, the output will be save in several files with name: selection_<int>.fa, with int a growing integer.
-\t\t-rules should be provided with a string of NAME=VALUE separated by ;
-\t\t\tMAX_SEQ_NB integer for a maximum number of record
-\t\t\tMAX_CHAR_NB integer for the maximum number of charater in a single sequence
-\t\t\tMAX_SEQ_LENGTH integer for the maximum sequence length
+	""",epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+	parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file, default is stdin, and giving - also read the stdin')
+	parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
+	parser.add_argument('-cmd',type=str,required=True,help="commande to execute, see description")
 
-""",epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
-parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file, default is stdin, and giving - also read the stdin')
-parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
-parser.add_argument('-cmd',type=str,required=True,help="commande to execute, see description")
+	parser.add_argument('-seqCol',type=int,required=False,help='[csv_to_fasta] : where to find the sequence')
+	parser.add_argument('-id',type=str,required=False,help='[csv_to_fasta] : where to find the id. Can be a coma-separated list of column, will be join by _ [fasta_extract_ids]: coma separated list of ids to extract')
+	parser.add_argument('-idJoin',type=str,default="_",required=False,help='[csv_to_fasta] : If several columns for id, this will be the spacer. default: "_" ')
+	parser.add_argument('-CharPerLine',type=int,default=80,required=False,help='[csv_to_fasta] : How many character per line for the fasta? default=80')
+	parser.add_argument('-rmId',action='store_true',default=False,help='[fasta_to_csv] add this flag if you want to remove the id of the fasta, will be in first column')
+	parser.add_argument('-id_file',type=str,help='[fasta_extract_ids] extract only ids in this file. one per line')
+	parser.add_argument('-rmTxErrors',action='store_true',default=False,help='[fasta_translate] : use this flag to check the translated sequence. Will remove all not starting with M (ATG), with premature stop in the cds (space in the sequence) or with unknown codon (* in the sequence)')
+	parser.add_argument('-rules',type=str,required=False,default="%s"%(RULES),help='[fasta_divide] : provide here a set of rules, see description')
 
-parser.add_argument('-seqCol',type=int,required=False,help='[csv_to_fasta] : where to find the sequence')
-parser.add_argument('-id',type=str,required=False,help='[csv_to_fasta] : where to find the id. Can be a coma-separated list of column, will be join by _ [fasta_extract_ids]: coma separated list of ids to extract')
-parser.add_argument('-idJoin',type=str,default="_",required=False,help='[csv_to_fasta] : If several columns for id, this will be the spacer. default: "_" ')
-parser.add_argument('-CharPerLine',type=int,default=80,required=False,help='[csv_to_fasta] : How many character per line for the fasta? default=80')
-parser.add_argument('-rmId',action='store_true',default=False,help='[fasta_to_csv] add this flag if you want to remove the id of the fasta, will be in first column')
-parser.add_argument('-id_file',type=str,help='[fasta_extract_ids] extract only ids in this file. one per line')
-parser.add_argument('-rmTxErrors',action='store_true',default=False,help='[fasta_translate] : use this flag to check the translated sequence. Will remove all not starting with M (ATG), with premature stop in the cds (space in the sequence) or with unknown codon (* in the sequence)')
-parser.add_argument('-rules',type=str,required=False,default="%s"%(RULES),help='[fasta_divide] : provide here a set of rules, see description')
-
-parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have / want an header (fist line with names of columns)')
-parser.add_argument('-Marker',type=str,default='>',required=False,help='mark for the name of a record (default: >)')
-parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
-parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
-parser.add_argument('--version', action='version', version='%(prog)s v1.0')#version display
-parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
-parser.add_argument('--quiet','-q',action='store_true',default=False,help='add this flag to remove warning')
-parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
-parser.add_argument('--author',action='store_true',help='Display author informations')
-args=vars(parser.parse_args())
-if args['author']:
-	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-	exit()
-if args['copy']:
-	print ("Copyright 2014 LEPENNETIER Gildas")
-	exit()
-##########################################
-if args['cmd'] not in COMMANDES:
-	sys.stderr.write("Error, %s is not an available command\nuse -h to get help\navailable commands: %s\n"%(args['cmd'], ", ".join(COMMANDES) ) )
-
-##########################################
-if args['cmd'] == 'csv_to_fasta':
-	if args['verbose'] > 0:
-		sys.stderr.write("Info: starting csv_to_fasta"+args['endline'])
-	if not args['seqCol']:
-		print ("Error: you should give a column number where the sequence is located")
-	if not args['id']:
-		print ("Error: you should give a column number where the id is located. Advice: check the each id is uniq, or give a coma sep list of clumn for the id")
-	
-	seqCol_index=args['seqCol'] -1 #python index starts at 0
-	id_index=[ int(el)-1 for el in args['id'].split(',') ] #python index starts at 0
-	k=0
-	for rline in  args['in']:
-		k+=1
-		if args['header'] and k==1:
-			pass
-		else:
-			line=rline.split(args['endline'])[0].split(args['sep'])
-			
-			ID= args['Marker'] + args['idJoin'].join([el for el in [ line[i] for i in id_index ] ]) + args['endline'] #Marker > + id_and_other + \n
-			SEQ=insert_in_string(string=line[seqCol_index],insert=args['endline'],each=args['CharPerLine']) # seq
-			
-			args['out'].write( ID + SEQ + args['endline'])
-##########################################
-if args['cmd'] == 'fasta_to_csv':
-	if args['header']:
-		if not args['rmId']:
-			args['out'].write("fasta_id" + args['sep'] + "sequence" + args['endline'] )
-		else:
-			args['out'].write("sequence" + args['endline'] )
-	k=0
-	for rline in args['in']:
-		k+=1
-		line=rline.split(args['endline'])[0]
-		if line:
-			if not args['rmId']:
-				if line[0] == args['Marker']:
-					if k > 1:
-						args['out'].write(args['endline'])#need to go back to line, but not for first line
-					ID=line.split(args['Marker'])[1] # extract id
-					args['out'].write(ID + args['sep'])
-				else:
-					args['out'].write(line) # print sequence
-				
-			else: #do not keep id
-				if line[0] == args['Marker']:
-					if k > 1:
-						args['out'].write(args['endline'])#need to go back to line, but not for first line
-				else:
-					args['out'].write(line) # print sequence
-	args['out'].write(args['endline']) #last line: should have that
-##########################################
-if args['cmd'] == 'fasta_freq':
-	COUNT={'A':0.0,'C':0.0,'G':0.0,'T':0.0,'N':0.0,'nb':0.0}
-	for rline in args['in']:
-		line=rline.split(args['endline'])[0]
-		if line:
-			if line[0] != args['Marker']:
-				COUNT['A'] += line.count("A") + line.count("a")
-				COUNT['C'] += line.count("C") + line.count("c")
-				COUNT['G'] += line.count("G") + line.count("g")
-				COUNT['T'] += line.count("T") + line.count("t")
-				COUNT['N'] += line.count("N") + line.count("n")
-				COUNT['nb'] += len(line)
-	FREQ=dict()
-	for key in COUNT.keys():
-		if key not in ['nb']:
-			if COUNT[key] != 0:
-				FREQ[key] = COUNT[key]/COUNT['nb']
-	
-	if FREQ['A']+FREQ['C']+FREQ['G']+FREQ['T'] !=1:
-		TOT=FREQ['A']+FREQ['C']+FREQ['G']+FREQ['T']
-		sys.stderr.write("Warning: total ACGT = %s ; N=%s%s"%(TOT,int(COUNT['N']),args['endline']))
-	#print (COUNT)
-	args['out'].write( args['sep'].join ( [ str(el) for el in [ FREQ['A'],FREQ['C'],FREQ['G'],FREQ['T'] ] ] ) +args['endline'] )
-##########################################
-if args['cmd'] == 'fasta_extract_ids':
-	IDS=[]
-	if not args['id'] and not args['id_file']:
-		sys.stderr.write("Error: id missing, you need to specify ids to keep!%s"%(args['endline']))
+	parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have / want an header (fist line with names of columns)')
+	parser.add_argument('-Marker',type=str,default='>',required=False,help='mark for the name of a record (default: >)')
+	parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
+	parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
+	parser.add_argument('--version', action='version', version='%(prog)s v1.0')#version display
+	parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+	parser.add_argument('--quiet','-q',action='store_true',default=False,help='add this flag to remove warning')
+	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+	parser.add_argument('--author',action='store_true',help='Display author informations')
+	args=vars(parser.parse_args())
+	if args['author']:
+		print ("LEPENNETIER Gildaif __name__ == '__main__':s - gildas.lepennetier@hotmail.fr")
 		exit()
-	if args['id']:
-		IDS.append(args['id'].split(","))
-	if args['id_file']:
-		with open (args['id_file'], 'r') as f:
-			for line in f.readlines():
-				IDS.append( line.strip() )
-	p=False
-	for line in args['in']:
-		if line[0] == args['Marker']:
-			#sys.stderr.write("%s\n"%(line.split(" ")[0]))
-			if line.split(" ")[0].split(args['Marker'])[1] in IDS:
-				p=True
-			else:
-				p=False
-		if p: #if we are still on the lines following an id
-			args['out'].write(line)
-##########################################
-if args['cmd'] == 'fasta_translate':
-	k=0
-	sequence = ''
-	fasta_id = 'none'
-	for line in args['in']:
-		if line[0]==args['Marker']:
+	if args['copy']:
+		print ("Copyright 2014 LEPENNETIER Gildas")
+		exit()
+	##########################################
+	if args['cmd'] not in COMMANDES:
+		sys.stderr.write("Error, %s is not an available command\nuse -h to get help\navailable commands: %s\n"%(args['cmd'], ", ".join(COMMANDES) ) )
+
+	##########################################
+	if args['cmd'] == 'csv_to_fasta':
+		if args['verbose'] > 0:
+			sys.stderr.write("Info: starting csv_to_fasta"+args['endline'])
+		if not args['seqCol']:
+			print ("Error: you should give a column number where the sequence is located")
+		if not args['id']:
+			print ("Error: you should give a column number where the id is located. Advice: check the each id is uniq, or give a coma sep list of clumn for the id")
+		
+		seqCol_index=args['seqCol'] -1 #python index starts at 0
+		id_index=[ int(el)-1 for el in args['id'].split(',') ] #python index starts at 0
+		k=0
+		for rline in  args['in']:
 			k+=1
-			if sequence:
-				TXSEQ=translate_dna(sequence, args['quiet'], k, fasta_id)
-				if args['rmTxErrors']:
-					if TXSEQ[0] != 'M' or '*' in TXSEQ or ' ' in TXSEQ:
-						TXSEQ=''
-						if not args['quiet']:
-							sys.stderr.write("-> removed %s%s"%(fasta_id, args['endline']))
-				if TXSEQ:
-					args['out'].write( insert_in_string( TXSEQ ) + args['endline'] )
+			if args['header'] and k==1:
+				pass
+			else:
+				line=rline.split(args['endline'])[0].split(args['sep'])
 				
-			#reinitialise
-			fasta_id=line.split(" ")[0].split(args['Marker'])[1].strip()
-			args['out'].write( args['Marker']+ fasta_id + args['endline'] )
-			sequence = ''
-			
-		else:
-			sequence += line.strip()
-	if sequence:
-		TXSEQ=translate_dna(sequence, args['quiet'], k, fasta_id)
-		if args['rmTxErrors']:
-			if TXSEQ[0] != 'M' or '*' in TXSEQ or ' ' in TXSEQ:
-				TXSEQ=''
-				if not args['quiet']:
-					sys.stderr.write("-> removed %s%s"%(fasta_id, args['endline']))
-		if TXSEQ:
-			args['out'].write( insert_in_string( TXSEQ ) + args['endline'] )
-##########################################
-if args['cmd'] == 'fasta_divide':
-	print("NOT AVAILABLE")
-	exit()
-	#default name for output
-	#load the rules as dict
-	RULES={}
-	for ru in args['rules'].split(';'):
-		Var = ru.split('=')[0]
-		Val = ru.split('=')[1]
-		RULES[Var]=Val
-	#load the fasta
-	DICO=Fasta_To_Dico_file(args['in'])
-	seq_nb=0
-	char_nb=0
-	for record_key in DICO.keys():
-		seq_nb+=1
-		char_nb+=len(DICO['record_key'])
-		#MAX_SEQ_NB
-		if seq_nb == RULES['MAX_SEQ_NB']:
-			#change output name
-			pass
-		#MAX_CHAR_NB
-		if char_nb >= RULES['MAX_CHAR_NB']:
-			#remove previous record, since he overload, and save, and change name
-			continue
-		#MAX_SEQ_LENGTH
-		if len(DICO['record_key']) >= RULES['MAX_SEQ_LENGTH']:
-			#remove this record
-			continue
+				ID= args['Marker'] + args['idJoin'].join([el for el in [ line[i] for i in id_index ] ]) + args['endline'] #Marker > + id_and_other + \n
+				SEQ=insert_in_string(string=line[seqCol_index],insert=args['endline'],each=args['CharPerLine']) # seq
+				
+				args['out'].write( ID + SEQ + args['endline'])
+	##########################################
+	if args['cmd'] == 'fasta_to_csv':
+		if args['header']:
+			if not args['rmId']:
+				args['out'].write("fasta_id" + args['sep'] + "sequence" + args['endline'] )
+			else:
+				args['out'].write("sequence" + args['endline'] )
+		k=0
+		for rline in args['in']:
+			k+=1
+			line=rline.split(args['endline'])[0]
+			if line:
+				if not args['rmId']:
+					if line[0] == args['Marker']:
+						if k > 1:
+							args['out'].write(args['endline'])#need to go back to line, but not for first line
+						ID=line.split(args['Marker'])[1] # extract id
+						args['out'].write(ID + args['sep'])
+					else:
+						args['out'].write(line) # print sequence
+					
+				else: #do not keep id
+					if line[0] == args['Marker']:
+						if k > 1:
+							args['out'].write(args['endline'])#need to go back to line, but not for first line
+					else:
+						args['out'].write(line) # print sequence
+		args['out'].write(args['endline']) #last line: should have that
+	##########################################
+	if args['cmd'] == 'fasta_freq':
+		COUNT={'A':0.0,'C':0.0,'G':0.0,'T':0.0,'N':0.0,'nb':0.0}
+		for rline in args['in']:
+			line=rline.split(args['endline'])[0]
+			if line:
+				if line[0] != args['Marker']:
+					COUNT['A'] += line.count("A") + line.count("a")
+					COUNT['C'] += line.count("C") + line.count("c")
+					COUNT['G'] += line.count("G") + line.count("g")
+					COUNT['T'] += line.count("T") + line.count("t")
+					COUNT['N'] += line.count("N") + line.count("n")
+					COUNT['nb'] += len(line)
+		FREQ=dict()
+		for key in COUNT.keys():
+			if key not in ['nb']:
+				if COUNT[key] != 0:
+					FREQ[key] = COUNT[key]/COUNT['nb']
+		
+		if FREQ['A']+FREQ['C']+FREQ['G']+FREQ['T'] !=1:
+			TOT=FREQ['A']+FREQ['C']+FREQ['G']+FREQ['T']
+			sys.stderr.write("Warning: total ACGT = %s ; N=%s%s"%(TOT,int(COUNT['N']),args['endline']))
+		#print (COUNT)
+		args['out'].write( args['sep'].join ( [ str(el) for el in [ FREQ['A'],FREQ['C'],FREQ['G'],FREQ['T'] ] ] ) +args['endline'] )
+	##########################################
+	if args['cmd'] == 'fasta_extract_ids':
+		IDS=[]
+		if not args['id'] and not args['id_file']:
+			sys.stderr.write("Error: id missing, you need to specify ids to keep!%s"%(args['endline']))
+			exit()
+		if args['id']:
+			IDS.append(args['id'].split(","))
+		if args['id_file']:
+			with open (args['id_file'], 'r') as f:
+				for line in f.readlines():
+					IDS.append( line.strip() )
+		p=False
+		for line in args['in']:
+			if line[0] == args['Marker']:
+				#sys.stderr.write("%s\n"%(line.split(" ")[0]))
+				if line.split(" ")[0].split(args['Marker'])[1] in IDS:
+					p=True
+				else:
+					p=False
+			if p: #if we are still on the lines following an id
+				args['out'].write(line)
+	##########################################
+	if args['cmd'] == 'fasta_translate':
+		k=0
+		sequence = ''
+		fasta_id = 'none'
+		for line in args['in']:
+			if line[0]==args['Marker']:
+				k+=1
+				if sequence:
+					TXSEQ=translate_dna(sequence, args['quiet'], k, fasta_id)
+					if args['rmTxErrors']:
+						if TXSEQ[0] != 'M' or '*' in TXSEQ or ' ' in TXSEQ:
+							TXSEQ=''
+							if not args['quiet']:
+								sys.stderr.write("-> removed %s%s"%(fasta_id, args['endline']))
+					if TXSEQ:
+						args['out'].write( insert_in_string( TXSEQ ) + args['endline'] )
+					
+				#reinitialise
+				fasta_id=line.split(" ")[0].split(args['Marker'])[1].strip()
+				args['out'].write( args['Marker']+ fasta_id + args['endline'] )
+				sequence = ''
+				
+			else:
+				sequence += line.strip()
+		if sequence:
+			TXSEQ=translate_dna(sequence, args['quiet'], k, fasta_id)
+			if args['rmTxErrors']:
+				if TXSEQ[0] != 'M' or '*' in TXSEQ or ' ' in TXSEQ:
+					TXSEQ=''
+					if not args['quiet']:
+						sys.stderr.write("-> removed %s%s"%(fasta_id, args['endline']))
+			if TXSEQ:
+				args['out'].write( insert_in_string( TXSEQ ) + args['endline'] )
+	##########################################
+	if args['cmd'] == 'fasta_divide':
+		print("NOT AVAILABLE")
+		exit()
+		#default name for output
+		#load the rules as dict
+		RULES={}
+		for ru in args['rules'].split(';'):
+			Var = ru.split('=')[0]
+			Val = ru.split('=')[1]
+			RULES[Var]=Val
+		#load the fasta
+		DICO=Fasta_To_Dico_file(args['in'])
+		seq_nb=0
+		char_nb=0
+		for record_key in DICO.keys():
+			seq_nb+=1
+			char_nb+=len(DICO['record_key'])
+			#MAX_SEQ_NB
+			if seq_nb == RULES['MAX_SEQ_NB']:
+				#change output name
+				pass
+			#MAX_CHAR_NB
+			if char_nb >= RULES['MAX_CHAR_NB']:
+				#remove previous record, since he overload, and save, and change name
+				continue
+			#MAX_SEQ_LENGTH
+			if len(DICO['record_key']) >= RULES['MAX_SEQ_LENGTH']:
+				#remove this record
+				continue
 	
