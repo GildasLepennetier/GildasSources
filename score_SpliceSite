@@ -69,7 +69,7 @@ parser.add_argument('-av',action='store_true',default=False,help='Print only the
 
 parser.add_argument('-rna',action='store_true',default=False,help='If the given splice site is RNA, default is DNA')
 parser.add_argument('-i',action='store_true',default=False,help='To make the function case-insensitive')
-\t
+
 parser.add_argument('-count_only',action='store_true',default=False,help='Only to count the number of matches with the sequence')
 parser.add_argument('-mismatch',action='store_true',default=False,help='Count the number of mis-matches instead of matches')
 
