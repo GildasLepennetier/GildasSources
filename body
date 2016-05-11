@@ -1,0 +1,14 @@
+#!/bin/bash
+#we have tail and head. here is body, to get a line in the middle
+usage(){
+cat << EOF 
+usage: body lineNb file
+The function will print the line from the body of a file.
+EOF
+}
+
+if [[ $# -ne 2 ]];then 
+	usage
+else 
+	sed "$1q;d" $2
+fi
