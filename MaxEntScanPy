@@ -1,0 +1,170 @@
+#!/usr/bin/python
+#coding: utf-8
+import argparse,os,sys
+from subprocess import Popen as EXEC
+from subprocess import PIPE as PIPE
+
+SPECIES_LIST=['drosophila','human']
+
+parser = argparse.ArgumentParser(description='Compute splice site strength score. Wrap for MaxEntScan scripts. Use -col5 OR -col3',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser.add_argument('-in',type=argparse.FileType('r'),default=sys.stdin, help='input file')
+parser.add_argument('-out',type=argparse.FileType('w'),default=sys.stdout, help='output file')
+
+parser.add_argument('-col5',type=int,help="Column number for the 5'splice site sequence.")
+parser.add_argument('-col3',type=int,help="Column number for the 3'splice site sequence.")
+
+parser.add_argument('-species',type=str,help='Species name. available: %s'%(' ,'.join(SPECIES_LIST)))
+
+parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header (fist line with names of columns)')
+
+parser.add_argument('-test',action='store_true',default=False,help='To test the config.')
+
+parser.add_argument('-sep',type=str,default='\t',help='Separator (default: \\t)')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+parser.add_argument('--version', action='version', version='%(prog)s v1 05-11-2016')
+parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
+
+parser.add_argument('-scripts',type=str,default='#home#',help='Local path to the directory where the script folders are stored. Absolut path may avoid problems. Default is the option #home#, that uses os.environ["HOME"] ')
+
+parser.add_argument('-script_fly',type=str,default='MaxEnt_Drosophila/',help='Local path to the directory for fly, if present. Absolut path may avoid problems')
+parser.add_argument('-script_human',type=str,default='MaxEnt_Human/',help='Local path to the directory for human, if present. Absolut path may avoid problems')
+
+parser.add_argument('-link_script_fly',type=str,default='http://gildas.idi-informatique.fr/data/MaxEnt_Drosophila.zip',help='Internet link for fly')
+parser.add_argument('-link_script_human',type=str,default='http://gildas.idi-informatique.fr/data/MaxEnt_Human.zip',help='Internet link for human')
+
+args=vars(parser.parse_args())
+
+if args['author']:
+	sys.stderr.write ('LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr\n')
+	exit()
+if args['copy']:
+	sys.stderr.write ('Copyright 2016 LEPENNETIER Gildas\n')
+	exit()
+
+if args['scripts'] == '#home#':
+	args['scripts']=os.environ['HOME']+'/'
+
+
+#test before everything
+if args['test']:
+	print("test only for 5' in drosophila")
+	DIR=args['scripts']+args['script_fly']
+	SCRIPT='score5_fly.pl'
+	
+	CMD=' '.join( [ 'echo', 'AAGGTAACA', '>', DIR+'todo'  ])
+	print('calling command: %s'%CMD)
+	EXEC( CMD , shell=True)
+	
+	CMD=' '.join( [ 'cd', DIR, ';', 'perl', SCRIPT, 'todo'  ])
+	print('calling command: %s'%CMD)
+	p = EXEC( CMD , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	output, err = p.communicate(b"input data that is passed to subprocess' stdin")
+	rc = p.returncode
+	print('Expected:'),'>', 'done'
+	print('AAGGTAACA\t7.33\n')
+	print('returned:')
+	print(output)
+	if(output != 'AAGGTAACA\t7.33\n'):
+		print('ERROR? PLEASE CHECK')
+	else:
+		print('no error detected.')
+	print(rc)
+
+	print('cleaning')
+	CMD=' '.join( [ 'rm', DIR+'todo' ])
+	print('calling command: %s'%CMD)
+	p = EXEC( CMD , shell=True)
+
+	exit()
+	
+	
+if args['species'] not in SPECIES_LIST:
+	sys.stderr.write ('Error: species %s not in species list\n'%(args['species']))
+	exit(1)
+
+if args['species'] == 'drosophila':
+	DIR=args['scripts']+args['script_fly']
+	if args['col5']:
+		SCRIPT='score5_fly.pl'
+		TypeOfScore='5'
+		COL=args['col5']
+	elif args['col3']:
+		SCRIPT='score3_fly.pl'
+		TypeOfScore='3'
+		COL=args['col3']
+	else:
+		sys.stderr.write ('Error: Please give the col5 option\n')
+		exit(1)
+if args['species'] == 'human':
+	DIR=args['scripts']+args['script_human']
+	if args['col5']:
+		SCRIPT='score5.pl'
+		TypeOfScore='5'
+		COL=args['col5']
+	elif args['col3']:
+		SCRIPT='score3.pl'
+		TypeOfScore='3'
+		COL=args['col3']
+	else:
+		sys.stderr.write ('Error: Please give the col3 option\n')
+		exit(1)
+
+	
+if not os.path.isdir(DIR):
+	sys.stderr.write ('Error: %s directory not found, trying to fix...\n'%(DIR))
+	if args['species'] == 'drosophila':
+		sys.stderr.write ('Downloading %s'%args['link_script_fly'])
+		CMD=' '.join( [ 'wget', '-nc', args['link_script_fly'], '--directory-prefix=%s'%(args['scripts']) ])
+		CMD2=' '.join( ['unzip','%sMaxEnt_Drosophila.zip'%(args['scripts']), '-d', args['scripts'] ] ) #extrem quiet, decompress in specify dir
+		CMD3=' '.join( ['rm','-v','%sMaxEnt_Drosophila.zip'%(args['scripts'])] )
+	elif args['species'] == 'human':
+		sys.stderr.write ('Downloading %s'%args['link_script_human'])
+		CMD=' '.join( [ 'wget', '-nc', args['link_script_human'], '--directory-prefix=%s'%(args['scripts']) ])
+		CMD2=' '.join( ['unzip','%sMaxEnt_Human.zip'%(args['scripts']), '-d', args['scripts'] ] )
+		CMD3=' '.join( ['rm','-v','%sMaxEnt_Human.zip'%(args['scripts'])] )
+	
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD)
+	p=EXEC( CMD , shell=True)
+	#need that to wait for download to finish
+	p.communicate()
+	rc = p.returncode
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD2)
+	p=EXEC( CMD2 , shell=True)
+	p.communicate()
+	rc = p.returncode
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD3)
+	p=EXEC( CMD3 , shell=True)
+
+# main
+COL=COL-1 #adapt python index to 0
+
+k=0
+for rline in args['in']:
+	k+=1
+	line = rline.split('\n')[0].split(args['sep'])
+	if k==1 and args['header']:
+		args['out'].write( line + 'MaxEnt%s'%TypeOfScore + '\n' )
+	SEQ=line[ COL ]
+	CMD=' '.join( [ 'echo', SEQ, '>', DIR+'todo'  ]) #need a fg file to execut the script
+	EXEC( CMD , shell=True)
+	CMD=' '.join( [ 'cd', DIR, ';', 'perl', SCRIPT, 'todo'])
+	returned = EXEC( CMD , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	output, err = returned.communicate(b"input data that is passed to subprocess' stdin")
+	
+	if returned.returncode != 0: #if error: debug
+		sys.stderr.write ('Error in %s when executing %s. Cell (line # %s) will be empty\n'%(sys.argv[0],SCRIPT,k))
+		if args['verbose'] >0:
+			sys.stderr.write ('code: %s\n'%returned.returncode)
+			sys.stderr.write ('error:\n%s\n'%err)
+		if args['col5'] and len(SEQ) != 9:
+			sys.stderr.write ("Sequence length incorrect for 5' splice site! given: %s expected: 9\n"%(len(SEQ)))
+			exit(1)
+		if args['col3'] and len(SEQ) != 23:
+			sys.stderr.write ("Sequence length incorrect for 3' splice site! given: %s expected: 23\n"%(len(SEQ)))
+			exit(1)
+		args['out'].write( args['sep'].join(line + [''] )  + '\n' )
+	else:
+		VALUE=output.split('\n')[0].split('\t')[1] #extract value
+		#print(VALUE)
+		args['out'].write( args['sep'].join(line + [VALUE] )  + '\n' )
