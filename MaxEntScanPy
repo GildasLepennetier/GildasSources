@@ -144,7 +144,9 @@ for rline in args['in']:
 	k+=1
 	line = rline.split('\n')[0].split(args['sep'])
 	if k==1 and args['header']:
-		args['out'].write( line + 'MaxEnt%s'%TypeOfScore + '\n' )
+		args['out'].write( args['sep'].join(line) + 'MaxEnt%s'%(TypeOfScore) + '\n')
+		continue
+	
 	SEQ=line[ COL ]
 	CMD=' '.join( [ 'echo', SEQ, '>', DIR+'todo'  ]) #need a fg file to execut the script
 	EXEC( CMD , shell=True)
@@ -153,8 +155,9 @@ for rline in args['in']:
 	output, err = returned.communicate(b"input data that is passed to subprocess' stdin")
 	
 	if returned.returncode != 0: #if error: debug
-		sys.stderr.write ('Error in %s when executing %s. Cell (line # %s) will be empty\n'%(sys.argv[0],SCRIPT,k))
 		if args['verbose'] >0:
+			sys.stderr.write ('Error in %s when executing %s. Cell (line # %s) will be empty\n'%(sys.argv[0],SCRIPT,k))
+		if args['verbose'] >1:
 			sys.stderr.write ('code: %s\n'%returned.returncode)
 			sys.stderr.write ('error:\n%s\n'%err)
 		if args['col5'] and len(SEQ) != 9:
@@ -166,5 +169,5 @@ for rline in args['in']:
 		args['out'].write( args['sep'].join(line + [''] )  + '\n' )
 	else:
 		VALUE=output.split('\n')[0].split('\t')[1] #extract value
-		#print(VALUE)
+		#sys.stderr.write("%s\n"%VALUE)
 		args['out'].write( args['sep'].join(line + [VALUE] )  + '\n' )
