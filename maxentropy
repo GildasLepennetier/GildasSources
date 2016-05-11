@@ -161,7 +161,7 @@ else
 		exit
 	fi
 fi
->&2
+
 #check for Ns in the sequences
 if [ "$HEADER" == "yes" ];then
 	if [ $indexCol5ss ];then #check n N in donor
@@ -197,7 +197,7 @@ if [ $TODO == "donor" ];then
 	#check length of sequence
 	line=$(tail -n 1 "five" | cut -f $indexCol5ss)
 	SIZE=${#line}
-	if [ $SIZE -ne 9 ];then echo "Error: your donor sequence has a size != 9 ($SIZE)">&2;rm "five"; exit; fi
+	if [ $SIZE -ne 9 ];then echo "Error: your donor sequence has a size different than 9 ($SIZE)">&2;rm "five"; exit; fi
 	#check GT
 	GT=${line:3:2}
 	if [ $GT != "GT" ];then echo "Error: your donor sequence does not have the correct GT ($GT)">&2; exit; fi
@@ -245,7 +245,7 @@ if [ $TODO == "acceptor" ];then
 	#check length of sequence
 	line=$(tail -n 1 "three" | cut -f $indexCol3ss)
 	SIZE=${#line}
-	if [ $SIZE -ne 23 ];then echo "Error: your acceptor sequence has a size != 23 ($SIZE) exit! ">&2; rm "three"; exit; fi
+	if [ $SIZE -ne 23 ];then echo "Error: your acceptor sequence has a size different than 23 ($SIZE) exit! ">&2; rm "three"; exit; fi
 	#check AG
 	AG=${line:18:2}
 	if [ $AG != "AG" ];then echo "Error: your donor sequence does not have the correct AG ($AG) exit!">&2; exit; fi
