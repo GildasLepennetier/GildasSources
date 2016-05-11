@@ -10,6 +10,7 @@ parser.add_argument('-a','-alphabet',help='Alphabet to use.')
 parser.add_argument('-i','-insensitive',action='store_true',help='Case insensitive, output will be in lower case.')
 parser.add_argument('-u','-upper',action='store_true',help='Converted output to upper case.')
 parser.add_argument('-r','-restrictions',action='append',help='Restriction to use. Give in the form <position>:<letter> example 2:G for 2ond letter to be a G. Can be cumulated: 2:G,99:x')
+parser.add_argument('-p','-possibilities',action='store_true',help='Calculate all possibilities')
 parser.add_argument('-R','-Random',action='store_true',help='Output random. Carefull: need to make all the possibilities to return something random.')
 parser.add_argument('-V','--version', action='version', version='%(prog)s 29-04-2015')
 parser.add_argument('-C','--copy',action='store_true',help='Display Copyright informations')
@@ -26,6 +27,14 @@ if not args['l']:
 	exit()
 if not args['a']:
 	print ("Error: alphabet required")
+	exit()
+if args['p']:
+	import math
+	try:
+		print (  math.pow( len(args['a']),  (args['l'] - len(args['r']) ) ) )
+	except TypeError: #because restriction can be None
+		print (  math.pow( len(args['a']),  args['l'] ) )
+			
 	exit()
 L=int(args['l'])#split(',')
 A=[a for a in args['a']] 
