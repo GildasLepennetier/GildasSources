@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #coding: utf-8
-import argparse,os,sys
+import argparse,os,sys,datetime
 from subprocess import Popen as EXEC
 from subprocess import PIPE as PIPE
 
@@ -18,6 +18,7 @@ parser.add_argument('-species',type=str,help='Species name. available: %s'%(' ,'
 parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header (fist line with names of columns)')
 
 parser.add_argument('-test',action='store_true',default=False,help='To test the config.')
+parser.add_argument('-progress',default=False,action='store_true',help='Progression of the processing.')
 
 parser.add_argument('-sep',type=str,default='\t',help='Separator (default: \\t)')
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
@@ -26,7 +27,6 @@ parser.add_argument('--version', action='version', version='%(prog)s v1 05-11-20
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
 
 parser.add_argument('-scripts',type=str,default='#home#',help='Local path to the directory where the script folders are stored. Absolut path may avoid problems. Default is the option #home#, that uses os.environ["HOME"] ')
-
 parser.add_argument('-script_fly',type=str,default='MaxEnt_Drosophila/',help='Local path to the directory for fly, if present. Absolut path may avoid problems')
 parser.add_argument('-script_human',type=str,default='MaxEnt_Human/',help='Local path to the directory for human, if present. Absolut path may avoid problems')
 
@@ -179,8 +179,14 @@ for line in output.split('\n') :
 		DICT [ line.split('\t')[0] ] = line.split('\t')[1]
 #same, but this time print the output
 k=0
+nbTot=len(LINES)
 for line in LINES:
 	k+=1
+	if k % 100 == 0 and args['progress']:
+		sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(k)/nbTot*100,1),k,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+	if k == nbTot and args['progress']:
+		sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(k)/nbTot*100,1),k,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'\n'))
+		
 	if k==1 and args['header']:
 		args['out'].write( args['sep'].join(line + [ 'MaxEnt%s'%(TypeOfScore) ] ) + '\n')
 		continue
@@ -195,4 +201,6 @@ for line in LINES:
 		args['out'].write( args['sep'].join(line) + '' + '\n')
 		continue
 	args['out'].write( args['sep'].join(line + [ DICT [SEQ] ]) + '\n')
-	
+#clean
+CMD=' '.join( [ 'rm', DIR+'todo'])
+EXEC( CMD , shell=True)
