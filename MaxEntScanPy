@@ -10,8 +10,8 @@ parser = argparse.ArgumentParser(description='Compute splice site strength score
 parser.add_argument('-in',type=argparse.FileType('r'),default=sys.stdin, help='input file')
 parser.add_argument('-out',type=argparse.FileType('w'),default=sys.stdout, help='output file')
 
-parser.add_argument('-col5',type=int,help="Column number for the 5'splice site sequence.")
-parser.add_argument('-col3',type=int,help="Column number for the 3'splice site sequence.")
+parser.add_argument('-col5',type=int,help="Column number for the 5'splice site sequence. -3  +6 (GT) example: AAG GT AACA")
+parser.add_argument('-col3',type=int,help="Column number for the 3'splice site sequence. -20 +3 (AG) example: CCCGAATTCGTCATCTGC AG CAG")
 
 parser.add_argument('-species',type=str,help='Species name. available: %s'%(' ,'.join(SPECIES_LIST)))
 
@@ -78,11 +78,14 @@ if args['test']:
 
 	exit()
 	
-	
-if args['species'] not in SPECIES_LIST:
+if not args['species']:
+	sys.stderr.write ('Error: please provide option -species ')
+	exit(1)
+elif args['species'] not in SPECIES_LIST:
 	sys.stderr.write ('Error: species %s not in species list\n'%(args['species']))
 	exit(1)
 
+		
 if args['species'] == 'drosophila':
 	DIR=args['scripts']+args['script_fly']
 	if args['col5']:
@@ -96,7 +99,7 @@ if args['species'] == 'drosophila':
 	else:
 		sys.stderr.write ('Error: Please give the col5 option\n')
 		exit(1)
-if args['species'] == 'human':
+elif args['species'] == 'human':
 	DIR=args['scripts']+args['script_human']
 	if args['col5']:
 		SCRIPT='score5.pl'
@@ -140,34 +143,56 @@ if not os.path.isdir(DIR):
 COL=COL-1 #adapt python index to 0
 
 k=0
+SEQ_ALL=[]
+
+#get all proper sequences, ignore the other for now
+LINES=[]
+
 for rline in args['in']:
 	k+=1
 	line = rline.split('\n')[0].split(args['sep'])
+	LINES.append(line)
 	if k==1 and args['header']:
-		args['out'].write( args['sep'].join(line) + 'MaxEnt%s'%(TypeOfScore) + '\n')
 		continue
+	SEQ=line[ COL ].upper()
+	if 'N' in SEQ:
+		continue
+	if args['col5'] and SEQ[3:5] != 'GT':
+		continue
+	if args['col3'] and SEQ[18:20] != 'AG':
+		continue
+	SEQ_ALL.append(SEQ)
 	
-	SEQ=line[ COL ]
-	CMD=' '.join( [ 'echo', SEQ, '>', DIR+'todo'  ]) #need a fg file to execut the script
-	EXEC( CMD , shell=True)
-	CMD=' '.join( [ 'cd', DIR, ';', 'perl', SCRIPT, 'todo'])
-	returned = EXEC( CMD , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-	output, err = returned.communicate(b"input data that is passed to subprocess' stdin")
 	
-	if returned.returncode != 0: #if error: debug
-		if args['verbose'] >0:
-			sys.stderr.write ('Error in %s when executing %s. Cell (line # %s) will be empty\n'%(sys.argv[0],SCRIPT,k))
-		if args['verbose'] >1:
-			sys.stderr.write ('code: %s\n'%returned.returncode)
-			sys.stderr.write ('error:\n%s\n'%err)
-		if args['col5'] and len(SEQ) != 9:
-			sys.stderr.write ("Sequence length incorrect for 5' splice site! given: %s expected: 9\n"%(len(SEQ)))
-			exit(1)
-		if args['col3'] and len(SEQ) != 23:
-			sys.stderr.write ("Sequence length incorrect for 3' splice site! given: %s expected: 23\n"%(len(SEQ)))
-			exit(1)
-		args['out'].write( args['sep'].join(line + [''] )  + '\n' )
-	else:
-		VALUE=output.split('\n')[0].split('\t')[1] #extract value
-		#sys.stderr.write("%s\n"%VALUE)
-		args['out'].write( args['sep'].join(line + [VALUE] )  + '\n' )
+#write file of sequences
+with open (DIR+'todo', 'w') as f1:
+	for s in set(SEQ_ALL): #set remove duplicates
+		f1.write("%s\n"%s)
+
+
+CMD=' '.join( [ 'cd', DIR, ';', 'perl', SCRIPT, 'todo'])
+returned = EXEC( CMD , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+output, err = returned.communicate(b"input data that is passed to subprocess' stdin")
+DICT={}
+for line in output.split('\n') :
+	if line:
+		DICT [ line.split('\t')[0] ] = line.split('\t')[1]
+#same, but this time print the output
+k=0
+for line in LINES:
+	k+=1
+	if k==1 and args['header']:
+		args['out'].write( args['sep'].join(line + [ 'MaxEnt%s'%(TypeOfScore) ] ) + '\n')
+		continue
+	SEQ=line[ COL ].upper()
+	if 'N' in SEQ:
+		args['out'].write( args['sep'].join(line) + '' + '\n')
+		continue
+	if args['col5'] and SEQ[3:5] != 'GT':
+		args['out'].write( args['sep'].join(line) + '' + '\n')
+		continue
+	if args['col3'] and SEQ[18:20] != 'AG':
+		args['out'].write( args['sep'].join(line) + '' + '\n')
+		continue
+	args['out'].write( args['sep'].join(line + [ DICT [SEQ] ]) + '\n')
+	
