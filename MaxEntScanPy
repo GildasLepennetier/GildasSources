@@ -192,13 +192,13 @@ for line in LINES:
 		continue
 	SEQ=line[ COL ].upper()
 	if 'N' in SEQ:
-		args['out'].write( args['sep'].join(line) + '' + '\n')
+		args['out'].write( args['sep'].join(line+['']) + '\n')
 		continue
 	if args['col5'] and SEQ[3:5] != 'GT':
-		args['out'].write( args['sep'].join(line) + '' + '\n')
+		args['out'].write( args['sep'].join(line+['']) + '\n')
 		continue
 	if args['col3'] and SEQ[18:20] != 'AG':
-		args['out'].write( args['sep'].join(line) + '' + '\n')
+		args['out'].write( args['sep'].join(line+['']) + '\n')
 		continue
 	args['out'].write( args['sep'].join(line + [ DICT [SEQ] ]) + '\n')
 #clean
