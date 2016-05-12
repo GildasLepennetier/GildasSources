@@ -36,12 +36,14 @@ starts_index=int(args['starts'])-1
 ends_index  =int(args['ends']  )-1
 strand_index=int(args['strand'])-1
 # Load a fasta file
+
+
 #### manual FASTA ####
 # Load a fasta file - rough
 def Fasta_To_Dico(path,idtag='>',endline="\n"):
-	with open(path,'r') as file:
+	with open(path,'r') as fi:
 		dico={}
-		for line in file:
+		for line in fi:
 			line=line.split(endline)[0]
 			if line[0]==idtag:
 				ID=line[1:].split(' ')[0] #this to avoid full name #avoid '>' in IDs
@@ -58,10 +60,9 @@ def loadFasta(adresse,endline="\n"):
 		SEQ=str( seq_record.seq.split(endline)[0] )
 		if ID not in dico.keys():
 			dico[ID]=SEQ
-	return dico
+	return dico 
 #### Give the reverse complement of a DNA sequence, change also if iupac nucleotide ####
 def revCompl_DNA(seq):
-	#Return reverse complement of dna, but does not change in case of N, Y, ...
 	reverse = []
 	if seq:
 		for letter in seq: #remplir avec le complementaire
@@ -92,12 +93,13 @@ def insert_in_string(string,insert="\n",each=80):
 		else:
 			string2=string2+letter
 	return string2
+
+
 ################ MAIN ################
 try:
 	DICOChrom = loadFasta(FASTA,endline=args['endline'])
 except:
-	if VERB_LVL > 1:
-		sys.stderr.write("Fasta loading using Biopython failled, using personnal function")
+	sys.stderr.write("Fasta loading using Biopython failled, using personnal function, may be slow\n")
 	DICOChrom = Fasta_To_Dico(FASTA,endline=args['endline'])
 lineNB=0
 LINES=IN.readlines()
