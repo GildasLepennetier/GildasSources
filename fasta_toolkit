@@ -1,9 +1,6 @@
 #!/usr/bin/python
 import sys,argparse
 ##########################################
-# some function for one day
-# Load a fasta file
-# manual FASTA ####
 # Load a fasta file - rough
 def Fasta_To_Dico_path(path,idtag='>',endline="\n"):
 	with open(path,'r') as file:
@@ -39,6 +36,10 @@ def loadFasta(adresse,endline="\n"):
 		else:
 			print("ERROR: %s already exist as key!"%ID)
 	return dico
+# Load fasta biopython2
+def loadFastaBiopython(path):
+	from Bio import SeqIO
+	return { k.split(' ')[0]:seq.split('\n')[0] for k,seq in SeqIO.to_dict(SeqIO.parse(path, 'fasta')).items() }
 # Give the reverse complement of a DNA sequence, change also if iupac nucleotide ####
 def revCompl_DNA(seq):
 	reverse = []
@@ -105,6 +106,7 @@ def insert_in_string(string,insert="\n",each=80):
 			string2=string2+letter
 	return string2
 
+# main 
 if __name__ == '__main__':
 	COMMANDES=["csv_to_fasta","fasta_to_csv","fasta_freq","fasta_extract_ids","fasta_translate"]
 	RULES="MAX_SEQ_NB=1000;MAX_CHAR_NB=100000;MAX_SEQ_LENGTH=3000"
@@ -333,4 +335,3 @@ if __name__ == '__main__':
 			if len(DICO['record_key']) >= RULES['MAX_SEQ_LENGTH']:
 				#remove this record
 				continue
-	

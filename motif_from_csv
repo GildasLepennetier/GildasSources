@@ -43,11 +43,11 @@ parser.add_argument('-action',default="count",type=str,help='which function to u
 parser.add_argument('-sequence',type=int,help='column number for sequence')
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have a header')
 parser.add_argument('-pattern','-e',type=str,help='pattern to search for (ex: CG for CpG). Handle regular expression, exemple. A[AT]A for AAA or ATA. You can give it in coma-separated values.') #action='append', -> create a list
+parser.add_argument('-file_pattern',type=str,help='If the pattern to search are in a file, give the path.')
 parser.add_argument('-rc',default=False,action='store_true',help='search also the reverse complement.')
 parser.add_argument('-separated',default=False,action='store_true',required=False,help='add this flag to get an output with only the result (default: add column in the file)')
 parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. this put also one flag --verbose')
 parser.add_argument('-sep',type=str,default='\t',help='separator (default: \\t)')
-parser.add_argument('-endline',type=str,default='\n',help='separator (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s 12-17-2014')#version display
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
@@ -60,26 +60,39 @@ if args['copy']:
 	print ("Copyright 2014 LEPENNETIER Gildas")
 	exit()
 if args['action'] not in ['count','position']:
-	sys.stderr.write("Error: bad keyword. Please select [ count ; position ]"+args['endline'])
+	sys.stderr.write("Error: bad keyword. Please select [ count ; position ]"+'\n')
 	exit()
-if not args['pattern']:
-	sys.stderr.write("Error: argument -sequence is required"+args['endline'])
-	parser.print_help()
-	quit()
+	
+
 if not args['sequence']:
-	sys.stderr.write("Error: argument -sequence is required"+args['endline'])
+	sys.stderr.write("Error: argument -sequence is required"+'\n')
 	parser.print_help()
 	quit()
 VERB_LVL=args['verbose']
 IN=args['in']
 OUT=args['out']
 sep=args['sep']
+
+
 PATTERNS=[]
-for p in args['pattern'].split(','):
-	if p and p not in ['','\n']:
-		PATTERNS.append(p)
-		if args['rc']:
-			PATTERNS.append( revCompl_DNA(p) )
+if args['pattern']:
+	for p in args['pattern'].split(','):
+		if p and p not in ['','\n']:
+			PATTERNS.append(p)
+			if args['rc']:
+				PATTERNS.append( revCompl_DNA(p) )
+if args['file_pattern']:
+	with open(args['file_pattern'], 'r') as fi:
+		for line in fi.readlines():
+			if line[0] in ['#']: #allow comments lines
+				continue
+			PATTERNS.append( line.split('\n')[0] )
+			if args['rc']:
+				PATTERNS.append( revCompl_DNA( line.split('\n')[0] ) )
+if not PATTERNS:
+	sys.stderr.write("Error: no pattern found. Please provide -pattern or -file_pattern is required"+'\n')
+	parser.print_help()
+	quit()
 
 NOTINFILE=args['separated']
 seq_index=int(args['sequence'])-1
@@ -89,9 +102,9 @@ if args['header']:
 	FirtLineNameCol=Lines[0].split('\n')[0].split(sep)[seq_index] #get first line: extract name of the column (remove spaces)
 	COL_NAME=[ "%s_%s_%s"%(FirtLineNameCol,e,args['action']) for e in PATTERNS ]
 	if NOTINFILE:
-		OUT.write( sep.join( COL_NAME ) + args['endline'] ) 
+		OUT.write( sep.join( COL_NAME ) + '\n' ) 
 	else:
-		OUT.write( sep.join( Lines[0].split('\n')[0].split(sep) + COL_NAME ) + args['endline'] )
+		OUT.write( sep.join( Lines[0].split('\n')[0].split(sep) + COL_NAME ) + '\n' )
 		
 		
 	Lines=Lines[1:] #skip first line
@@ -103,7 +116,7 @@ for line in Lines:
 	if kk % 100 == 0 and args['progress']:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 	if kk == nbTot and args['progress']:
-		sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
+		sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'\n'))
 	# sequence
 	SEQ=splitLINE[seq_index]
 	OUTVALUE=[]
@@ -115,6 +128,6 @@ for line in Lines:
 			OUTVALUE.append( ",".join([str(el) for el in POSITIONS]) ) #no need to add 1 at the coordinates: already done
 	###################
 	if NOTINFILE:
-		OUT.write( sep,join( [str(e) for e in OUTVALUE ] ) + args['endline'])
+		OUT.write( sep,join( [str(e) for e in OUTVALUE ] ) + '\n')
 	else:
-		OUT.write( sep.join( [str(e) for e in splitLINE + OUTVALUE ] ) + args['endline'])
+		OUT.write( sep.join( [str(e) for e in splitLINE + OUTVALUE ] ) + '\n')
