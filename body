@@ -11,4 +11,5 @@ if [[ $# -ne 2 ]];then
 	usage
 else 
 	sed "$1q;d" $2
+	#awk "NR == $2" $2
 fi
