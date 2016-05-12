@@ -22,18 +22,17 @@ parser.add_argument('-progress',default=False,action='store_true',help='Print pr
 parser.add_argument('-add_type',default=False,action='store_true',help='Add the type of intron (or example GT-AG) based on extremities of the extracted sequence')
 
 parser.add_argument('-sep',type=str,default='\t',help='Separator (default: \\t)')
-parser.add_argument('-endline',type=str,default='\n',help='End of line (default: unix \\n)')
 parser.add_argument('--version', action='version', version='%(prog)s v1.2')#version display
 parser.add_argument('--verbose', '-v', action='count',default=0,help='Verbosity')# count the level of verbosity, +1 for each -v flag
 parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-    exit()
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
 if args['copy']:
-    print ("Copyright 2014 LEPENNETIER Gildas")
-    exit()
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
 IN=args['in']
 OUT=args['out']
 FA=args['fasta']
@@ -41,14 +40,14 @@ sep=args['sep']
 chr_index   =int(args['chr']   )-1
 strand_index=int(args['strand'])-1
 try:
-    starts_index=int(args['istart'])-1
+	starts_index=int(args['istart'])-1
 except TypeError:
-    starts_index=None
+	starts_index=None
 try:
-    ends_index  =int(args['iend']  )-1
+	ends_index  =int(args['iend']  )-1
 except TypeError:
-    ends_index=None
-    
+	ends_index=None
+	
 b5=int(args['b5'])
 a5=int(args['a5'])
 b3=int(args['b3'])
@@ -57,87 +56,87 @@ a3=int(args['a3'])
 ### functions
 # Load a fasta file
 def Fasta_To_Dico(path,idtag='>',endline="\n"):
-    with open(path,'r') as file:
-        dico={}
-        for line in file:
-            line=line.split(endline)[0]
-            if line[0]==idtag:
-                ID=line[1:].split(' ')[0] #avoid '>' in IDs
-                dico[ID]='' 
-            else:
-                dico[ID]+=line
-    return dico
+	with open(path,'r') as file:
+		dico={}
+		for line in file:
+			line=line.split(endline)[0]
+			if line[0]==idtag:
+				ID=line[1:].split(' ')[0] #avoid '>' in IDs
+				dico[ID]='' 
+			else:
+				dico[ID]+=line
+	return dico
 # LOAD FASTA BIOPYTHON
 def loadFasta(adresse):
-    from Bio import SeqIO
-    dico={}
-    for seq_record in SeqIO.parse(adresse, 'fasta'):
-        ID=str(seq_record.description.split(' ')[0] )
-        SEQ=str(seq_record.seq.split("\n")[0])
-        if ID not in dico.keys():
-            dico[ID]=SEQ
-    return dico
+	from Bio import SeqIO
+	dico={}
+	for seq_record in SeqIO.parse(adresse, 'fasta'):
+		ID=str(seq_record.description.split(' ')[0] )
+		SEQ=str(seq_record.seq.split("\n")[0])
+		if ID not in dico.keys():
+			dico[ID]=SEQ
+	return dico
 ### Give the reverse complement of a DNA sequence, change also if iupac nucleotide, does not change in case of N
 def revCompl_DNA(seq):
-    reverse = []
-    if seq:
-        for letter in seq: #remplir avec le complementaire
-            CORRESPONDANCE={"A":"T","a":"t","C":"G","c":"g","G":"C","g":"c","T":"A","t":"a",#usual ACGT
-                            "R":"Y","r":"y","Y":"R","y":"r",#iupac R=A/G, Y=C/T
-                            "S":"W","s":"w","W":"S","w":"s",#S=G/C, W=A/T
-                            "K":"M","k":"m","M":"K","m":"k",#K=G/T, M=A/C
-                            "B":"V","b":"v","V":"B","v":"b",# B=C/G/T, V=A/C/G
-                            "D":"H","d":"h","H":"D","h":"d",# D=A/G/T, H=A/C/T
-                            "N":"N","n":"n"}#keep the Ns
-            if letter in CORRESPONDANCE.keys():
-                reverse.append(CORRESPONDANCE[letter])
-            elif letter in ['u','U']:
-                sys.stderr.write('ERROR, must work on DNA, and U or u was found')
-                exit(1)
-            else:
-                reverse.append(letter)
-        return ''.join(reverse[::-1]) #inverser
-    else: #no seq given return empty
-        return ""
+	reverse = []
+	if seq:
+		for letter in seq: #remplir avec le complementaire
+			CORRESPONDANCE={"A":"T","a":"t","C":"G","c":"g","G":"C","g":"c","T":"A","t":"a",#usual ACGT
+							"R":"Y","r":"y","Y":"R","y":"r",#iupac R=A/G, Y=C/T
+							"S":"W","s":"w","W":"S","w":"s",#S=G/C, W=A/T
+							"K":"M","k":"m","M":"K","m":"k",#K=G/T, M=A/C
+							"B":"V","b":"v","V":"B","v":"b",# B=C/G/T, V=A/C/G
+							"D":"H","d":"h","H":"D","h":"d",# D=A/G/T, H=A/C/T
+							"N":"N","n":"n"}#keep the Ns
+			if letter in CORRESPONDANCE.keys():
+				reverse.append(CORRESPONDANCE[letter])
+			elif letter in ['u','U']:
+				sys.stderr.write('ERROR, must work on DNA, and U or u was found')
+				exit(1)
+			else:
+				reverse.append(letter)
+		return ''.join(reverse[::-1]) #inverser
+	else: #no seq given return empty
+		return ""
 
 ### automatic detection of shift compared to constitutive splice site in sequence, based on position. Return list of shift found
 # NEED : revCompl_DNA
 def consti_search(seq, strand, index, consti, range_shift):
-    l=[]
-    if strand == "+":
-        if seq[index:index+2].upper() != consti:
-            for shift in range_shift:
-                Type=seq[shift+index:shift+index+2]
-                if Type.upper() == consti:
-                    l.append(shift)
-    if strand == "-":
-        if revCompl_DNA(seq[index-2:index].upper()) != consti:
-            for shift in range_shift:
-                Type=revCompl_DNA(seq[shift+index-2:shift+index])
-                if Type.upper() == consti:
-                    l.append(shift)
-    return (l)
+	l=[]
+	if strand == "+":
+		if seq[index:index+2].upper() != consti:
+			for shift in range_shift:
+				Type=seq[shift+index:shift+index+2]
+				if Type.upper() == consti:
+					l.append(shift)
+	if strand == "-":
+		if revCompl_DNA(seq[index-2:index].upper()) != consti:
+			for shift in range_shift:
+				Type=revCompl_DNA(seq[shift+index-2:shift+index])
+				if Type.upper() == consti:
+					l.append(shift)
+	return (l)
 ######## load fasta file
 try:
-    DICO=loadFasta(FA)
+	DICO=loadFasta(FA)
 except:
-    sys.stderr.write("WARNING: Biopython load of fasta failed"+args['endline'])
-    DICO=Fasta_To_Dico(FA)
+	sys.stderr.write("WARNING: Biopython load of fasta failed"+'\n')
+	DICO=Fasta_To_Dico(FA)
 Lines = IN.readlines()
 if args['header']: #skip first line
-    FirstLine=Lines[0].split(args['endline'])[0].split(sep)
-    if starts_index:
-        FirstLine=FirstLine+['SS5']
-        if args['add_type']:
-            FirstLine=FirstLine+['SS5_type']
-    if ends_index:
-        FirstLine=FirstLine+['SS3']
-        if args['add_type']:
-            FirstLine=FirstLine+['SS3_type']
-            
-    OUT.write( sep.join( FirstLine ) + args['endline'])
-    Lines=Lines[1:]
-    
+	FirstLine=Lines[0].split('\n')[0].split(sep)
+	if starts_index:
+		FirstLine=FirstLine+['SS5']
+		if args['add_type']:
+			FirstLine=FirstLine+['SS5_type']
+	if ends_index:
+		FirstLine=FirstLine+['SS3']
+		if args['add_type']:
+			FirstLine=FirstLine+['SS3_type']
+			
+	OUT.write( sep.join( FirstLine ) + '\n')
+	Lines=Lines[1:]
+	
 ######## main
 kk=0
 nbTot=len(Lines)
@@ -146,93 +145,93 @@ WARN_empty=0
 WARN_length=0
 
 for line in Lines:
-    kk+=1
-    if kk % 100 == 0 and args['progress']:
-        sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    if kk == nbTot and args['progress']:
-        sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),args['endline']))
-    lineSplit=line.split(args['endline'])[0].split(sep)
-    chro  =lineSplit[chr_index]
-    strand=lineSplit[strand_index]
+	kk+=1
+	if kk % 100 == 0 and args['progress']:
+		sys.stderr.write("\r%s %% - (%s / %s) - %s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+	if kk == nbTot and args['progress']:
+		sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'\n'))
+	lineSplit=line.split('\n')[0].split(sep)
+	chro  =lineSplit[chr_index]
+	strand=lineSplit[strand_index]
 
-    #exchange start and end when negative strand
-    if strand == '-':
-        try: #load 
-            end =int(lineSplit[starts_index]) -1 #here: -1 because of python string starting at 0
-            start =int(lineSplit[ends_index])
-        except ValueError:
-            sys.stderr.write("ERROR: column %s can not be converted to integer on line %s\n"%(starts_index,kk))
-            if kk == 1:
-                sys.stderr.write(" -> did you forget the header option?"+ args['endline'])
-            exit(1)
-    else:
-        if strand != '+':
-            sys.stderr.write("WARNING: no +/- strand for line %s, so using +"%s(line)+ args['endline'])
-        try: #load 
-            start =int(lineSplit[starts_index]) -1 #here: -1 because of python string starting at 0
-            end =int(lineSplit[ends_index])
-        except ValueError:
-            sys.stderr.write("ERROR: column %s can not be converted to integer on line %s\n"%(starts_index,kk))
-            if kk == 1:
-                sys.stderr.write(" -> did you forget the header option?"+ args['endline'])
-            exit(1)
-    #load sequence for the chromosome        
-    if chro in DICO:
-        SEQ=DICO[chro]
-    else:
-        sys.stderr.write("ERROR: chromosome %s not found, line %s skipped\n"%(chro,kk))
-        continue
+	#exchange start and end when negative strand
+	if strand == '-':
+		try: #load 
+			end =int(lineSplit[starts_index]) -1 #here: -1 because of python string starting at 0
+			start =int(lineSplit[ends_index])
+		except ValueError:
+			sys.stderr.write("ERROR: column %s can not be converted to integer on line %s\n"%(starts_index,kk))
+			if kk == 1:
+				sys.stderr.write(" -> did you forget the header option?"+ '\n')
+			exit(1)
+	else:
+		if strand != '+':
+			sys.stderr.write("WARNING: no +/- strand for line %s, so using +"%s(line)+ '\n')
+		try: #load 
+			start =int(lineSplit[starts_index]) -1 #here: -1 because of python string starting at 0
+			end =int(lineSplit[ends_index])
+		except ValueError:
+			sys.stderr.write("ERROR: column %s can not be converted to integer on line %s\n"%(starts_index,kk))
+			if kk == 1:
+				sys.stderr.write(" -> did you forget the header option?"+ '\n')
+			exit(1)
+	#load sequence for the chromosome        
+	if chro in DICO:
+		SEQ=DICO[chro]
+	else:
+		sys.stderr.write("ERROR: chromosome %s not found, line %s skipped\n"%(chro,kk))
+		continue
 
-    if strand == '-':
-        SS5=revCompl_DNA( SEQ[start-a5:start+b5] )#reverse complement
-        SS3=revCompl_DNA( SEQ[end-a3:end+b3] )
-        if args['add_type']:
-            SS5_type=revCompl_DNA( SEQ[start-2:start] )
-            SS3_type=revCompl_DNA( SEQ[end:end+2] )
-    else:
-        SS5=SEQ[start-b5:start+a5]#Extract sequence
-        SS3=SEQ[end-b3:end+a3]#Extract sequence
-        if args['add_type']:
-            SS5_type=SEQ[start:start+2]
-            SS3_type=SEQ[end-2:end]
+	if strand == '-':
+		SS5=revCompl_DNA( SEQ[start-a5:start+b5] )#reverse complement
+		SS3=revCompl_DNA( SEQ[end-a3:end+b3] )
+		if args['add_type']:
+			SS5_type=revCompl_DNA( SEQ[start-2:start] )
+			SS3_type=revCompl_DNA( SEQ[end:end+2] )
+	else:
+		SS5=SEQ[start-b5:start+a5]#Extract sequence
+		SS3=SEQ[end-b3:end+a3]#Extract sequence
+		if args['add_type']:
+			SS5_type=SEQ[start:start+2]
+			SS3_type=SEQ[end-2:end]
 
-            
-    #last checks
-    if True:
-        if starts_index:
-            if SS5 == '':
-                WARN_empty+=1 #["chr %s (5') position %s"%(chro,start)]
-            if 'n' in SS5 or 'N' in SS5:
-                WARN_N+=1 #["chr %s (5') position %s"%(chro,start)]
-            if len(SS5) != b5+a5:
-                WARN_length+=1 #["chr %s (5') position %s"%(chro,start)]
+			
+	#last checks
+	if True:
+		if starts_index:
+			if SS5 == '':
+				WARN_empty+=1 #["chr %s (5') position %s"%(chro,start)]
+			if 'n' in SS5 or 'N' in SS5:
+				WARN_N+=1 #["chr %s (5') position %s"%(chro,start)]
+			if len(SS5) != b5+a5:
+				WARN_length+=1 #["chr %s (5') position %s"%(chro,start)]
 
-        if ends_index:
-            if SS3 == '':
-                WARN_empty+=1 #["chr %s (3') position %s"%(chro,end)]
-            if 'n' in SS3 or 'N' in SS3:
-                WARN_N+=1 #["chr %s (3') position %s"%(chro,end)]
-            if len(SS3) != b3+a3:
-                WARN_length+=1 #["chr %s (3') position %s"%(chro,end)]
+		if ends_index:
+			if SS3 == '':
+				WARN_empty+=1 #["chr %s (3') position %s"%(chro,end)]
+			if 'n' in SS3 or 'N' in SS3:
+				WARN_N+=1 #["chr %s (3') position %s"%(chro,end)]
+			if len(SS3) != b3+a3:
+				WARN_length+=1 #["chr %s (3') position %s"%(chro,end)]
 
 
 
-    #writing to file
-    LIST=lineSplit
-    if starts_index:
-        LIST=LIST+[SS5]
-        if args['add_type']:
-            LIST=LIST+[SS5_type]
-    if ends_index:
-        LIST=LIST+[SS3]
-        if args['add_type']:
-            LIST=LIST+[SS3_type]
-    OUT.write( sep.join( [str(el) for el in LIST] )+'\n' )
+	#writing to file
+	LIST=lineSplit
+	if starts_index:
+		LIST=LIST+[SS5]
+		if args['add_type']:
+			LIST=LIST+[SS5_type]
+	if ends_index:
+		LIST=LIST+[SS3]
+		if args['add_type']:
+			LIST=LIST+[SS3_type]
+	OUT.write( sep.join( [str(el) for el in LIST] )+'\n' )
 
 if args['verbose'] > 0:
-    if WARN_empty>0:
-        sys.stderr.write("WARNING: %s empty splice sites (%s total)\n"%(WARN_empty,nbTot))
-    if WARN_N>0:
-        sys.stderr.write("WARNING: %s splice sites containing n|N (%s total)\n"%(WARN_N,nbTot))
-    if WARN_length>0:
-        sys.stderr.write("WARNING: %s empty splice sites (%s total)\n"%(WARN_length,nbTot))
+	if WARN_empty>0:
+		sys.stderr.write("WARNING: %s empty splice sites (%s total)\n"%(WARN_empty,nbTot))
+	if WARN_N>0:
+		sys.stderr.write("WARNING: %s splice sites containing n|N (%s total)\n"%(WARN_N,nbTot))
+	if WARN_length>0:
+		sys.stderr.write("WARNING: %s empty splice sites (%s total)\n"%(WARN_length,nbTot))
