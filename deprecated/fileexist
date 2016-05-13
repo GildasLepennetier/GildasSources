@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [[ ! -f $1 ]]; then echo $1
+
+else echo -e "Output file already exists.\n\t$1"
+read -p "Write Y to overwrite, otherwise type a new name: " A 
+
+if [ "$A" == "Y" ];then echo $1;else $0 $A;fi
+
+fi
