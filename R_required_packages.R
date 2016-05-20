@@ -21,6 +21,8 @@ if(!require("gtools",quietly=T)){install.packages("gtools",dependencies=T)};libr
 #if(!require("aplpack",q=T)){install.packages("aplpack",dependencies=T)};library("aplpack",q=T)
 # principal componant analysis, PCA dudi.pca
 #if(!require("ade4",q=T)){install.packages("ade4",dependencies=T)};library("ade4",q=T)
+# foreach, parallel loops
+if(!require("foreach",quietly=T)){install.packages("foreach",dependencies=T)};library("foreach",quietly=T)
 #===============================================
 # functions
 count=function(v){return(length(na.omit(v)))}
@@ -28,6 +30,7 @@ breadth=function(v,lim=F){if(lim){v=v[v<lim]};return(length(na.omit(v))/length(v
 TSI=function(v,w=F){v=na.omit(v);if(length(v)<2){if(w){write("Error in TSI: you need a vector of size > 1",stderr())};return(NA)};if(!sum(v!=0)){write("Error in TSI: 1 value should be different than 0",stderr());return(NA)};return(sum(1-(v/max(v)))/(length(v)-1))} #tissue specificity index from Yanai 2005, min=0, max=1, > 1tissue, 1 value !=0
 stars=function(p.value,limits=c(0.05,0.01,0.001),sign=2,NS=T){if(NS){star="NS"}else{star=signif(p.value,sign)}; if(p.value<limits[1]){star="*"};if(p.value<limits[2]){star="**"};if(p.value<limits[3]){star="***"};return(star)}
 sampleRows = function(df,n,r=T){return(df[sample(nrow(df),n,replace=r),])} #sample n rows in a df, with/wo replacement
+#you can give to asymmetry two verctor of count, but not two vector of position, carefull !
 asymmetry=function(sens,anti){if(length(sens)!=length(anti)){print("Error: sens and anti should have the same length",stderr());return(NA)};s=sum(sens);a=sum(anti);if(s==0&a==0){return (0)}else{return((s-a)/(s+a))}}#take into account 0 obs in both strands, and work with vectors or integers
 motif_from_end=function(L,V){ #L=list with positionS of PA in exon - V=vector of exon size as reference
 	if(length(L)!=length(V)){write("Error, list and vector should be of same length",stderr())}
@@ -200,4 +203,15 @@ complement=function(string, type="DNA"){
 # reverse complement
 reverseComplement=function(string, type="DNA"){return(complement(reverse(string),type=type))}
 # test 	reverseComplement( "ATG" ) == "CAT"
+
+values_between = function(string,start,end,sep=','){
+    line = as.integer( unlist( strsplit(string,fixed=T,split=sep) ) )
+    return( line[ line >= start & line <= end ] )
+    #from a string coma separated integer ('1,2,50,100')-> return vector of integer in range start-end (ex: start = 2, will remove value 1)
+}
+
+values_between_count=function( V, start, end ){
+    return(count(unlist( foreach(line = V ) %do%  values_between(line, start, end) )))
+    #given a column (can contain NA), return the count of motifs between start and end
+}
 
