@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
+#coding: utf-8
 import sys,os,argparse
-parser = argparse.ArgumentParser(description='Perform actions .',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser = argparse.ArgumentParser(description='Perform actions related to isoforms.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in', required=False, type=argparse.FileType('r'),default=sys.stdin, help='Input file')
 parser.add_argument('-out', required=False, type=argparse.FileType('w'),default=sys.stdout, help='Output file')
 
