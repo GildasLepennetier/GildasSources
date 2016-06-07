@@ -2,11 +2,25 @@
 # -*- coding: utf-8 -*-
 import sys,argparse
 
-try:
-	sys.path.append('.')#to be able to import the reverse complement function on the same directory
-	from reverse_complement import revCompl_DNA
-except ImportError:
-	sys.stderr.write("ImportError: Please check that the file reverse_complement is on the same folder as %s"%argv[0])
+def revCompl_DNA(seq):
+	reverse = []
+	if seq:
+		for letter in seq: #remplir avec le complementaire
+			COR={"A":"T","a":"t","C":"G","c":"g","G":"C","g":"c","T":"A","t":"a",#usual ACGT, case conserve
+				"R":"Y","r":"y","Y":"R","y":"r",#iupac R=A/G, Y=C/T
+				"S":"W","s":"w","W":"S","w":"s",#S=G/C, W=A/T
+				"K":"M","k":"m","M":"K","m":"k",#K=G/T, M=A/C
+				"B":"V","b":"v","V":"B","v":"b",# B=C/G/T, V=A/C/G
+				"D":"H","d":"h","H":"D","h":"d"}# D=A/G/T, H=A/C/T
+			if letter in COR.keys():
+				reverse.append(COR[letter])
+			elif letter in ['u','U']:
+				print ('error, must work on DNA, and I found nome U or u')
+			else:
+				reverse.append(letter)
+		return ''.join(reverse[::-1]) #inverser
+	else:
+		return ""
 	
 # calculate number of match/mismatch
 def match_count(string,ref,to_upper=False):
