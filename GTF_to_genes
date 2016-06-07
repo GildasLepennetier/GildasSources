@@ -7,6 +7,9 @@ parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sy
 parser.add_argument('-element',type=str,default='exon',required=False,help='name for the element, default: exon')
 parser.add_argument('-isoIDpattern',type=str,default=".*transcript_id \"([\w\.-]*)\";.*",required=False,help='pattern for the isoform ID (default:Ensembl) .*transcript_id \"([\w.-]*)\";.*')
 parser.add_argument('-geneIDpattern',type=str,default=".*gene_id \"([\w\.-]*)\";.*",required=False,help='pattern for the gene ID (default:Ensembl) .*gene_id \"([\w.-]*)\";.*')
+
+parser.add_argument('-keepChrIds',type=str,required=False,help='give the list of chromosome ids to keep, coma separated')
+
 parser.add_argument('-sep',type=str,default='\t',nargs='?',help='separator (default: \\t)')
 parser.add_argument('--version', action='version', version='%(prog)s v04-03-2014')#version display
 parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
@@ -34,6 +37,13 @@ isoIDpattern= args['isoIDpattern'] #str() ??
 geneIDpattern=args['geneIDpattern']
 Lines = IN.readlines()
 index_gff={'seqid':0,'source':1,'type':2,'start':3,'end':4,'score':5,'strand':6,'frame':7,'attribute':8}
+
+if args['keepChrIds']:
+	if args['keepChrIds'] != 'all':
+		keepChrIds=args['keepChrIds'].split(',')
+	else:
+		keepChrIds=''
+
 GENOME={}
 if VERB_LVL > 0:
     sys.stderr.write("Loading the dictionnary : genes, isoforms...\n")
@@ -50,6 +60,11 @@ for line in Lines:
     END    =line.split(sep)[index_gff['end']]
     STRAND =line.split(sep)[index_gff['strand']]
     CHROM  =line.split(sep)[index_gff['seqid']]
+    
+    if keepChrIds:
+		if CHROM not in keepChrIds:
+			continue
+    
     #ATTRI  =line.split(sep)[index_gff['attribute']]
     EXON_INFOS   =[START,END,STRAND,CHROM]
     try:
