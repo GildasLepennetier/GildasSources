@@ -36,7 +36,7 @@ def revCompl_DNA(seq):
         return ''.join(reverse[::-1]) #inverser
     else:
         return ""
-parser = argparse.ArgumentParser(description='Find motif (pattern) in a csv-like file. Choose -action count to have the number of match OR -action position to get the coordinate (base 1) where the motif start',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser = argparse.ArgumentParser(description='Find motif (pattern) in a csv-like file. Choose -action count to have the number of match OR -action position to get the coordinate (base 1) where the motif start. Sequence will be converted to upper case.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',type=argparse.FileType('r'),default=sys.stdin, help='input file')
 parser.add_argument('-out',type=argparse.FileType('w'),default=sys.stdout, help='output file')
 parser.add_argument('-action',default="count",type=str,help='which function to use? [ count ; position ]')
@@ -108,8 +108,6 @@ if args['header']:
 		OUT.write( sep.join( COL_NAME ) + '\n' ) 
 	else:
 		OUT.write( sep.join( Lines[0].split('\n')[0].split(sep) + COL_NAME ) + '\n' )
-		
-		
 	Lines=Lines[1:] #skip first line
 kk=0
 nbTot=len(Lines)
@@ -121,7 +119,7 @@ for line in Lines:
 	if kk == nbTot and args['progress']:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'\n'))
 	# sequence
-	SEQ=splitLINE[seq_index]
+	SEQ=splitLINE[seq_index].upper()
 	OUTVALUE=[]
 	for PATTERN in PATTERNS:
 		if args['action'] == "count":
