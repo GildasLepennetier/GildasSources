@@ -41,8 +41,12 @@ parser.add_argument('-in',type=argparse.FileType('r'),default=sys.stdin, help='i
 parser.add_argument('-out',type=argparse.FileType('w'),default=sys.stdout, help='output file')
 parser.add_argument('-action',default="count",type=str,help='which function to use? [ count ; position ]')
 parser.add_argument('-sequence',type=int,help='column number for sequence')
+
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have a header')
 parser.add_argument('-pattern','-e',type=str,help='pattern to search for (ex: CG for CpG). Handle regular expression, exemple. A[AT]A for AAA or ATA. You can give it in coma-separated values.') #action='append', -> create a list
+
+parser.add_argument('-seq_to_upper',default=False,action='store_true',help='convert the target sequence to upper case (avoid soft-masqued problems)')
+
 parser.add_argument('-file_pattern',type=str,help='If the pattern to search are in a file, give the path.')
 parser.add_argument('-rc',default=False,action='store_true',help='Search also the reverse complement.')
 parser.add_argument('-kd',default=True,action='store_false',help='Keep duplicate. Default behavior is to remove duplicates')
@@ -119,7 +123,10 @@ for line in Lines:
 	if kk == nbTot and args['progress']:
 		sys.stderr.write("\r%s %% - (%s / %s) - %s%s"%( round(float(kk)/nbTot*100,1),kk,nbTot,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'\n'))
 	# sequence
-	SEQ=splitLINE[seq_index].upper()
+	SEQ=splitLINE[seq_index]
+	if args['seq_to_upper']:
+		SEQ=SEQ.upper()
+	
 	OUTVALUE=[]
 	for PATTERN in PATTERNS:
 		if args['action'] == "count":
