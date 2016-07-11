@@ -16,11 +16,11 @@ parser.add_argument('--copy',action='store_true',help='Display Copyright informa
 parser.add_argument('--author',action='store_true',help='Display author informations')
 args=vars(parser.parse_args())
 if args['author']:
-    print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
-    exit()
+	print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+	exit()
 if args['copy']:
-    print ("Copyright 2014 LEPENNETIER Gildas")
-    exit()
+	print ("Copyright 2014 LEPENNETIER Gildas")
+	exit()
 VERB_LVL=args['verbose']
 IN=args['in']
 OUT=args['out']
@@ -29,26 +29,29 @@ SkipFirst=args['header']
 col=args['col']-1
 Lines = IN.readlines()
 if SkipFirst:
-    OUT.write(  Lines[0]  )
-    Lines=Lines[1:]
+	OUT.write(  Lines[0]  )
+	Lines=Lines[1:]
+if not Lines:
+	sys.stderr.write("WARNING: file is apparently empty, exit\n")
+	exit()
 if (col+1) > len(Lines[0].split(sep)) :
-    print("ERROR: bad index for the column to use (required: %s / number: %s)"%(col+1,len(Lines[0].split(sep))))
-    exit()
+	sys.stderr.write("ERROR: bad index for the column to use (required: %s / number: %s)"%(col+1,len(Lines[0].split(sep))))
+	exit()
 DICO={}
 for line in Lines:
-    line=line.split(args['endline'])[0]
-    KEY=line.split(sep)[col]
-    if KEY not in DICO:
-        DICO[KEY]=[line]
-    else:
-        DICO[KEY].append(line)
+	line=line.split(args['endline'])[0]
+	KEY=line.split(sep)[col]
+	if KEY not in DICO:
+		DICO[KEY]=[line]
+	else:
+		DICO[KEY].append(line)
 if args['sorted']:
-    KEYS=sorted(DICO.keys())
+	KEYS=sorted(DICO.keys())
 else:
-    KEYS=DICO.keys()
+	KEYS=DICO.keys()
 for K in KEYS:
-    if len(DICO[K]) > 1: #if more than 1 element, choose one randomly
-        OUT.write(random.choice(DICO[K]) + args['endline'])
-    else:
-        if args['keepSingle']:#if not exclusion of single elements (in this case no random possible)
-            OUT.write(DICO[K][0] + args['endline'])
+	if len(DICO[K]) > 1: #if more than 1 element, choose one randomly
+		OUT.write(random.choice(DICO[K]) + args['endline'])
+	else:
+		if args['keepSingle']:#if not exclusion of single elements (in this case no random possible)
+			OUT.write(DICO[K][0] + args['endline'])
