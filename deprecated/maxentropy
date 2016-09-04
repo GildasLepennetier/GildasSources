@@ -1,0 +1,284 @@
+#!/bin/bash
+#first release 19 March 2014
+############################ default values
+CUR="$(pwd)"
+VERSION="2.0 - 2016"
+AUTHOR="Author: Gildas Lepennetier - gildas.lepennetier@hotmail.fr"
+COPY="Copyright 2014-2015 LEPENNETIER Gildas"
+SCRIPTSPATH="$HOME" 
+SPECIES="human"
+SPECIESLIST=(human drosophila)
+FOLDERNAMES=(MaxEnt_Human MaxEnt_Drosophila)
+SEP="\t"
+
+HEADER="no" #default: no header: keep 
+
+############################ define usage / help function
+usage(){
+cat << EOF
+USAGE: $(basename $0)
+	-i path/to/file 
+	-d donorColumn OR -a acceptorColumn
+	[ options: -o outputName -s species -S path/to/scripts -t sep -H if header -V print version -A print author -h HELP ]
+
+	Calculate the donor OR acceptor splice site strength based on Maximum Entropy model.
+	
+	The given file will be tested (Ns, length of sequence, GT- AG presence)
+	The default output is <given file name>.MaxEnt
+	Please provide information about header presence, or you may have an error.
+	
+INFORMATION
+	The donor splice site should be:
+		-3 +6 (GT)
+		Ex:
+		AAGGTAACA
+	The acceptor splice site should be:
+		-20 +3 (AG)
+		Ex:
+		CCCGAATTCGTCATCTGCAGCAG
+		
+ARGUMENTS
+	OBLIGATORILY
+	-i		Input file name
+	-d		Donor splice site sequence index in the input file (first column = column 1)
+	-a		Acceptor splice site sequence index in the input file
+	OPTIONALS
+	-H 		Header 		Flag to add if there is a header (first line with names) default: $HEADER
+	-o		Output 		(default: <infile>.MaxEnt)
+	-s		Species		[ available:  ${SPECIESLIST[@]} ] default: $SPECIES
+	-S		Scripts		path to the perl scripts default: $SCRIPTSPATH
+	-t		Separator	(default: tab >$SEP<)
+	-V		Display version
+	-A		Display author
+	-h		Display help and exit
+-----------------------
+	This function wrap the usage of scripts created by:
+	1) For Humans:
+		Gene Yeo : geneyeo@mit.edu
+		see also http://genes.mit.edu/burgelab/maxent/Xmaxentscan_scoreseq.html
+	2) For Drosophila
+		Joel McManus : mcmanus@andrew.cmu.edu
+		(personnal communication, modify to avoid the print of an extra \n in score5_fly.pl line 33 and in score3_fly.pl line 27)
+-----------------------
+	$AUTHOR
+	$VERSION
+	$COPY
+EOF
+}
+# function "is element in array?"
+containsElement(){
+  local e
+  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+  return 1
+}
+
+
+############################ parse arguments
+
+if [ $# -lt 1 ];then
+	echo "Error, please give arguments">&2
+	echo "For help, type: $(basename $0) -h">&2
+	exit
+fi
+
+# put colon ":" after arguments that need a value in a variable. Ex: the flag -h don't need a value. same for V and A
+while getopts "i:d:a:s:o:t:VAhH" OPTION; do
+	case $OPTION in
+		i) IN="$OPTARG";  ;;
+		d) indexCol5ss="$OPTARG";;
+		a) indexCol3ss="$OPTARG";;
+		s) SPECIES="$OPTARG";;
+		S) SCRIPTSPATH="$OPTARG";;
+		o) OUT="$OPTARG";;
+		H) HEADER="yes";;
+		t) SEP="$OPTARG";;
+		V) echo $VERSION>&2; exit;;
+		A) echo $AUTHOR>&2;  exit;;
+		h) usage; exit;;
+	esac
+done
+
+######## tests before run
+# test if species is in list of available species, else print error and exit
+! containsElement "$SPECIES" "${SPECIESLIST[@]}" && echo "$SPECIES is not in available species list: ${SPECIESLIST[@]}">&2 && exit
+
+
+# check script folder
+if [ "$SPECIES" == "${SPECIESLIST[0]}" ];then # human
+	if [ ! -d $SCRIPTSPATH/${FOLDERNAMES[0]} ];then echo "downloading scripts for $SPECIES"
+		cd $SCRIPTSPATH
+		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Human.zip
+		unzip -q MaxEnt_Human.zip
+		rm MaxEnt_Human.zip
+		echo "using ${FOLDERNAMES[1]} folder at $SCRIPTSPATH for $SPECIES"
+	fi
+	
+	SCRIPTPATH="$SCRIPTSPATH/${FOLDERNAMES[0]}"
+	SCRIPT5="score5.pl"
+	SCRIPT3="score3.pl"
+fi
+
+if [ "$SPECIES" == "${SPECIESLIST[1]}" ];then # drosophila
+	if [ ! -d $SCRIPTSPATH/${FOLDERNAMES[1]} ];then echo "downloading scripts for $SPECIES"
+		cd $SCRIPTSPATH
+		wget -nc http://gildas.idi-informatique.fr/data/MaxEnt_Drosophila.zip
+		unzip -q MaxEnt_Drosophila.zip
+		rm MaxEnt_Drosophila.zip
+		echo "using ${FOLDERNAMES[1]} folder at $SCRIPTSPATH for $SPECIES"
+	fi
+	
+	SCRIPTPATH="$SCRIPTSPATH/${FOLDERNAMES[1]}"
+	SCRIPT5="score5_fly.pl"
+	SCRIPT3="score3_fly.pl"
+fi
+
+cd $CUR
+
+# check that input file exist
+if [ ! -e "$IN" ];then
+	echo "Error, infile not found: '$IN'">&2
+    exit
+fi
+
+# if oufile not set by options, make the default output name
+if [ ! $OUT ];then
+	OUT="$IN.MaxEnt"
+fi
+
+#check for index
+if [ $indexCol5ss ];then
+	if [ $indexCol3ss ];then
+		echo "Error: please choose donor or acceptor scoring (give -a or -d with the index in file)">&2
+		exit
+	else
+		TODO="donor"
+	fi
+else
+	if [ $indexCol3ss ];then
+		TODO="acceptor"
+	else
+		echo "Error: please choose donor or acceptor scoring (give -a or -d with the index in file)">&2
+		exit
+	fi
+fi
+
+#check for Ns in the sequences
+if [ "$HEADER" == "yes" ];then
+	if [ $indexCol5ss ];then #check n N in donor
+		NB=$(cut -f $indexCol5ss $IN | tail -n +2 | grep -in N | wc -l)
+		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB">&2;exit; fi
+	fi
+	if [ $indexCol3ss ];then #check n N in donor
+		NB=$(cut -f $indexCol3ss $IN | tail -n +2 | grep -in N | wc -l)
+		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB">&2;exit; fi
+	fi
+fi
+
+if [ "$HEADER" == "no" ];then
+	if [ $indexCol5ss ];then #check n N in donor
+		NB=$(cut -f $indexCol5ss $IN | grep -in N | wc -l)
+		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB">&2;exit; fi
+	fi
+	if [ $indexCol3ss ];then #check n N in donor
+		NB=$(cut -f $indexCol3ss $IN | grep -in N | wc -l)
+		if [ $NB -gt 0 ]; then echo "error: there are some N on your sequences: $NB">&2;exit; fi
+	fi
+fi
+
+####################### MAIN #########################################
+if [ $TODO == "donor" ];then
+	#echo "donor"
+	#extraction
+	if [ "$HEADER" == "yes" ]; then
+		awk "BEGIN { FS=\"$SEP\"}{if(NR > 1) print \$$indexCol5ss }" $IN > "five"
+	else
+		awk "BEGIN { FS=\"$SEP\"}{print \$$indexCol5ss }" $IN > "five"
+	fi
+	#check length of sequence
+	line=$(tail -n 1 "five" | cut -f $indexCol5ss)
+	SIZE=${#line}
+	if [ $SIZE -ne 9 ];then echo "Error: your donor sequence has a size different than 9 ($SIZE)">&2;rm "five"; exit; fi
+	#check GT
+	GT=${line:3:2}
+	if [ $GT != "GT" ];then echo "Error: your donor sequence does not have the correct GT ($GT)">&2; exit; fi
+	#check number of lines
+	REF=$(wc -l <$IN)
+	if [ "$HEADER" == "yes" ]; then
+		COUNT=$(( $(wc -l <"five") +1))
+	else
+		COUNT=$(( $(wc -l <"five") ))
+	fi
+	if [ $REF -ne $COUNT ];then
+		echo "Error in MaxEnt: bad number of lines: five - $IN (check GT | skip first line) exit!">&2
+		exit
+	fi
+	#move
+	mv "five" "$SCRIPTPATH"
+	cd "$SCRIPTPATH"
+	#first line name
+	if [ "$HEADER" == "yes" ];then
+		echo -e "seq5\tMaxEnt5" > "five.MaxEnt"
+	fi
+	#compute
+	perl $SCRIPT5 "five" >> "five.MaxEnt"
+	#clean
+	rm "five"
+	#move back
+	mv "five.MaxEnt" $CUR
+	cd $CUR
+	#paste
+	cut -f 2 "five.MaxEnt" > "five.MaxEnt2"
+	paste "$IN" "five.MaxEnt2" > "$OUT"
+	#clean
+	rm "five.MaxEnt" "five.MaxEnt2"
+	
+else
+
+if [ $TODO == "acceptor" ];then
+	#echo "acceptor"
+	#extraction
+	if [ "$HEADER" == "yes" ]; then
+		awk "BEGIN { FS=\"$SEP\"}{if(NR > 1) print \$$indexCol3ss }" $IN > "three"
+	else
+		awk "BEGIN { FS=\"$SEP\"}{print \$$indexCol3ss }" $IN > "three"
+	fi
+	#check length of sequence
+	line=$(tail -n 1 "three" | cut -f $indexCol3ss)
+	SIZE=${#line}
+	if [ $SIZE -ne 23 ];then echo "Error: your acceptor sequence has a size different than 23 ($SIZE) exit! ">&2; rm "three"; exit; fi
+	#check AG
+	AG=${line:18:2}
+	if [ $AG != "AG" ];then echo "Error: your donor sequence does not have the correct AG ($AG) exit!">&2; exit; fi
+	#check number of lines
+	REF=$(wc -l <$IN)
+	if [ "$HEADER" == "yes" ]; then
+		COUNT=$(( $(wc -l <"three") +1))
+	else
+		COUNT=$(( $(wc -l <"three") ))
+	fi
+	if [ $REF -ne $COUNT ];then
+		echo "Error in MaxEnt: bad number of lines: three - $IN (check AG | skip first line) exit!">&2
+		#rm "three"
+		exit
+	fi
+	#move
+	mv "three" "$SCRIPTPATH"
+	cd "$SCRIPTPATH"
+	#first line name
+	if [ "$HEADER" == "yes" ];then
+		echo -e "seq3\tMaxEnt3"> "three.MaxEnt"
+	fi
+	#compute
+	perl $SCRIPT3 "three" >> "three.MaxEnt"
+	#clean
+	rm "three"
+	#move back
+	mv "three.MaxEnt" $CUR
+	cd $CUR
+	#paste
+	cut -f 2 "three.MaxEnt" > "three.MaxEnt2"
+	paste "$IN" "three.MaxEnt2" > "$OUT"
+	#clean
+	rm "three.MaxEnt" "three.MaxEnt2"
+fi
+fi
