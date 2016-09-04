@@ -17,6 +17,7 @@ parser.add_argument('-species',type=str,help='Species name. available: %s'%(' ,'
 
 parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have an header (fist line with names of columns)')
 
+parser.add_argument('-download',action='store_true',default=False,help='To download the scripts. See the -scripts option for specific folder.')
 parser.add_argument('-test',action='store_true',default=False,help='To test the config.')
 parser.add_argument('-progress',default=False,action='store_true',help='Progression of the processing.')
 
@@ -46,16 +47,52 @@ if args['scripts'] == '#home#':
 	args['scripts']=os.environ['HOME']+'/'
 
 
+# download scripts if not present
+if args['download'] :
+	sys.stderr.write ('Downloading %s'%args['link_script_fly'])
+	CMD=' '.join( [ 'wget', '-nc', args['link_script_fly'], '--directory-prefix=%s'%(args['scripts']) ])
+	CMD2=' '.join( ['unzip','%sMaxEnt_Drosophila.zip'%(args['scripts']), '-d', args['scripts'] ] ) #extrem quiet, decompress in specify dir
+	CMD3=' '.join( ['rm','-v','%sMaxEnt_Drosophila.zip'%(args['scripts'])] )
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD)
+	p=EXEC( CMD , shell=True)
+	#need that to wait for download to finish
+	p.communicate()
+	rc = p.returncode
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD2)
+	p=EXEC( CMD2 , shell=True)
+	p.communicate()
+	rc = p.returncode
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD3)
+	p=EXEC( CMD3 , shell=True)
+		
+		
+	sys.stderr.write ('Downloading %s'%args['link_script_human'])
+	CMD=' '.join( [ 'wget', '-nc', args['link_script_human'], '--directory-prefix=%s'%(args['scripts']) ])
+	CMD2=' '.join( ['unzip','%sMaxEnt_Human.zip'%(args['scripts']), '-d', args['scripts'] ] )
+	CMD3=' '.join( ['rm','-v','%sMaxEnt_Human.zip'%(args['scripts'])] )
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD)
+	p=EXEC( CMD , shell=True)
+	#need that to wait for download to finish
+	p.communicate()
+	rc = p.returncode
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD2)
+	p=EXEC( CMD2 , shell=True)
+	p.communicate()
+	rc = p.returncode
+	sys.stderr.write ('\n\n->executing: %s\n'%CMD3)
+	p=EXEC( CMD3 , shell=True)
+	
+	exit()
+
+
 #test before everything
 if args['test']:
-	print("test only for 5' in drosophila")
+	print("test for 5' in drosophila")
 	DIR=args['scripts']+args['script_fly']
 	SCRIPT='score5_fly.pl'
-	
-	CMD=' '.join( [ 'echo', 'AAGGTAACA', '>', DIR+'todo'  ])
+	CMD=' '.join( [ 'echo', 'AAGGTAACA', '>', DIR+'/todo'  ])
 	print('calling command: %s'%CMD)
 	EXEC( CMD , shell=True)
-	
 	CMD=' '.join( [ 'cd', DIR, ';', 'perl', SCRIPT, 'todo'  ])
 	print('calling command: %s'%CMD)
 	p = EXEC( CMD , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -70,12 +107,11 @@ if args['test']:
 	else:
 		print('no error detected.')
 	print(rc)
-
 	print('cleaning')
-	CMD=' '.join( [ 'rm', DIR+'todo' ])
+	CMD=' '.join( [ 'rm', DIR+'/todo' ])
 	print('calling command: %s'%CMD)
 	p = EXEC( CMD , shell=True)
-
+	print("test for 5' in human")
 	exit()
 	
 if not args['species']:
