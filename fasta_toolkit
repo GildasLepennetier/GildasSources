@@ -362,7 +362,7 @@ if __name__ == '__main__':
 				k+=1
 				if k > maxi:
 					exit()
-				args['out'].write("%s\n%s"%(id,DICO[id]))
+				args['out'].write(">%s\n%s"%(id,DICO[id]))
 				
 				
 		
