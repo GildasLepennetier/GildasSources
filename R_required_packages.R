@@ -75,6 +75,15 @@ motif_expand=function(L,split=",",toint=F){
 		return( OUT )
 	}
 }
+alignWords = function(l1,l2,sep=" ",minspace=2){
+	if(minspace<0){simpleError("error, minimum space is 0")}
+	M1 =nchar(l1)
+	M2 =nchar(l2)
+	MAX = max(M1)+max(M2)+minspace
+	DIFF = MAX - (M1+M2)
+	l3 = sapply(X = DIFF, FUN = function(x,sep){return(paste0(rep(sep,x),collapse=""))}, sep)
+	return( paste0( l1, l3, l2 ) )
+}
 
 # calculate the position in percentage from start using position of motif, size of element. If several motif, use all="all"
 motif_percent_from_start=function(L,V,all="all"){
