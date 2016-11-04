@@ -139,16 +139,17 @@ if __name__ == '__main__':
 	-rmTxErrors will check some basics errors: Start, premature stop, unknown codon
 	-cmd fasta_divide [NOT AVAILABLE]
 	(Divide the fasta file in sub-files according to some rules)
-	-rules should be provided with a string of NAME=VALUE separated by semicolon ;
+	-rules should be provided with a string of NAME=VALUE separated by + (no space!)
 	MAX_SEQ_NB=integer for a maximum number of record
 	MAX_CHAR_NB=integer for the maximum number of charater in a single sequence
 	MAX_SEQ_LENGTH=integer for the maximum sequence length
 	
 	-cdm fasta_get
 	(get only some records)
-	-rules should be provided with a string of NAME=VALUE separated by semicolon ;
+	-rules should be provided
 	MAX_SEQ_NB=integer for a maximum number of record
-
+	SEQ_FROM=integer for index of first sequence to extract. default=0
+	
 	""",epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 	parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file, default is stdin, and giving - also read the stdin')
 	parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
@@ -182,7 +183,15 @@ if __name__ == '__main__':
 	##########################################
 	if args['cmd'] not in COMMANDES:
 		sys.stderr.write("Error, %s is not an available command\nuse -h to get help\navailable commands: %s\n"%(args['cmd'], ", ".join(COMMANDES) ) )
-
+	
+	#load the rules
+	RULES={'SEQ_FROM':0} 
+	for ru in args['rules'].split('+'):
+		Var = ru.split('=')[0]
+		Val = ru.split('=')[1]
+		RULES[Var]=Val #rules are all in text!
+		
+		
 	##########################################
 	if args['cmd'] == 'csv_to_fasta':
 		if args['verbose'] > 0:
@@ -319,12 +328,6 @@ if __name__ == '__main__':
 		print("NOT AVAILABLE: todo: need to deal with different output name, and check that stdout is a file")
 		exit()
 		#default name for output
-		#load the rules as dict
-		RULES={}
-		for ru in args['rules'].split(';'):
-			Var = ru.split('=')[0]
-			Val = ru.split('=')[1]
-			RULES[Var]=Val
 		#load the fasta
 		DICO=Fasta_To_Dico_file(args['in'])
 		seq_nb=0
@@ -348,17 +351,16 @@ if __name__ == '__main__':
 	##########################################
 	if args['cmd'] == 'fasta_get':
 		DICO=Fasta_To_Dico_file(args['in']) #args['is already a conn to file']
-		RULES={} #load the rules
-		for ru in args['rules'].split(';'):
-			Var = ru.split('=')[0]
-			Val = ru.split('=')[1]
-			RULES[Var]=Val #rules are all in text!
 		if 'MAX_SEQ_NB' not in RULES.keys():
 			exit()
 		else:
+			if 'SEQ_FROM' in RULES.keys():
+				skip=int(RULES['SEQ_FROM'])+1
+			else:
+				skip=0
 			maxi=int(RULES['MAX_SEQ_NB'])
 			k=0
-			for id in DICO.keys():
+			for id in DICO.keys()[skip:]:
 				k+=1
 				if k > maxi:
 					exit()

@@ -8,14 +8,88 @@
 
 ################################################################################
 
-# git
+# required for a lot of code
+sudo apt install libboost-all-dev
+
+#####################
+# cmd=git			VERSION CONTROL
 sudo apt install git
 cd ~ ; git clone https://github.com/GildasLepennetier/GildasSources.git
 cd ~ ; git clone https://github.com/brentp/bio-playground.git
 
 
+##################### 
+# cdm=kalign			ALIGNMENT
+cd ~/TOOLS
+mkdir Kalign; cd Kalign
+wget http://msa.sbc.su.se/downloads/kalign/current.tar.gz
+tar -xf current.tar.gz
+./configure
+make
+sudo make install #in /usr/local/bin/
+cd ..
+rm -r Kalign
+
+
+# T-coffee
+# cmd=t_coffee
+cd ~/TOOLS
+wget http://www.tcoffee.org/Packages/Stable/Latest/linux/T-COFFEE_installer_Version_11.00.8cbe486_linux_x64.bin
+chmod +x T-COFFEE_installer_Version_11.00.8cbe486_linux_x64.bin
+./T-COFFEE_installer_Version_11.00.8cbe486_linux_x64.bin
+# in /home/ga94rac/t_coffee_bin/Version_11.00.8cbe486/bin
+# auto update the .bashrc file, and other things
+
+
+#####################
+# cmd=muscle
+sudo apt install muscle #muscle align
+
+#####################
+# cmd=belvu			ALIGNMENT VIEWER
+# cmd=dotter			COMPARISON of two sequences
+# cmd=blixem			BROWSER of pairwise Blast matches
+# FROM = http://www.sanger.ac.uk/science/tools/seqtools
+cd ~/TOOLS
+sudo apt install libcurl4-gnutls-dev libgtk2.0-dev libglib2.0-dev libreadline6-dev libsqlite3-dev 
+wget ftp://ftp.sanger.ac.uk/pub/resources/software/seqtools/PRODUCTION/seqtools-4.44.0.tar.gz
+tar -xf seqtools-4.44.0.tar.gz
+cd seqtools-4.44.0
+./configure
+make
+sudo make install
+cd .. 
+rm -r seqtools-4.44.0 
+
+##################### TREE
+cd ~/TOOLS
+wget http://doua.prabi.fr/software/seaview_data/seaview4-64.tgz
+tar -xzf seaview4-64.tgz
+rm seaview4-64.tgz
+
+#PHYLIP
+#http://evolution.gs.washington.edu/phylip/download/phylip-3.696.tar.gz
+
+
+#####################
+#bioinfo
+sudo apt install tophat bowtie ncbi-blast+ bedtools #BIOINFO TOOLS
+sudo apt install fastx-toolkit #BIOINFO TOOLS
+
+# QUALITY of multiple sequence alignments
+#available online = http://msa.sbc.su.se/cgi-bin/msa.cgi
+#http://msa.sbc.su.se/downloads/mumsa-1.0.tgz
+
+
+
+
+
+
+#####################
 # system
-sudo apt install kate
+sudo apt install kate #text editor
+# GKrellM system monitor
+
 
 # ___required___ for several R libraries
 sudo apt install libcurl4-openssl-dev libssl-dev libxml2-dev
@@ -35,23 +109,14 @@ python3 get-pip.py
 sudo apt install rpm alien
 
 
-
-#bioinfo
-sudo apt install tophat bowtie ncbi-blast+ bedtools
-sudo apt install muscle
-sudo apt install libboost-all-dev
-sudo apt install fastx-toolkit
-
 sudo wget -nc http://cancan.cshl.edu/labmembers/gordon/fastq_illumina_filter/release/0.1/fastq_illumina_filter-Linux-x86_64 -P /usr/local/bin
 sudo chmod 755 /usr/local/bin/fastq_illumina_filter-Linux-x86_64
 
-
-
+#####################
 # SRA-toolkit
 sudo apt install sra-toolkit
 
-
-
+#####################
 # bcl2fastq
 
 #dependencies: zlib librt libpthread
@@ -77,7 +142,7 @@ sudo dpkg -i bcl2fastq2_0v2.17.1.14-2_amd64.deb
 
 curl -kL http://install.perlbrew.pl | bash
 
-
+#####################
 # pRESTO : 
 sudo apt-get install python-dev python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose
 sudo apt-get install python3-dev
@@ -94,13 +159,29 @@ sudo pip3 install presto-0.5.2.tar.gz
 rm presto-0.5.2.tar.gz
 
 
-
+#####################
 #internet tools
 sudo apt install curl whois nmap
-#sudo apt install openssh-server filezilla thunderbird
+
+sudo apt install filezilla thunderbird
+
+
+### SSH
+sudo apt install openssh-server openssh-client
+sudo cp /etc/ssh/sshd_config  /etc/ssh/sshd_config.original_copy
+nc -v -z 127.0.0.1 22 #test port 22
+sudo nano /etc/ssh/sshd_config # change port from  22 to another, PermitRootLogin : no yes prohibit-password
+sudo /etc/init.d/ssh restart
+
+#no matching cipher found:
+#client aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc,cast128-cbc,arcfour256,arcfour128,3des-cbc
+#server chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com
 
 
 
+
+
+#####################
 # install R and RStudio
 DISTRIB_CODENAME=`grep DISTRIB_CODENAME /etc/lsb-release | cut -f 2 -d "="`
 #supported = xenial wily trusty precise
