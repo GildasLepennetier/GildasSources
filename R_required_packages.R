@@ -24,6 +24,9 @@ if(!require("gtools",quietly=T)){install.packages("gtools",dependencies=T)};libr
 # foreach, parallel loops
 if(!require("foreach",quietly=T)){install.packages("foreach",dependencies=T)};library("foreach",quietly=T)
 #===============================================
+
+#library(devtools)
+
 # functions
 count=function(v){return(length(na.omit(v)))}
 breadth=function(v,lim=F){if(lim){v=v[v<lim]};return(length(na.omit(v))/length(v))}

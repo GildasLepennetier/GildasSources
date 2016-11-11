@@ -17,6 +17,8 @@ sudo apt install git
 cd ~ ; git clone https://github.com/GildasLepennetier/GildasSources.git
 cd ~ ; git clone https://github.com/brentp/bio-playground.git
 
+sudo apt install mercurial
+
 
 ##################### 
 # cdm=kalign			ALIGNMENT
@@ -68,7 +70,16 @@ tar -xzf seaview4-64.tgz
 rm seaview4-64.tgz
 
 #PHYLIP
+#https://packages.debian.org/unstable/science/phylip
+sudo apt install phylip phylip-doc
 #http://evolution.gs.washington.edu/phylip/download/phylip-3.696.tar.gz
+cd ~
+mkdir phylip ; cd phylip
+wget -nc http://evolution.gs.washington.edu/phylip/download/phylip-3.696.tar.gz
+tar -xf phylip-3.696.tar.gz
+cd phylip-3.696/src
+cp Makefile.unx Makefile
+make install
 
 
 #####################
@@ -81,8 +92,11 @@ sudo apt install fastx-toolkit #BIOINFO TOOLS
 #http://msa.sbc.su.se/downloads/mumsa-1.0.tgz
 
 
-
-
+sudo apt install linuxbrew-wrapper
+sudo apt-get install build-essential
+#add /home/ga94rac/.linuxbrew/bin to path
+echo -e "\nPATH=/home/ga94rac/.linuxbrew/bin:$PATH #brew\n" >> ~/.bashrc
+brew doctor
 
 
 #####################
@@ -136,11 +150,39 @@ unzip bcl2fastq2-v2.17.1.14-Linux-x86_64.zip
 sudo alien bcl2fastq2-v2.17.1.14-Linux-x86_64.rpm
 sudo dpkg -i bcl2fastq2_0v2.17.1.14-2_amd64.deb
 
+cd ~ ; wget http://www.clustal.org/omega/clustalo-1.2.3-Ubuntu-x86_64 ; cp clustalo-1.2.3-Ubuntu-x86_64 clustalo ; sudo chmod +x clustalo ; sudo mv clustalo /usr/local/bin 
 
 
 
+# git clone https://github.com/ShirinG/exprAnalysis.git
 
-curl -kL http://install.perlbrew.pl | bash
+
+sudo apt install perlbrew
+perlbrew install-cpanm #auto dependencies
+
+### install BioPerl http://bioperl.org/INSTALL.html
+sudo apt install expat
+
+perl -MCPAN -e shell
+#to install dependencies automaticly
+o conf prerequisites_policy follow
+o conf commit
+quit
+
+perl -MCPAN -e shell #or just cpan
+#answer yes to automatic stuff
+#local::lib
+#yes to append to .bashrc
+# at prompt of CPAN, type:
+install Module::Build
+o conf prefer_installer MB
+
+
+d /bioperl/
+#install the most recent:
+install CJFIELDS/BioPerl-1.6.924.tar.gz
+
+#http://www.ensembl.org/info/docs/api/api_installation.html #?????
 
 #####################
 # pRESTO : 
