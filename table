@@ -1,15 +1,12 @@
 #!/usr/bin/python
 import sys,argparse
 parser = argparse.ArgumentParser(description="Take from output, count and make table: count -- element counted",epilog='Author: Gildas Lepennetier')
-
 parser.add_argument('-i', type=argparse.FileType('r'),default=sys.stdin, help='input file name, can take stdin')
 parser.add_argument('-o', type=argparse.FileType('w'),default=sys.stdout, help='output file name, or stdout')
-
-parser.add_argument('-s',action='store_true',help='Sort output')
-
+parser.add_argument('-noname',action='store_true',help='No column names')
+parser.add_argument('-sort_num',action='store_true',help='Natural number sorting of the values')
+parser.add_argument('-sort_char',action='store_true',help='Natural character sorting of the values')
 args=vars(parser.parse_args())
-
-
 DICO = {}
 for rline in args['i']:
 	line=rline.split('\n')[0]
@@ -17,9 +14,17 @@ for rline in args['i']:
 		DICO[line]+=1
 	except KeyError:
 		DICO[line]=1
-if args['s']:
-	for k in sorted( DICO.keys() ):
+
+if not args['noname']:
+	args['o'].write("count\tvalue\n")
+
+if args['sort_num']:
+	for k in sorted( DICO.keys(),key=int):
 		args['o'].write("%s\t%s\n"%(DICO[k],k))
 else:
-	for k in DICO.keys():
-		args['o'].write("%s\t%s\n"%(DICO[k],k))
+	if args['sort_char']:
+		for k in sorted( DICO.keys()):
+			args['o'].write("%s\t%s\n"%(DICO[k],k))
+	else: #if not sorted
+		for k in DICO.keys():
+			args['o'].write("%s\t%s\n"%(DICO[k],k))
