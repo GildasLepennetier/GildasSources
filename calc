@@ -1,6 +1,6 @@
 #!/bin/bash
 
-bc <<< "$*"
+bc -i <<< "$*"
 
 #awk "BEGIN { print $* }; exit"
 #python -c "print $*"
