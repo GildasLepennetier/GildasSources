@@ -43,6 +43,15 @@ chmod +x T-COFFEE_installer_Version_11.00.8cbe486_linux_x64.bin
 # auto update the .bashrc file, and other things
 
 
+
+
+#### Megan6
+
+#cd ~
+#wget -nc http://ab.inf.uni-tuebingen.de/data/software/megan6/download/MEGAN_Community_unix_6_5_10.sh
+
+
+
 #####################
 # cmd=muscle
 sudo apt install muscle #muscle align
