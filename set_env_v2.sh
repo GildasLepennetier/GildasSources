@@ -237,11 +237,26 @@ sudo /etc/init.d/ssh restart
 DISTRIB_CODENAME=`grep DISTRIB_CODENAME /etc/lsb-release | cut -f 2 -d "="`
 #supported = xenial wily trusty precise
 sudo add-apt-repository "deb https://cran.uni-muenster.de/bin/linux/ubuntu $DISTRIB_CODENAME"
-
-#sudo add-apt-repository "deb https://cran.uni-muenster.de/bin/linux/ubuntu xenial" 
+#sudo add-apt-repository "deb https://cran.uni-muenster.de/bin/linux/ubuntu trusty"
+###sudo add-apt-repository --remove "deb https://cran.uni-muenster.de/bin/linux/ubuntu trusty"
 
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
 sudo apt-get install r-base r-base-dev r-base-html r-doc-html libjpeg62
+#R version 3.2.3 (2015-12-10) -- "Wooden Christmas-Tree"
+
+
+# install last r version 
+#need X11 headers/libs
+sudo apt install libx11-dev libxt-devel xorg-dev javacc javacc-doc openjdk-8-jdk liblzma-dev
+
+cd ~
+wget -nc https://cran.r-project.org/src/base/R-3/R-3.3.2.tar.gz
+tar -xf R-3.3.2.tar.gz
+cd R-3.3.2/
+./configure --enable-R-shlib
+make #make clean if pb
+sudo make install
+
 
 # Get RStudio version
 VERSION="$(curl -s "https://www.rstudio.com/products/rstudio/release-notes/" | grep "<h2>RStudio v" | awk '{print $2}' | sed -e 's/v//')"

@@ -24,8 +24,10 @@ if(!require("gtools",quietly=T)){install.packages("gtools",dependencies=T)};libr
 # foreach, parallel loops
 if(!require("foreach",quietly=T)){install.packages("foreach",dependencies=T)};library("foreach",quietly=T)
 #===============================================
+# to use devel tools
+install.packages(c("devtools", "roxygen2", "testthat", "knitr", "rmarkdown", "Rcpp"))
+#===============================================
 
-#library(devtools)
 
 # functions
 count=function(v){return(length(na.omit(v)))}
