@@ -1,0 +1,18 @@
+#!/usr/bin/python
+#coding: utf-8
+import sys,argparse
+parser = argparse.ArgumentParser(description='return the length of each line',epilog='Author: Gildas Lepennetier')
+parser.add_argument('-in',type=argparse.FileType('r'),default=sys.stdin,help='input file')
+parser.add_argument('-out',type=argparse.FileType('w'),default=sys.stdout, help='output file')
+parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+parser.add_argument('--author',action='store_true',help='Display author informations')
+args=vars(parser.parse_args())
+if args['author']:
+	print ("LEPENNETIER Gildas")
+	exit()
+if args['copy']:
+	print ("Copyright 2016 LEPENNETIER Gildas")
+	exit()
+	
+for rline in args['in'].readlines():
+	args['out'].write("%s\n"%(len(rline.split('\n')[0] )))
