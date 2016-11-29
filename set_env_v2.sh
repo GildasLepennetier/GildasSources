@@ -211,6 +211,13 @@ rm presto-0.5.2.tar.gz
 
 
 #####################
+# MixCR
+brew install milaboratory/all/mixcr
+
+# see also MIGEC
+#https://milaboratory.com/software/migec/
+
+#####################
 #internet tools
 sudo apt install curl whois nmap
 
@@ -233,17 +240,16 @@ sudo /etc/init.d/ssh restart
 
 
 #####################
+# this does not allow easy update
 # install R and RStudio
-DISTRIB_CODENAME=`grep DISTRIB_CODENAME /etc/lsb-release | cut -f 2 -d "="`
+#DISTRIB_CODENAME=`grep DISTRIB_CODENAME /etc/lsb-release | cut -f 2 -d "="`
 #supported = xenial wily trusty precise
-sudo add-apt-repository "deb https://cran.uni-muenster.de/bin/linux/ubuntu $DISTRIB_CODENAME"
+#sudo add-apt-repository "deb https://cran.uni-muenster.de/bin/linux/ubuntu $DISTRIB_CODENAME"
 #sudo add-apt-repository "deb https://cran.uni-muenster.de/bin/linux/ubuntu trusty"
 ###sudo add-apt-repository --remove "deb https://cran.uni-muenster.de/bin/linux/ubuntu trusty"
-
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-sudo apt-get install r-base r-base-dev r-base-html r-doc-html libjpeg62
+#sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+#sudo apt-get install r-base r-base-dev r-base-html r-doc-html libjpeg62
 #R version 3.2.3 (2015-12-10) -- "Wooden Christmas-Tree"
-
 
 # install last r version 
 #need X11 headers/libs
@@ -256,7 +262,7 @@ cd R-3.3.2/
 ./configure --enable-R-shlib
 make #make clean if pb
 sudo make install
-
+make clean
 
 # Get RStudio version
 VERSION="$(curl -s "https://www.rstudio.com/products/rstudio/release-notes/" | grep "<h2>RStudio v" | awk '{print $2}' | sed -e 's/v//')"
