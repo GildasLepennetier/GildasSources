@@ -3,11 +3,11 @@ import sys,argparse
 
 ##########################################
 # Load a fasta file - rough
-def Fasta_To_Dico_path(path,idtag='>',endline="\n"):
+def Fasta_To_Dico_path(path,idtag='>',eol="\n"):
 	with open(path,'r') as file:
 		dico={}
 		for line in file:
-			line=line.split(endline)[0]
+			line=line.split(eol)[0]
 			if line[0]==idtag:
 				ID=line[1:] #avoid '>' in IDs
 				dico[ID]='' 
@@ -15,10 +15,10 @@ def Fasta_To_Dico_path(path,idtag='>',endline="\n"):
 				dico[ID]+=line
 	return dico
 # Load a fasta file - rough
-def Fasta_To_Dico_file(file,idtag='>',endline="\n"):
+def Fasta_To_Dico_file(file,idtag='>',eol="\n"):
 	dico={}
 	for line in file:
-		line=line.split(endline)[0]
+		line=line.split(eol)[0]
 		if line[0]==idtag:
 			ID=line[1:] #avoid '>' in IDs
 			dico[ID]=''
@@ -26,12 +26,12 @@ def Fasta_To_Dico_file(file,idtag='>',endline="\n"):
 			dico[ID]+=line
 	return dico
 # LOAD FASTA BIOPYTHON ####
-def loadFasta(adresse,endline="\n"):
+def loadFasta(adresse,eol="\n"):
 	from Bio import SeqIO
 	dico={}
 	for seq_record in SeqIO.parse(adresse, 'fasta'):
 		ID=str(seq_record.description)
-		SEQ=str( seq_record.seq.split(endline)[0] )
+		SEQ=str( seq_record.seq.split(eol)[0] )
 		if ID not in dico.keys():
 			dico[ID]=SEQ
 		else:
@@ -92,151 +92,211 @@ def insert_in_string(string,insert="\n",each=80):
 
 # main 
 if __name__ == '__main__':
-	COMMANDES=["csv_to_fasta","fasta_to_csv","fasta_freq","fasta_translate","fasta_extract_ids","fasta_divide","fasta_get",'rc']
-	RULES="MAX_SEQ_NB=1000;MAX_CHAR_NB=100000;MAX_SEQ_LENGTH=3000"
+	
+	
+	COMMANDES=['rc_dna', 'csv_to_fa', 'fa_to_csv', 'fa_freq', 'fa_extr_ids', 'fa_translate', 'fa_get','count','fa_split']
+
 
 	##########################################
-	parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,description="""%(prog)s -cmd [command] to use a specific tool
+	parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,description="""%(prog)s (- for stdin read) -cmd <command> <options>
+
+-cmd <command>
 	
-	-cmd rc
-	(reverse complement)
+	---------
+	rc_dna	(reverse complement)
 	
-	-cmd csv_to_fasta
-	(Conversion from fasta file to csv)
-	-seqCol specify the column where is the sequence
-	-id in which column are the ids, coma separated list
-	-idJoin allows to change the separator when several ids are used
+	---------
+	csv_to_fa	(Conversion fasta to csv)
 	
-	-cmd fasta_to_csv
-	(Conversion from cvs to fasta file)
-	The sequences are, by befaut, 80 char-long, but can be changed with -CharPerLine option
-	-rmId allows to remove the id of the sequence
+		-seqCol	specify the column where is the sequence
+		-idCol	in which column are the ids, coma separated list
+		-idJoin	allows to change the separator when several ids are used
+		-header	if csv has an header
+		-sep	to specify csv spacer (default is tab)
 	
-	-cmd fasta_freq
-	(From a fasta file, calculate the nucleotid frequency)
+	---------
+	fa_to_csv	(Conversion cvs to fasta)
 	
-	-cmd fasta_extract_ids
-	(From a fasta file, this command extract only the record of the given ids)
-	-id_file <file>
-	-id id1,id2 
+		-rmId	allows to remove the id of the sequence
+		-header	to add header with column names
+		
+	---------
+	fa_freq	(calculate the nucleotid frequency)
 	
-	-cmd fasta_translate
-	(Translate, from a fasta file, the DNA sequence in Eukaryotic proteins (stop codons are : TAA, TAG and TGA))
-	(The sequence should then be in DNA)
-	-rmTxErrors will check some basics errors: Start, premature stop, unknown codon
-	-cmd fasta_divide [NOT AVAILABLE]
-	(Divide the fasta file in sub-files according to some rules)
-	-rules should be provided with a string of NAME=VALUE separated by + (no space!)
-	MAX_SEQ_NB=integer for a maximum number of record
-	MAX_CHAR_NB=integer for the maximum number of charater in a single sequence
-	MAX_SEQ_LENGTH=integer for the maximum sequence length
+	---------
+	fa_extr_ids	(extract records by name)
 	
-	-cdm fasta_get
-	(get only some records)
-	-rules should be provided
-	MAX_SEQ_NB=integer for a maximum number of record
-	SEQ_FROM=integer for index of first sequence to extract. default=0
+		-id_file <file with one id per line>
+		-id id1,id2
 	
+	---------
+	fa_translate	(translate dna to protein, expect only full CDS)
+	
+		-rmTxErrors	check some basics errors: Start, premature stop, unknown codon
+	---------
+	fa_get	(extract records following rules)
+	
+		-rules should be provided, as VAR=value
+		
+		KEEP =integer	keep only the first (non-ordered) x records
+		RANDOM =True or False	to get the sequence at random
+		MAX_SEQ_LENGTH =integer	maximum length (default: none)
+		MIN_SEQ_LENGTH =integer	minimum length (default: 0)
+		
+	---------
+	count	(count the number of fasta records)
+	
+	---------
+	fa_split	(split in several fasta files)
+			
+			Will be save in <file>_partx.fa
+			incompatible with -out (not with stdout)
+			
+			-outputName to change file name pattern
+			-f option to force overwrite
+
+		MAX_SEQ_PER_FILE =integer	maximum record per file.
+		DIVIDE_IN_MAX =integer	divide in this number of file maximum
+		
+	---------
+	OTHER GLOBAL OPTIONS
+	
+	-CharPerLine	by befaut, fasta records are 80 char-long
 	""",epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
-	parser.add_argument('-in',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file, default is stdin, and giving - also read the stdin')
-	parser.add_argument('-out',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file')
+	
+	parser.add_argument('-in','-i',required=False,type=argparse.FileType('r'),default=sys.stdin, help='input file, (default stdin).')
+	parser.add_argument('-out','-o',required=False,type=argparse.FileType('w'),default=sys.stdout, help='output file (default stdout)')
+	parser.add_argument('-outputName',type=str,default='part.fa',help="pattern to name file, in the case of using MAX_SEQ_PER_FILE option. default: part0001.fa")
+	parser.add_argument('-force','-f',action='store_true',help="use to overwrite existing files, in the case of using MAX_SEQ_PER_FILE option")
 	parser.add_argument('-cmd',type=str,required=True,help="commande to execute, see description")
-
-	parser.add_argument('-seqCol',type=int,required=False,help='[csv_to_fasta] : where to find the sequence')
-	parser.add_argument('-id',type=str,required=False,help='[csv_to_fasta] : where to find the id. Can be a coma-separated list of column, will be join by _ [fasta_extract_ids]: coma separated list of ids to extract')
-	parser.add_argument('-idJoin',type=str,default="_",required=False,help='[csv_to_fasta] : If several columns for id, this will be the spacer. default: "_" ')
-	parser.add_argument('-CharPerLine',type=int,default=80,required=False,help='[csv_to_fasta] : How many character per line for the fasta? default=80')
-	parser.add_argument('-rmId',action='store_true',default=False,help='[fasta_to_csv] add this flag if you want to remove the id of the fasta, will be in first column')
-	parser.add_argument('-id_file',type=str,help='[fasta_extract_ids] extract only ids in this file. one per line')
-	parser.add_argument('-rmTxErrors',action='store_true',default=False,help='[fasta_translate] : use this flag to check the translated sequence. Will remove all not starting with M (ATG), with premature stop in the cds (space in the sequence) or with unknown codon (* in the sequence)')
-	parser.add_argument('-rules',type=str,required=False,default="%s"%(RULES),help='[fasta_divide] : provide here a set of rules, see description')
-
-	parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have / want an header (fist line with names of columns)')
-	parser.add_argument('-Marker',type=str,default='>',required=False,help='mark for the name of a record (default: >)')
-	parser.add_argument('-endline',type=str,default='\n',required=False,help='separator (default: unix \\n)')
-	parser.add_argument('-sep',type=str,default='\t',required=False,help='separator (default: \\t)')
-	parser.add_argument('--version', action='version', version='%(prog)s v1.0')#version display
+	parser.add_argument('-seqCol',type=int,required=False,help='sequence column index')
+	parser.add_argument('-idCol',type=str,required=False,help='coma separated list for ids column index, see -idJoin for separator')
+	parser.add_argument('-idJoin',type=str,default="_",required=False,help='If several columns for id, this will be the spacer. default: "_" ')
+	parser.add_argument('-CharPerLine',type=int,default=80,required=False,help='number of char per line, default 80')
+	parser.add_argument('-rmId',action='store_true',default=False,help='to remove fasta ids when csv conversion')
+	parser.add_argument('-id_file',type=str,help='file with ids, one per line')
+	parser.add_argument('-rmTxErrors',action='store_true',default=False,help='to check the translated sequence. Remove: not starting with M (ATG), premature stop in the cds (space in the sequence) or with unknown * codon')
+	parser.add_argument('-rules',type=str,required=False,help='set of rules, ex: "RANDOM=True + MIN_SEQ_LENGTH = 200"')
+	parser.add_argument('-printRules',action='store_true',help='print the rules on stderr and exit')
+	parser.add_argument('-header',action='store_true',default=False,help='add this flag if you have/want an header (fist line with names of columns)')
+	parser.add_argument('-eol',type=str,default='\n',required=False,help='end of line char (default: unix \\n)')
+	parser.add_argument('-sep',type=str,default='\t',required=False,help='separator for csv file (default: tabulation \\t)')
+	parser.add_argument('--version','-V', action='version', version='%(prog)s version 2.0')#version display
 	parser.add_argument('--verbose', '-v', action='count',default=0,help='add flag(s) to increase verbosity')# count the level of verbosity, +1 for each -v flag
-	parser.add_argument('--quiet','-q',action='store_true',default=False,help='add this flag to remove warning')
-	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
-	parser.add_argument('--author',action='store_true',help='Display author informations')
+	parser.add_argument('--copy','-C',action='store_true',help='Display Copyright informations')
+	parser.add_argument('--author','-A',action='store_true',help='Display author informations')
+	
 	args=vars(parser.parse_args())
+	
 	if args['author']:
-		print ("LEPENNETIER Gildaif __name__ == '__main__':s - gildas.lepennetier@hotmail.fr")
-		exit()
+		print ("LEPENNETIER Gildas - contact email: gildas.lepennetier@hotmail.fr")
+		exit(0)
 	if args['copy']:
-		print ("Copyright 2014 LEPENNETIER Gildas")
-		exit()
+		print ("Copyright 2014-2016 LEPENNETIER Gildas")
+		exit(0)
+	
+	
 	##########################################
+	# checks and loading 
 	if args['cmd'] not in COMMANDES:
 		sys.stderr.write("Error, %s is not an available command\nuse -h to get help\navailable commands: %s\n"%(args['cmd'], ", ".join(COMMANDES) ) )
 	
 	#load the rules
-	RULES={'SEQ_FROM':0} 
-	for ru in args['rules'].split('+'):
-		Var = ru.split('=')[0]
-		Val = ru.split('=')[1]
-		RULES[Var]=Val #rules are all in text!
-		
-		
+	RULES={'RANDOM':'False','MIN_SEQ_LENGTH':'0','MAX_SEQ_LENGTH':'none','MAX_SEQ_PER_FILE':'all','DIVIDE_IN_MAX':'none'}
+	if args['rules']:
+		RULES_STRING=args['rules'].replace(' ','').split('+')
+		for ru in RULES_STRING:
+			Var = ru.split('=')[0]
+			Val = ru.split('=')[1]
+			RULES[Var]=Val #CAREFUL : rules are all in text!
+	if args['printRules']:
+		sys.stderr.write("Rules are set to:\n")
+		for ru in RULES.keys():
+			sys.stderr.write("%s\t%s\n"%(ru,RULES[ru]))
+		exit(0)
+	
 	##########################################
+	
+	if args['cmd'] == 'rc_dna':
+		DICO=Fasta_To_Dico_file(args['in'])
+		for k in DICO.keys():
+			args['out'].write(">%s\n%s\n"%(k, insert_in_string( revCompl_DNA(DICO[k], each=args['CharPerLine']) ) ))
+	
+	##########################################
+	
+	if args['cmd'] == 'count':
+		k=0
+		for line in args['in'].readlines():
+			if args['header']:
+				continue
+			else:
+				if line[0]=='>':
+					k+=1
+		args['out'].write("%s fasta_records\n"%k)
+	
+	##########################################
+	
 	if args['cmd'] == 'csv_to_fasta':
 		if args['verbose'] > 0:
-			sys.stderr.write("Info: starting csv_to_fasta"+args['endline'])
+			sys.stderr.write("Info: starting csv_to_fasta\n")
 		if not args['seqCol']:
 			print ("Error: you should give a column number where the sequence is located")
-		if not args['id']:
+		if not args['idCol']:
 			print ("Error: you should give a column number where the id is located. Advice: check the each id is uniq, or give a coma sep list of clumn for the id")
 		
 		seqCol_index=args['seqCol'] -1 #python index starts at 0
-		id_index=[ int(el)-1 for el in args['id'].split(',') ] #python index starts at 0
+		id_index=[ int(el)-1 for el in args['idCol'].split(',') ] #python index starts at 0
 		k=0
 		for rline in args['in']:
 			k+=1
 			if args['header'] and k==1:
 				pass
 			else:
-				line=rline.split(args['endline'])[0].split(args['sep'])
+				line=rline.split('\n')[0].split(args['sep'])
 				
-				ID= args['Marker'] + args['idJoin'].join([el for el in [ line[i] for i in id_index ] ]) + args['endline'] #Marker > + id_and_other + \n
-				SEQ=insert_in_string(string=line[seqCol_index],insert=args['endline'],each=args['CharPerLine']) # seq
+				ID= '>' + args['idJoin'].join([el for el in [ line[i] for i in id_index ] ]) + '\n'
+				SEQ=insert_in_string(string=line[seqCol_index],insert='\n', each=args['CharPerLine']) # seq
 				
-				args['out'].write( ID + SEQ + args['endline'])
+				args['out'].write( ID + SEQ + '\n')
+	
 	##########################################
-	if args['cmd'] == 'fasta_to_csv':
+	
+	if args['cmd'] == 'fa_to_csv':
 		if args['header']:
 			if not args['rmId']:
-				args['out'].write("fasta_id" + args['sep'] + "sequence" + args['endline'] )
+				args['out'].write("fasta_id" + args['sep'] + "sequence" + '\n' )
 			else:
-				args['out'].write("sequence" + args['endline'] )
+				args['out'].write("sequence" + '\n' )
 		k=0
 		for rline in args['in']:
 			k+=1
-			line=rline.split(args['endline'])[0]
+			line=rline.split('\n')[0]
 			if line:
 				if not args['rmId']:
-					if line[0] == args['Marker']:
+					if line[0] == '>':
 						if k > 1:
-							args['out'].write(args['endline'])#need to go back to line, but not for first line
-						ID=line.split(args['Marker'])[1] # extract id
+							args['out'].write('\n')#need to go back to line, but not for first line
+						ID=line.split('>')[1] # extract id
 						args['out'].write(ID + args['sep'])
 					else:
 						args['out'].write(line) # print sequence
 					
 				else: #do not keep id
-					if line[0] == args['Marker']:
+					if line[0] == '>':
 						if k > 1:
-							args['out'].write(args['endline'])#need to go back to line, but not for first line
+							args['out'].write('\n')#need to go back to line, but not for first line
 					else:
 						args['out'].write(line) # print sequence
-		args['out'].write(args['endline']) #last line: should have that
+		args['out'].write('\n') #last line: should have that
+	
 	##########################################
-	if args['cmd'] == 'fasta_freq':
+	
+	if args['cmd'] == 'fa_freq':
 		COUNT={'A':0.0,'C':0.0,'G':0.0,'T':0.0,'N':0.0,'nb':0.0}
 		for rline in args['in']:
-			line=rline.split(args['endline'])[0]
+			line=rline.split('\n')[0]
 			if line:
-				if line[0] != args['Marker']:
+				if line[0] != '>':
 					COUNT['A'] += line.count("A") + line.count("a")
 					COUNT['C'] += line.count("C") + line.count("c")
 					COUNT['G'] += line.count("G") + line.count("g")
@@ -251,38 +311,42 @@ if __name__ == '__main__':
 		
 		if FREQ['A']+FREQ['C']+FREQ['G']+FREQ['T'] !=1:
 			TOT=FREQ['A']+FREQ['C']+FREQ['G']+FREQ['T']
-			sys.stderr.write("Warning: total ACGT = %s ; N=%s%s"%(TOT,int(COUNT['N']),args['endline']))
+			sys.stderr.write("Warning: total ACGT = %s ; N=%s%s"%(TOT,int(COUNT['N']),'\n'))
 		#print (COUNT)
-		args['out'].write( args['sep'].join ( [ str(el) for el in [ FREQ['A'],FREQ['C'],FREQ['G'],FREQ['T'] ] ] ) +args['endline'] )
+		args['out'].write( args['sep'].join ( [ str(el) for el in [ FREQ['A'],FREQ['C'],FREQ['G'],FREQ['T'] ] ] ) +'\n' )
+	
 	##########################################
-	if args['cmd'] == 'fasta_extract_ids':
+	
+	if args['cmd'] == 'fa_extr_ids':
 		IDS=[]
-		if not args['id'] and not args['id_file']:
-			sys.stderr.write("Error: id missing, you need to specify ids to keep!%s"%(args['endline']))
-			exit()
-		if args['id']:
-			IDS.append(args['id'].split(","))
+		if not args['idCol'] and not args['id_file']:
+			sys.stderr.write("Error: id missing, you need to specify ids to keep!\n")
+			exit(1)
+		if args['idCol']:
+			IDS.append(args['idCol'].split(","))
 		if args['id_file']:
 			with open (args['id_file'], 'r') as f:
 				for line in f.readlines():
 					IDS.append( line.strip() )
 		p=False
 		for line in args['in']:
-			if line[0] == args['Marker']:
+			if line[0] == '>':
 				#sys.stderr.write("%s\n"%(line.split(" ")[0]))
-				if line.split(" ")[0].split(args['Marker'])[1] in IDS:
+				if line.split(" ")[0].split('>')[1] in IDS:
 					p=True
 				else:
 					p=False
 			if p: #if we are still on the lines following an id
 				args['out'].write(line)
+	
 	##########################################
-	if args['cmd'] == 'fasta_translate':
+	
+	if args['cmd'] == 'fa_translate':
 		k=0
 		sequence = ''
 		fasta_id = 'none'
 		for line in args['in']:
-			if line[0]==args['Marker']:
+			if line[0]=='>':
 				k+=1
 				if sequence:
 					TXSEQ=translate_dna(sequence, args['quiet'], k, fasta_id)
@@ -290,13 +354,13 @@ if __name__ == '__main__':
 						if TXSEQ[0] != 'M' or '*' in TXSEQ or ' ' in TXSEQ:
 							TXSEQ=''
 							if not args['quiet']:
-								sys.stderr.write("-> removed %s%s"%(fasta_id, args['endline']))
+								sys.stderr.write("-> removed %s\n"%(fasta_id))
 					if TXSEQ:
-						args['out'].write( insert_in_string( TXSEQ ) + args['endline'] )
+						args['out'].write( insert_in_string( TXSEQ, each=args['CharPerLine'] ) + '\n' )
 					
 				#reinitialise
-				fasta_id=line.split(" ")[0].split(args['Marker'])[1].strip()
-				args['out'].write( args['Marker']+ fasta_id + args['endline'] )
+				fasta_id=line.split(" ")[0].split('>')[1].strip()
+				args['out'].write( '>'+ fasta_id + '\n' )
 				sequence = ''
 				
 			else:
@@ -307,56 +371,121 @@ if __name__ == '__main__':
 				if TXSEQ[0] != 'M' or '*' in TXSEQ or ' ' in TXSEQ:
 					TXSEQ=''
 					if not args['quiet']:
-						sys.stderr.write("-> removed %s%s"%(fasta_id, args['endline']))
+						sys.stderr.write("-> removed %s\n"%(fasta_id))
 			if TXSEQ:
-				args['out'].write( insert_in_string( TXSEQ ) + args['endline'] )
-	##########################################
-	if args['cmd'] == 'fasta_divide':
-		print("NOT AVAILABLE: todo: need to deal with different output name, and check that stdout is a file")
-		exit()
-		#default name for output
-		#load the fasta
-		DICO=Fasta_To_Dico_file(args['in'])
-		seq_nb=0
-		char_nb=0
-		for record_key in DICO.keys():
-			seq_nb+=1
-			char_nb+=len(DICO['record_key'])
-			#MAX_SEQ_NB
-			if seq_nb == RULES['MAX_SEQ_NB']:
-				#change output name
-				pass
-			#MAX_CHAR_NB
-			if char_nb >= RULES['MAX_CHAR_NB']:
-				#remove previous record, since he overload, and save, and change name
-				continue
-			#MAX_SEQ_LENGTH
-			if len(DICO['record_key']) >= RULES['MAX_SEQ_LENGTH']:
-				#remove this record
-				continue
-			
-	##########################################
-	if args['cmd'] == 'fasta_get':
-		DICO=Fasta_To_Dico_file(args['in']) #args['is already a conn to file']
-		if 'MAX_SEQ_NB' not in RULES.keys():
-			exit()
-		else:
-			if 'SEQ_FROM' in RULES.keys():
-				skip=int(RULES['SEQ_FROM'])+1
-			else:
-				skip=0
-			maxi=int(RULES['MAX_SEQ_NB'])
-			k=0
-			for id in DICO.keys()[skip:]:
-				k+=1
-				if k > maxi:
-					exit()
-				args['out'].write(">%s\n%s\n"%(id,DICO[id]))
+				args['out'].write( insert_in_string( TXSEQ, each=args['CharPerLine']  ) + '\n' )
 	
 	##########################################
-	if args['cmd'] == 'rc':
+	
+	if args['cmd'] == 'fa_get':
+		DICO=Fasta_To_Dico_file(args['in']) # no keep of skip : dico do not preserve order
+		IDS_PASS=[]
+		for ID in DICO.keys():
+			#test on size
+			if len(DICO[ID]) >= int(RULES['MIN_SEQ_LENGTH']):
+				if RULES['MAX_SEQ_LENGTH'] == 'none':
+					IDS_PASS.append(ID)
+				else:
+					if len(DICO[ID]) <= int(RULES['MAX_SEQ_LENGTH']):
+						IDS_PASS.append(ID)
+		
+		if RULES['KEEP'] == 'all':
+			maxi=len(DICO.keys())+1
+		else:
+			maxi=int(RULES['KEEP'])+1
+		
+		
+		if RULES['RANDOM'].upper() == 'TRUE':
+			import random
+			random.shuffle(IDS)
+		
+		k=0
+		for ID in IDS_PASS:
+			k+=1
+			if k == maxi: 
+				exit(0)
+			else:
+				args['out'].write(">%s\n%s\n"%(ID,insert_in_string(DICO[ID],each=args['CharPerLine'])))
+	
+	##########################################
+	
+	if args['cmd'] == 'fa_split':
+		import os
 		DICO=Fasta_To_Dico_file(args['in'])
-		for k in DICO.keys():
-			args['out'].write(">%s\n%s\n"%(k, insert_in_string( revCompl_DNA(DICO[k] ) ) ))
-
+		NBRECORDS=len(DICO.keys())
+		if RULES['DIVIDE_IN_MAX'] == 'none':
+			NBFILESMAX=NBRECORDS
+		else:
+			NBFILESMAX=int(RULES['DIVIDE_IN_MAX'])
+		#check required number of files
+		if RULES['MAX_SEQ_PER_FILE'] == 'all':
+			MAXPERFILE=NBRECORDS
+			REQUIRED=1
+		else:
+			MAXPERFILE=int(RULES['MAX_SEQ_PER_FILE'])
+			if NBRECORDS % MAXPERFILE != 0:
+				REQUIRED = NBRECORDS / MAXPERFILE +1
+			else:
+				REQUIRED = NBRECORDS / MAXPERFILE
+		#if not enough files planned
+		if NBFILESMAX < REQUIRED:
+			sys.stderr.write("ERROR: you asked for %s files with max %s records, but %s files is/are required for your %s record(s)\n"%(NBFILESMAX,MAXPERFILE,REQUIRED,NBRECORDS))
+			exit(1)
+		if args['verbose'] > 0:
+			sys.stderr.write("INFO: you asked for %s files with max %s records, and %s files are required for your %s records\n"%(NBFILESMAX,MAXPERFILE,REQUIRED,NBRECORDS))
+		SUFFIX=range(1,REQUIRED+1)#+1 for proper range
+		PATH=os.path.dirname(args['outputName'])
+		BASENAME=os.path.basename(args['outputName'])
+		EXTENSION="fa"
+		SPLIT=BASENAME.split('.')
+		if len(SPLIT) > 1:
+			BASENAME = "".join(SPLIT[:len(SPLIT)-1])
+			EXTENSION=SPLIT[len(SPLIT)-1]
+		Signif = len(str(REQUIRED)) #number of leading zeros required
+		FILENAMES=[]
+		for Suffix in SUFFIX:
+			#check if existing
+			FILENAME=PATH + "/" + BASENAME + '%0*d'%(Signif, Suffix) + "." + EXTENSION
+			if os.path.isfile(FILENAME) and not args['force']:
+				sys.stderr.write("ERROR: file exist, use the -force option to overwrite\n")
+				sys.stderr.write("file is: %s\n"%FILENAME)
+				exit(1)
+			else:
+				FILENAMES.append(FILENAME)
+		
+		if len(FILENAMES) > 20:
+			sys.stderr.write("WARNING: you will create %s files\n"%len(FILENAMES))
+			response = raw_input("Please type 'yes' to confirm: ")
+			if response != 'yes':
+				sys.stderr.write("cancelled\n")
+				exit(1)
+		# now need to open each file and print the proper number of records on it
+		k_record=0
+		k_name=0
+		if args['verbose'] > 0:
+			sys.stderr.write("oppen file %s\n"%FILENAMES[k_name])
+		myfile = open(FILENAMES[k_name], 'w')
+		for ID in DICO.keys():
+			k_record+=1
+			myfile.write(">%s\n%s\n"%(ID,insert_in_string(DICO[ID],each=args['CharPerLine'])))
+			if k_record == MAXPERFILE:
+				if args['verbose'] > 0:
+					sys.stderr.write("%s record printed\n"%k_record)
+				k_record=0
+				if args['verbose'] > 0:
+					sys.stderr.write("close file %s"%FILENAMES[k_name])
+				myfile.close()
+				k_name+=1
+				if args['verbose'] > 0:
+					sys.stderr.write("oppen file %s"%FILENAMES[k_name])
+				myfile = open(FILENAMES[k_name], 'w')
+		if args['verbose'] > 0:
+			sys.stderr.write(k_record)
+			sys.stderr.write("close file %s"%FILENAMES[k_name])
+		myfile.close()
+				
+				
+		
+		
+		
 		
