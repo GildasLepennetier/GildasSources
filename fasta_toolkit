@@ -410,6 +410,7 @@ if __name__ == '__main__':
 	##########################################
 	
 	if args['cmd'] == 'fa_split':
+		
 		import os
 		DICO=Fasta_To_Dico_file(args['in'])
 		NBRECORDS=len(DICO.keys())
@@ -429,12 +430,15 @@ if __name__ == '__main__':
 				REQUIRED = NBRECORDS / MAXPERFILE
 		#if not enough files planned
 		if NBFILESMAX < REQUIRED:
-			sys.stderr.write("ERROR: you asked for %s files with max %s records, but %s files is/are required for your %s record(s)\n"%(NBFILESMAX,MAXPERFILE,REQUIRED,NBRECORDS))
+			sys.stderr.write("ERROR: you asked for %s files with max %s record(s), but %s files is/are required for your %s record(s)\n"%(NBFILESMAX,MAXPERFILE,REQUIRED,NBRECORDS))
 			exit(1)
 		if args['verbose'] > 0:
-			sys.stderr.write("INFO: you asked for %s files with max %s records, and %s files are required for your %s records\n"%(NBFILESMAX,MAXPERFILE,REQUIRED,NBRECORDS))
+			sys.stderr.write("INFO: you asked for %s files with max %s record(s), and %s files is/are required for your %s record(s)\n"%(NBFILESMAX,MAXPERFILE,REQUIRED,NBRECORDS))
 		SUFFIX=range(1,REQUIRED+1)#+1 for proper range
+		
 		PATH=os.path.dirname(args['outputName'])
+		if not PATH:
+			PATH="."
 		BASENAME=os.path.basename(args['outputName'])
 		EXTENSION="fa"
 		SPLIT=BASENAME.split('.')
@@ -460,28 +464,42 @@ if __name__ == '__main__':
 				sys.stderr.write("cancelled\n")
 				exit(1)
 		# now need to open each file and print the proper number of records on it
+		k_tot_record=0
 		k_record=0
 		k_name=0
+		
 		if args['verbose'] > 0:
-			sys.stderr.write("oppen file %s\n"%FILENAMES[k_name])
+			sys.stderr.write("open %s\n"%FILENAMES[k_name])
 		myfile = open(FILENAMES[k_name], 'w')
+		
+		
 		for ID in DICO.keys():
 			k_record+=1
+			k_tot_record+=1
 			myfile.write(">%s\n%s\n"%(ID,insert_in_string(DICO[ID],each=args['CharPerLine'])))
+			
+			if k_tot_record == NBRECORDS:
+				if args['verbose'] > 0:
+					sys.stderr.write("reached %s records\n"%NBRECORDS)
+					sys.stderr.write("close %s\n"%FILENAMES[k_name])
+				myfile.close()
+				exit(0)
+				
 			if k_record == MAXPERFILE:
 				if args['verbose'] > 0:
 					sys.stderr.write("%s record printed\n"%k_record)
+					sys.stderr.write("close %s\n"%FILENAMES[k_name])
 				k_record=0
-				if args['verbose'] > 0:
-					sys.stderr.write("close file %s"%FILENAMES[k_name])
 				myfile.close()
+				
 				k_name+=1
 				if args['verbose'] > 0:
-					sys.stderr.write("oppen file %s"%FILENAMES[k_name])
+					sys.stderr.write("open %s\n"%FILENAMES[k_name])
 				myfile = open(FILENAMES[k_name], 'w')
+				
 		if args['verbose'] > 0:
-			sys.stderr.write(k_record)
-			sys.stderr.write("close file %s"%FILENAMES[k_name])
+			sys.stderr.write("%s record printed\n"%k_record)
+			sys.stderr.write("close %s\n"%FILENAMES[k_name])
 		myfile.close()
 				
 				
