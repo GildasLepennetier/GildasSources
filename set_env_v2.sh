@@ -135,6 +135,18 @@ sudo apt install rpm alien
 sudo wget -nc http://cancan.cshl.edu/labmembers/gordon/fastq_illumina_filter/release/0.1/fastq_illumina_filter-Linux-x86_64 -P /usr/local/bin
 sudo chmod 755 /usr/local/bin/fastq_illumina_filter-Linux-x86_64
 
+
+### ETE toolkit
+#dep
+sudo apt install python-numpy python-qt4 python-lxml python-six
+sudo -H pip install ete3
+#sudo -H pip install --upgrade ete3
+
+
+#dependency for Spectratype.py from TRIgS
+sudo apt install python-tk
+
+
 #####################
 # SRA-toolkit
 sudo apt install sra-toolkit
