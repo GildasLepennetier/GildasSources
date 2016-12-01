@@ -1,0 +1,10 @@
+#!/bin/bash
+USAGE="usage: $(basename $0) filename [-h for help]\
+\n\n\tReturn column number and column name from a TAB-delimited file\
+\n\nCopyright 2014 LEPENNETIER Gildas\
+\nAuthor: Gildas Lepennetier - gildas.lepennetier@hotmail.fr\\"
+[[ $1 == "-h" ]] && >&2 echo -e $USAGE && exit 0
+[[ $# -eq 0 ]] && >&2 echo "Error in $(basename $0): first argument have to be the file name (and piping is forbidden)" && exit 1 #for piping: File=$(cat /dev/stdin | head -n 1)
+[ ! -s $1 ] && >&2 echo "Error in $(basename $0): File does not exist or is empty" && exit 1
+X=$(awk -F"\t" '{print NF;exit}' $1)
+for i in $(seq 1 $X); do head -n 1 $1 | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}"; done
