@@ -1,10 +1,59 @@
-#!/bin/bash
-USAGE="usage: $(basename $0) filename [-h for help]\
-\n\n\tReturn column number and column name from a TAB-delimited file\
-\n\nCopyright 2014 LEPENNETIER Gildas\
-\nAuthor: Gildas Lepennetier - gildas.lepennetier@hotmail.fr\\"
-[[ $1 == "-h" ]] && >&2 echo -e $USAGE && exit 0
-[[ $# -eq 0 ]] && >&2 echo "Error in $(basename $0): first argument have to be the file name (and piping is forbidden)" && exit 1 #for piping: File=$(cat /dev/stdin | head -n 1)
-[ ! -s $1 ] && >&2 echo "Error in $(basename $0): File does not exist or is empty" && exit 1
-X=$(awk -F"\t" '{print NF;exit}' $1)
-for i in $(seq 1 $X); do head -n 1 $1 | awk -F $'\t' "{print \"$i\" \"\t\" \$$i}"; done
+#!/usr/bin/python
+import sys, os
+def usage():
+	print("usage: %s [options] [-h help] [-d delimiter]"%( os.path.basename(sys.argv[0]) ) )
+	print("")
+	print("  Print names of column and column number.")
+	print("\nOPTIONS:")
+	print("  -         use a single minus to take input from stdin")
+	print("  -o PATH   use this option(default stdout)")
+	print("  -d DELIM  delimiter for input columns (default tab \\t)")
+	print("  -s DELIM  delimiter for output columns (default tab \\t)")
+	print("  -h        display help and exit")
+	print("  -version  display version")
+	print("  -author   display author information")
+	print("")
+	print("%s version 2.0"%os.path.basename(sys.argv[0]))
+	print("Gildas Lepennetier - gildas.lepennetier@hotmail.fr")
+	exit(0)
+if len(sys.argv)==1:
+	#no options=help & quit
+	usage()
+args=sys.argv[1:] #remove first argument = script name
+if '-h' in args:
+	usage()
+if '-version' in args:
+	print("%s version 2.0"%os.path.basename(sys.argv[0]))
+	exit(0)
+if '-author' in args:
+	print("Gildas Lepennetier - gildas.lepennetier@hotmail.fr")
+	exit(0)
+sep_in="\t"
+if '-d' in args:
+	sep_in=args[ args.index('-d')+1 ]
+	args.remove('-d') #remove option -d
+	args.remove(sep_in) #remove option -d #remove delimiter after -d
+sep_out="\t"
+if '-s' in args:
+	sep_out=args[ args.index('-s')+1 ]
+	args.remove('-s') #remove option -d
+	args.remove(sep_out) #remove option -d #remove delimiter after -d
+	
+
+if '-' in args:
+	# here is from stdin
+	index=0
+	for name in sys.stdin.readline().split(sep_in):
+		index+=1
+		print("%s%s%s"%(index,sep_out,name))
+	exit(0)
+else:
+	for filepath in args:
+		if os.path.isfile(filepath):
+			index=0
+			with open (filepath) as fi:
+				for name in fi.readline().split(sep_in):
+					index+=1
+					print("%s%s%s"%(index,sep_out,name))
+		else:
+			print("File not found at: %s"%filepath)
