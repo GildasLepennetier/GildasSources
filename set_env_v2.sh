@@ -247,9 +247,11 @@ sudo /etc/init.d/ssh restart
 #client aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc,cast128-cbc,arcfour256,arcfour128,3des-cbc
 #server chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com
 
+#parallel
+sudo apt install parallel
 
-
-
+sudo apt install graphviz graphviz-doc graphviz-dev
+# programms are: dot, neato, fdp, sfdp, twopi, circo see:http://www.graphviz.org/Home.php
 
 #####################
 # this does not allow easy update
@@ -266,6 +268,9 @@ sudo /etc/init.d/ssh restart
 # install last r version 
 #need X11 headers/libs
 sudo apt install libx11-dev libxt-devel xorg-dev javacc javacc-doc openjdk-8-jdk liblzma-dev
+
+#to have access to jpeg, for example in the qgraph package
+sudo apt-get install libjpeg-dev
 
 cd ~
 wget -nc https://cran.r-project.org/src/base/R-3/R-3.3.2.tar.gz
