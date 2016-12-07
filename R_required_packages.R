@@ -228,7 +228,14 @@ values_between_count=function( V, start, end ){
     return(count(unlist( foreach(line = V ) %do%  values_between(line, start, end) )))
     #given a column (can contain NA), return the count of motifs between start and end
 }
+
 #map element of a vectors without duplicates
-pair_map=function(elements){V1=c();V2=c();for (index1 in 1:(length(elements)-1) ){for ( index2 in ((index1+1):length(elements))){V1=c(V1,elements[ index1]);V2=c(V2,elements[ index2]);};};return(list(elements1=V1,elements2=V2))}
+#old version, keep just in case
+#pair_map=function(elements){V1=c();V2=c();for (index1 in 1:(length(elements)-1) ){for ( index2 in ((index1+1):length(elements))){V1=c(V1,elements[ index1]);V2=c(V2,elements[ index2]);};};return(list(elements1=V1,elements2=V2))}
+#return map of comparisons from 1 vectors, without duplicated comparison
+pair_map=function(vect){V1=c();V2=c();for (index1 in 1:(length(vect)-1) ){for ( index2 in ((index1):length(vect))){V1=c(V1,vect[ index1]);V2=c(V2,vect[ index2]);};};return(list(index1=V1,index2=V2,names=vect))}
+#return map of comparisons for two vectors, without duplicated comparison
+pair_map2=function(vect1, vect2){V1=c();V2=c();for (index1 in 1:(length(vect1)-1) ){for ( index2 in ((index1):length(vect2))){V1=c(V1,vect1[ index1]);V2=c(V2,vect2[ index2]);};};return(list(index1=V1,index2=V2,names1=vect1,names2=vect2))}
+
 
 hamming=function(str1, str2){return( sum(strsplit(str1,split = "",fixed = T)[[1]] != strsplit(str2,split = "",fixed = T)[[1]]))}

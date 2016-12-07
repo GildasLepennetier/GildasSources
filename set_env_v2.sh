@@ -177,9 +177,18 @@ cd ~ ; wget http://www.clustal.org/omega/clustalo-1.2.3-Ubuntu-x86_64 ; cp clust
 
 # git clone https://github.com/ShirinG/exprAnalysis.git
 
-
+## using perlbrew #https://perlbrew.pl/
 sudo apt install perlbrew
 perlbrew install-cpanm #auto dependencies
+perlbrew install perl-5.24.0
+#perlbrew lib list
+#perlbrew switch perl-5.24.0
+#perlbrew use perl-5.24.0
+cpanm Graph::Easy #http://bloodgate.com/perl/graph/manual/
+
+
+#perlbrew exec perl myprogram.pl
+
 
 ### install BioPerl http://bioperl.org/INSTALL.html
 sudo apt install expat
@@ -252,6 +261,7 @@ sudo apt install parallel
 
 sudo apt install graphviz graphviz-doc graphviz-dev
 # programms are: dot, neato, fdp, sfdp, twopi, circo see:http://www.graphviz.org/Home.php
+
 
 #####################
 # this does not allow easy update
