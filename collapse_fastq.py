@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 inname=sys.argv[1]
 oname=inname+".clps"

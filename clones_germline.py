@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # open clone_table30.txt, open germline, print fasta from tab file (alml7d-F_clone-pass_germ-pass.tab)
 
 import sys

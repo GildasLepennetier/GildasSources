@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys, re
 
 def load_pir(path):

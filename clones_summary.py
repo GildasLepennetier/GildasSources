@@ -1,4 +1,4 @@
-#
+#!/usr/bin/env python
 # this script takes a file from pRESTO like _clone-pass_germ-pass.tab
 # using the CLONE (column 46 in pthon index), it search for V_CALL attribution (column 7)
 # then, if there are several attribution, they are joined by coma, and multiple is set to True
@@ -10,6 +10,7 @@ linenb=0
 CLONES_CALL={}
 CLONES_GENE={}
 CLONES_COUNT={}
+
 with open(sys.argv[1]) as File:
 	for rline in File.readlines():
 		line=rline.split('\n')[0].split('\t')
