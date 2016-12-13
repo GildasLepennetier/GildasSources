@@ -43,7 +43,7 @@ if '-s' in args:
 if '-' in args:
 	# here is from stdin
 	index=0
-	for name in sys.stdin.readline().split(sep_in):
+	for name in sys.stdin.readline().split("\n")[0].split(sep_in):
 		index+=1
 		print("%s%s%s"%(index,sep_out,name))
 	exit(0)
@@ -52,7 +52,7 @@ else:
 		if os.path.isfile(filepath):
 			index=0
 			with open (filepath) as fi:
-				for name in fi.readline().split(sep_in):
+				for name in fi.readline().split("\n")[0].split(sep_in):
 					index+=1
 					print("%s%s%s"%(index,sep_out,name))
 		else:
