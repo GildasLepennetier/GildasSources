@@ -177,6 +177,9 @@ cd ~ ; wget http://www.clustal.org/omega/clustalo-1.2.3-Ubuntu-x86_64 ; cp clust
 
 # git clone https://github.com/ShirinG/exprAnalysis.git
 
+# graph easy graph-easy fucntion for graph conversion
+sudo apt install libgraph-easy-perl
+
 ## using perlbrew #https://perlbrew.pl/
 sudo apt install perlbrew
 perlbrew install-cpanm #auto dependencies

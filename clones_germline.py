@@ -68,8 +68,9 @@ index_CALL=1
 index_GENE=4
 index_GENE_multi=5
 
+
 for CLONE in SUMMARY.keys():
-	with open("Clones/alml7d_clone_%s_min30_germline.fa"%(CLONE),'w') as File:
+	with open("clone_%s_germline.fa"%(CLONE),'w') as File:
 		
 		#save germline as first seq_record
 		if SUMMARY[CLONE][index_GENE_multi] == 'False':
@@ -84,7 +85,7 @@ for CLONE in SUMMARY.keys():
 				sys.stderr.write("WARNING: keep only first match, because several gene concerning clone %s\n"%(CLONE))
 				GENE = SUMMARY[CLONE][index_GENE].split(',')[0]
 				
-		File.write(">G.L. %s\n%s\n"%(GENE, insert_in_string( GERMLINE[GENE] ) ))
+		File.write(">G.L._%s\n%s\n"%(GENE, insert_in_string( GERMLINE[GENE] ) ))
 
 		#save each clone member
 		for TabLine in TABFILE:

@@ -17,19 +17,19 @@ set -o pipefail
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 STARTTIME=$(date +%s)
 NPROC=15
-#read configuration: read 1 = sens (V-region primer) / read 2 = antisens (C-region primer)
+#read configuration: keeping same as for BCR
 
-READ1_GZ=alml7d_S1_L001_R1_001.fastq.gz
-READ2_GZ=alml7d_S1_L001_R2_001.fastq.gz
+READ1_GZ=human_S1_L001_R1_001.fastq.gz
+READ2_GZ=human_S1_L001_R2_001.fastq.gz
 
 READ1=read1.fastq
 READ2=read2.fastq
 
-CWDir=/home/ga94rac/NextGenSeq/BCR_161207
+CWDir=/home/ga94rac/NextGenSeq/161216/human_TCR/
 cd $CWDir
 
 IGBLAST=/home/ga94rac/ncbi-igblast/bin
-IGBLASTDBPATH=/home/ga94rac/ncbi-igblast/IgBLAST_DB
+IGBLASTDBPATH=/home/ga94rac/ncbi-igblast/TCR_igblast_DB
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 
@@ -63,28 +63,36 @@ if [ ]; then echo "install IgBlast"
 	
 	cd $CWD
 fi
-if [ ];then echo "make igblast database"
+if [ ];then echo "make igblast database for T-cells"
 	
 	# download manually the fasta information AND GIVE .fasta name (otherwise MakeDb.py crashes)
 	#http://imgt.org/vquest/refseqh.html
-	#http://imgt.org/genedb/GENElect?query=7.14+IGHV&species=Mus
-	#http://imgt.org/genedb/GENElect?query=7.14+IGHD&species=Mus
-	#http://imgt.org/genedb/GENElect?query=7.14+IGHJ&species=Mus
+	#touch Homo+sapiens.{TRAV,TRAJ,TRBV,TRBD,TRBJ,TRGV,TRGJ,TRDV,TRDD,TRDJ}.fasta
 	
-	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Mus.IGHD.fasta > $IGBLASTDBPATH/Mus.IGHD
-	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Mus.IGHJ.fasta > $IGBLASTDBPATH/Mus.IGHJ
-	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Mus.IGHV.fasta > $IGBLASTDBPATH/Mus.IGHV
 	
-	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Mus.IGHD
-	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Mus.IGHJ
-	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Mus.IGHV
-	
-	# same for humans BCR
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRAV.fasta > $IGBLASTDBPATH/Homo+sapiens.TRAV
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRAJ.fasta > $IGBLASTDBPATH/Homo+sapiens.TRAJ
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRBV.fasta > $IGBLASTDBPATH/Homo+sapiens.TRBV
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRBD.fasta > $IGBLASTDBPATH/Homo+sapiens.TRBD
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRBJ.fasta > $IGBLASTDBPATH/Homo+sapiens.TRBJ
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRGV.fasta > $IGBLASTDBPATH/Homo+sapiens.TRGV
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRGJ.fasta > $IGBLASTDBPATH/Homo+sapiens.TRGJ
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRDV.fasta > $IGBLASTDBPATH/Homo+sapiens.TRDV
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRDD.fasta > $IGBLASTDBPATH/Homo+sapiens.TRDD
+	perl /home/ga94rac/ncbi-igblast/edit_imgt_file.pl $IGBLASTDBPATH/Homo+sapiens.TRDJ.fasta > $IGBLASTDBPATH/Homo+sapiens.TRDJ
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRAV
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRAJ
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRBV
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRBD
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRBJ
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRGV
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRGJ
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRDV
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRDD
+	makeblastdb -parse_seqids -dbtype nucl -in $IGBLASTDBPATH/Homo+sapiens.TRDJ
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ##############################################################
-
-
 
 
 ##############################################################
@@ -173,13 +181,13 @@ if [ 0 ]; then echo "using the whole file - for pRESTO igblast_out_changeo   -> 
 	echo "output: $OUTFILE"
 	igblastn \
 	-num_threads $NPROC \
-	-domain_system imgt -ig_seqtype Ig -organism mouse \
+	-domain_system imgt -ig_seqtype TCR -organism human \
 	-query $INFILE \
 	-out $OUTFILE \
-	-auxiliary_data $IGBLAST/optional_file/mouse_gl.aux \
-	-germline_db_V $IGBLASTDBPATH/Mus.IGHV \
-	-germline_db_J $IGBLASTDBPATH/Mus.IGHJ \
-	-germline_db_D $IGBLASTDBPATH/Mus.IGHD \
+	-auxiliary_data $IGBLAST/optional_file/human_gl.aux \
+	-germline_db_V $IGBLASTDBPATH/Homo+sapiens.{TRAV,TRBV,TRDV,TRGV} \
+	-germline_db_J $IGBLASTDBPATH/Homo+sapiens.{TRAJ,TRBJ,TRGJ,TRDJ} \
+	-germline_db_D $IGBLASTDBPATH/Homo+sapiens.{TRBD,TRDD} \
 	-outfmt '7 std qseq sseq btop' \
 	-evalue 1.0e-5 #(1.0e-10 to avoid excessive size of file and low quality matches)
 	
@@ -192,7 +200,7 @@ if [ 0 ];then echo "post- igblastn processing"
 	# using the whole file (~ 1h)
 	echo "make database"
 	### here: only .fasta for file
-	MakeDb.py igblast --regions --scores -i "$OUTNAME".igb -s "$OUTNAME"_quality-pass.nr.fasta -r $IGBLASTDBPATH/Mus.IGHV.fasta $IGBLASTDBPATH/Mus.IGHJ.fasta $IGBLASTDBPATH/Mus.IGHD.fasta
+	MakeDb.py igblast --regions --scores -i "$OUTNAME".igb -s "$OUTNAME"_quality-pass.nr.fasta -r $IGBLASTDBPATH/Homo+sapiens.{TRAV,TRBV,TRDV,TRGV,TRAJ,TRBJ,TRGJ,TRDJ,TRBD,TRDD}
 	echo "sort to remove non-functionnal sequences: only F in FUNCTIONAL column. -u = uniquly"
 	# IgBlastn
 	ParseDb.py select -d "$OUTNAME"_db-pass.tab -f FUNCTIONAL -u T --outname "$OUTNAME"-F
@@ -207,7 +215,7 @@ if [ 0 ];then echo "post- igblastn processing"
 	DISTANCE=0.20
 	DefineClones.py bygroup -d "$OUTNAME"-F_parse-select.tab --nproc $NPROC --dist $DISTANCE --outname "$OUTNAME"-F
 	
-	CreateGermlines.py -d "$OUTNAME"-F_clone-pass.tab -r $IGBLASTDBPATH/Mus.IGHV.fasta $IGBLASTDBPATH/Mus.IGHJ.fasta $IGBLASTDBPATH/Mus.IGHD.fasta -g dmask --cloned
+	CreateGermlines.py -d "$OUTNAME"-F_clone-pass.tab -r $IGBLASTDBPATH/Homo+sapiens.{TRAV,TRBV,TRDV,TRGV,TRAJ,TRBJ,TRGJ,TRDJ,TRBD,TRDD} -g dmask --cloned
 fi
 
 # select some groups: 
@@ -216,84 +224,7 @@ fi
 # > junction of same length
 # > clustering acording to CDR3 distance measure
 
-##############################################################
-# igtree # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-if [ 0 ];then echo "IgTree / ClustalW"
 
-	if [ 0 ];then echo "prepare summary"
-		# get data, clones > 30 members
-		echo "make table of count, and germline"
-		clones_summary.py "$OUTNAME"-F_clone-pass_germ-pass.tab > clone_table.txt
-			
-		## select only >= 30 members
-		cat clone_table.txt | awk -F "\t" '{ if(NR==1){print $0} if($4+0 >= 30){print $0} }' > clone_table30.txt #use the +0 to convert to integer
-	fi
-	
-	## extract to fasta and add germline, save in a different fasta file
-	if [ 0 ];then echo "prepare ClustalW (modify reads record names)"
-		
-		mkdir -p Clones
-		cd Clones
-		clones_germline.py ../clone_table30.txt /home/ga94rac/ncbi-igblast/IgBLAST_DB/Mus.IGHV.fasta ../"$OUTNAME"-F_clone-pass_germ-pass.tab
-		
-		for File in $(ls *.fa); do
-			cat $File | sed "s/M04284_13_000000000-ATVWH_//g" > $File.fasta
-		done
-		
-		cd $CWDir
-	fi
-	
-	if [ 0 ];then echo "take each group and align it using clustalw"
-	
-		#fasta_toolkit -cmd count -in alml7d_all.fa 
-		#fasta_toolkit -cmd fa_split -in alml7d_all.fa -vv -rules "MAX_SEQ_PER_FILE=5000"
-		# when one alignment takes a lot of time, we can run other in parallel:
-		ls Clones/*.fasta | time parallel --eta clustalw -quiet -align -output=pir -infile={}
-	fi
-		
-	
-	#clean before : rm *.png *.out.* *.pir.out
-	if [ 0 ];then echo "IgTree making the tree"
-		
-		for File in $(ls Clones/*.pir); do
-		
-			if [ 0 ]; then
-				# we need to find the beginning of the CDR3 
-				echo $File
-				CDR3_START=$(find_CDR3_alignStart.py $File | cut -f 1)
-				echo -e "\tCDR3 start : $CDR3_START"
-				CDR3_END=$(find_CDR3_alignStart.py $File | cut -f 2)
-				echo -e "\tCDR3 end   : $CDR3_END"
-				
-				echo -e "\tsize=$(find_CDR3_alignStart.py $File | cut -f 3)"
-
-				echo "running IgTree $(date)"
-				/home/ga94rac/TOOLS/IgTree-for-linux.ex1 input=$File start=$CDR3_START end=$CDR3_END dot
-				
-				echo -e "\tmaking png for .out.sdot and .out.vsdot"
-				
-				dot -Tpng -O $File.out.sdot
-				dot -Tpng -O $File.out.vsdot
-			fi
-			
-			if [ ];then echo "conversion"
-				echo "conversion between formats: dot -> graphml"
-				## perl function: http://search.cpan.org/~tels/Graph-Easy/bin/graph-easy
-				graph-easy --input=$File.out.dot --from dot --output $File.out.graphml --as graphml # ascii, boxart, html, svg, dot|graphviw, txt, vcg, gdl, graphml +some other, see homepage
-		
-			fi
-			# visualise using cytoscape (install apps : apps mannager : network merge , dot-app , JGF app , cyRest , gexf-app )
-			
-			
-			#IgTree input=<input file name> (output=<output file name) 
-			#(dot) (mut) (no_reversion)  
-			#(0=<start location>) (end=<end location>) 
-			#(frame=<frame start) (fr1=<fr1 start>) (fr2=<fr2 start>) (fr3=<fr3 start>) (fr4=<fr4 start>) 
-			#(cdr1=<cdr1 start>) (cdr2=<cdr2 start>) (cdr3=<cdr3 start>) (preliminary_trees) (num) (a-to-i) (metadata=<metadata file name>)
-		done
-	fi
-fi
-##############################################################
 
 ENDTIME=$(date +%s)
 DIFFTIME=$(($ENDTIME - $STARTTIME))
