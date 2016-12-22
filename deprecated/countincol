@@ -10,10 +10,13 @@ USAGE="usage: $(basename $0) [column] [filename or| - for stdin]\
 
 # if read from stdin
 if [ "$2" == "-" ];then
-	awk -F $'\t' "{if(NF<$1){print \"Error: file have less than $1 columns at line\",NR;nextfile}else{count[\$$1]++} } END{for(j in count) print count[j] \"\t\" j }" /dev/stdin
+	awk -F $'\t' "BEGIN{if(NF>=$2){nextfile}}" /dev/stdin
+	awk -F $'\t' "{count[\$$1]++} END{for(j in count) print count[j] \"\t\" j }" /dev/stdin
 fi
 #if filename given
 if [ -e "$2" ];then
-	awk -F $'\t' "{if(NF<$1){print \"Error: file have less than $1 columns at line\",NR;nextfile}else{count[\$$1]++} } END{for(j in count) print count[j] \"\t\" j }" $2
+	awk -F $'\t' "{count[\$$1]++} END{for(j in count) print count[j] \"\t\" j }" $2
 fi
+
+#if (NF!=6)
 
