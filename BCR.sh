@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 #
 # pRESTO wrapper - working script
 # Gildas Lepennetier 2016
@@ -200,10 +200,10 @@ if [ 0 ];then echo "post- igblastn processing"
 	IGBLAST_before=$(wc -l "$OUTNAME"_db-pass.tab | cut -d ' ' -f 1)
 	IGBLAST_after=$(wc -l "$OUTNAME"-F_parse-select.tab | cut -d ' ' -f 1)
 	echo igblast before $IGBLAST_before after $IGBLAST_after diff is $(($IGBLAST_before-$IGBLAST_after)) that being $( echo "( $IGBLAST_before - $IGBLAST_after ) / $IGBLAST_before * 100" | bc -l ) percent non-functionnal
-	
-	echo "find threashold"
+fi
+if [ ]; then echo "find threashold"
 	findThreshold_BCR.R "$OUTNAME"-F_parse-select.tab
-	
+	exit
 	DISTANCE=0.20
 	DefineClones.py bygroup -d "$OUTNAME"-F_parse-select.tab --nproc $NPROC --dist $DISTANCE --outname "$OUTNAME"-F
 	
@@ -300,4 +300,4 @@ DIFFTIME=$(($ENDTIME - $STARTTIME))
 ELAPSED=`date -u -d @${DIFFTIME} +"%T"`
 echo "Elapsed: $ELAPSED"
 
-
+summary_stats_workflow.sh $CWDir $READ1_GZ $READ2_GZ
