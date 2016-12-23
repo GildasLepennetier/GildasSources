@@ -89,123 +89,132 @@ fi
 
 ##############################################################
 # pRESTO 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-if [ 0 ];then echo "extract FASTQ archive: .gz -> .fastq  careful: NEED to be .fastq for AssemblePairs!"
-	zcat $READ1_GZ > $READ1
-	zcat $READ2_GZ > $READ2
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if [ 0 ];then echo "making pRESTO until we find the threshold"
+	if [ 0 ];then echo "extract FASTQ archive: .gz -> .fastq  careful: NEED to be .fastq for AssemblePairs!"
+		zcat $READ1_GZ > $READ1
+		zcat $READ2_GZ > $READ2
+	fi
+
+	# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+	OUTNAME=assembl
+	if [ 0 ];then echo "pRESTO: AssemblePairs.py align + FilterSeq.py quality"
+		# # be sure that read 1 is the good one : the one that is on 5' of the gene, so the V-region (3' is C-region)
+		# # 270.3 min
+		# # 8 650 650 reads
+		
+		AssemblePairs.py align -1 $READ1 -2 $READ2 --coord illumina --rc tail --outname $OUTNAME --log AP.log --nproc $NPROC --failed #read2 and 1 are inverted !
+		
+		rm -v $READ1 $READ2
+		
+		echo "pRESTO: FilterSeq.py quality Phred quality score >= 20"
+		# # 21.2 min
+		# # 5,138,768 reads
+		FilterSeq.py quality -s "$OUTNAME"_assemble-pass.fastq -q 20 --outname $OUTNAME --log FS.log --nproc $NPROC --failed
+		
+		cat "$OUTNAME"_quality-pass.fastq | sed -n '1~4s/^@/>/p;2~4p' > "$OUTNAME"_quality-pass.fasta
+		
+		echo "pRESTO: ParseLog.py AP"
+		# 4.4 min
+		ParseLog.py -l AP.log -f ID LENGTH OVERLAP ERROR PVALUE # AP_table.tab
+		rm -v AP.log
+		ParseLog.py -l FS.log -f ID QUALITY # FS_table.tab
+		rm -v FS.log
+
+		echo "$OUTNAME"_assemble-pass.fastq
+		grep "@" "$OUTNAME"_assemble-pass.fastq | wc -l
+		# 10042558
+		echo "$OUTNAME"_quality-pass.fastq
+		grep "@" "$OUTNAME"_quality-pass.fastq | wc -l
+		# 10038139
+		echo "$OUTNAME"_quality-pass.fasta
+		grep ">" "$OUTNAME"_quality-pass.fasta | wc -l
+		# 5136443 ASSEMBLED reads
+	fi
+
+	# collapse # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+	LABEL=Seq
+	if [ 0 ];then echo "collapse identical assembled reads: .nr = non-redondant database"
+		# 1) this function does not conserve the fastq format, change the name instead of adding a tag with count, and remove the quality line...
+		#fastx_collapser -v -i $READ1 -o read1.nrdb > read1.nrdb.logs
+		#fastx_collapser -v -i $READ2 -o read2.nrdb > read2.nrdb.logs
+		
+		# 2) usearch (faster than blast), but only x32 is free, the x64 cost 1485 USD  http://www.drive5.com/usearch/manual/cmds_all.html
+		#usearch -fastx_uniques read1.fq ‑fastqout read1.nrdb.fq -relabel Uniq
+		
+		# best option, and free
+		vsearch --derep_fulllength "$OUTNAME"_quality-pass.fasta --threads $NPROC --relabel $LABEL --relabel_keep --sizeout --output "$OUTNAME"_quality-pass.nr.fasta
+		grep ">" "$OUTNAME"_quality-pass.fasta | wc -l
+		echo "was reduced to "
+		grep ">" "$OUTNAME"_quality-pass.nr.fasta | wc -l
+		
+	# 	Reading file assembl_quality-pass.fasta 100%  
+	# 	1865999021 nt in 5136443 seqs, min 43, max 494, avg 363
+	# 	Dereplicating 100%  
+	# 	Sorting 100%
+	# 	4004988 unique sequences, avg cluster 1.3, median 1, max 76
+	# 	Writing output file 100%  
+	# 	5136443
+	# 	was reduced to 
+	# 	4004988
+		### inside: sequences are sorted. line is: >Seq1;size=76; here size is the number of duplicated sequences
+		### grep "size=1" assembl_quality-pass.nr.fasta | wc -l # 3780596 assembled sequences uniq
+	fi
+
+	# IgBlastn # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+	if [ 0 ]; then echo "using the whole file - for pRESTO igblast_out_changeo   ->   -outfmt '7 std qseq sseq btop' "
+		# using the whole file (~ 1h)
+		#for TRIgS igblast_out_TRIgS   ->   -outfmt '3'
+		
+		cd $IGBLAST # Neet do change directory to igblastn so it can find easily the internal_data
+		
+		INFILE=$CWDir/"$OUTNAME"_quality-pass.nr.fasta
+		OUTFILE=$CWDir/"$OUTNAME".igb
+		echo "input : $INFILE"
+		echo "output: $OUTFILE"
+		igblastn \
+		-num_threads $NPROC \
+		-domain_system imgt -ig_seqtype Ig -organism mouse \
+		-query $INFILE \
+		-out $OUTFILE \
+		-auxiliary_data $IGBLAST/optional_file/mouse_gl.aux \
+		-germline_db_V $IGBLASTDBPATH/Mus.IGHV \
+		-germline_db_J $IGBLASTDBPATH/Mus.IGHJ \
+		-germline_db_D $IGBLASTDBPATH/Mus.IGHD \
+		-outfmt '7 std qseq sseq btop' \
+		-evalue 1.0e-5 #(1.0e-10 to avoid excessive size of file and low quality matches)
+		
+		cd $CWDir
+		
+	fi
+
+	# continue pRESTO # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+	if [ 0 ];then echo "post- igblastn processing"
+		# using the whole file (~ 1h)
+		echo "make database"
+		### here: only .fasta for file
+		MakeDb.py igblast --regions --scores -i "$OUTNAME".igb -s "$OUTNAME"_quality-pass.nr.fasta -r $IGBLASTDBPATH/Mus.IGHV.fasta $IGBLASTDBPATH/Mus.IGHJ.fasta $IGBLASTDBPATH/Mus.IGHD.fasta
+		echo "sort to remove non-functionnal sequences: only F in FUNCTIONAL column. -u = uniquly"
+		# IgBlastn
+		ParseDb.py select -d "$OUTNAME"_db-pass.tab -f FUNCTIONAL -u T --outname "$OUTNAME"-F
+		
+		IGBLAST_before=$(wc -l "$OUTNAME"_db-pass.tab | cut -d ' ' -f 1)
+		IGBLAST_after=$(wc -l "$OUTNAME"-F_parse-select.tab | cut -d ' ' -f 1)
+		echo igblast before $IGBLAST_before after $IGBLAST_after diff is $(($IGBLAST_before-$IGBLAST_after)) that being $( echo "( $IGBLAST_before - $IGBLAST_after ) / $IGBLAST_before * 100" | bc -l ) percent non-functionnal
+	fi
+
+	if [ 0 ]; then echo "find threashold"
+		findThreshold_BCR.R "$OUTNAME"-F_parse-select.tab
+		echo "please modify the code and use this threshold"
+		exit
+	fi
 fi
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-OUTNAME=assembl
-if [ 0 ];then echo "pRESTO: AssemblePairs.py align + FilterSeq.py quality"
-	# # be sure that read 1 is the good one : the one that is on 5' of the gene, so the V-region (3' is C-region)
-	# # 270.3 min
-	# # 8 650 650 reads
-	
-	AssemblePairs.py align -1 $READ1 -2 $READ2 --coord illumina --rc tail --outname $OUTNAME --log AP.log --nproc $NPROC --failed #read2 and 1 are inverted !
-	
-	rm -v $READ1 $READ2
-	
-	echo "pRESTO: FilterSeq.py quality Phred quality score >= 20"
-	# # 21.2 min
-	# # 5,138,768 reads
-	FilterSeq.py quality -s "$OUTNAME"_assemble-pass.fastq -q 20 --outname $OUTNAME --log FS.log --nproc $NPROC --failed
-	
-	cat "$OUTNAME"_quality-pass.fastq | sed -n '1~4s/^@/>/p;2~4p' > "$OUTNAME"_quality-pass.fasta
-	
-	echo "pRESTO: ParseLog.py AP"
-	# 4.4 min
-	ParseLog.py -l AP.log -f ID LENGTH OVERLAP ERROR PVALUE # AP_table.tab
-	rm -v AP.log
-	ParseLog.py -l FS.log -f ID QUALITY # FS_table.tab
-	rm -v FS.log
+THRESHOLD=0.20
 
-	echo "$OUTNAME"_assemble-pass.fastq
-	grep "@" "$OUTNAME"_assemble-pass.fastq | wc -l
-	# 10042558
-	echo "$OUTNAME"_quality-pass.fastq
-	grep "@" "$OUTNAME"_quality-pass.fastq | wc -l
-	# 10038139
-	echo "$OUTNAME"_quality-pass.fasta
-	grep ">" "$OUTNAME"_quality-pass.fasta | wc -l
-	# 5136443 ASSEMBLED reads
-fi
-
-# collapse # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-LABEL=Seq
-if [ 0 ];then echo "collapse identical assembled reads: .nr = non-redondant database"
-	# 1) this function does not conserve the fastq format, change the name instead of adding a tag with count, and remove the quality line...
-	#fastx_collapser -v -i $READ1 -o read1.nrdb > read1.nrdb.logs
-	#fastx_collapser -v -i $READ2 -o read2.nrdb > read2.nrdb.logs
+if [ ]; then echo "define clones using threshold"
 	
-	# 2) usearch (faster than blast), but only x32 is free, the x64 cost 1485 USD  http://www.drive5.com/usearch/manual/cmds_all.html
-	#usearch -fastx_uniques read1.fq ‑fastqout read1.nrdb.fq -relabel Uniq
-	
-	# best option, and free
-	vsearch --derep_fulllength "$OUTNAME"_quality-pass.fasta --threads $NPROC --relabel $LABEL --relabel_keep --sizeout --output "$OUTNAME"_quality-pass.nr.fasta
-	grep ">" "$OUTNAME"_quality-pass.fasta | wc -l
-	echo "was reduced to "
-	grep ">" "$OUTNAME"_quality-pass.nr.fasta | wc -l
-	
-# 	Reading file assembl_quality-pass.fasta 100%  
-# 	1865999021 nt in 5136443 seqs, min 43, max 494, avg 363
-# 	Dereplicating 100%  
-# 	Sorting 100%
-# 	4004988 unique sequences, avg cluster 1.3, median 1, max 76
-# 	Writing output file 100%  
-# 	5136443
-# 	was reduced to 
-# 	4004988
-	### inside: sequences are sorted. line is: >Seq1;size=76; here size is the number of duplicated sequences
-	### grep "size=1" assembl_quality-pass.nr.fasta | wc -l # 3780596 assembled sequences uniq
-fi
-
-# IgBlastn # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-if [ 0 ]; then echo "using the whole file - for pRESTO igblast_out_changeo   ->   -outfmt '7 std qseq sseq btop' "
-	# using the whole file (~ 1h)
-	#for TRIgS igblast_out_TRIgS   ->   -outfmt '3'
-	
-	cd $IGBLAST # Neet do change directory to igblastn so it can find easily the internal_data
-	
-	INFILE=$CWDir/"$OUTNAME"_quality-pass.nr.fasta
-	OUTFILE=$CWDir/"$OUTNAME".igb
-	echo "input : $INFILE"
-	echo "output: $OUTFILE"
-	igblastn \
-	-num_threads $NPROC \
-	-domain_system imgt -ig_seqtype Ig -organism mouse \
-	-query $INFILE \
-	-out $OUTFILE \
-	-auxiliary_data $IGBLAST/optional_file/mouse_gl.aux \
-	-germline_db_V $IGBLASTDBPATH/Mus.IGHV \
-	-germline_db_J $IGBLASTDBPATH/Mus.IGHJ \
-	-germline_db_D $IGBLASTDBPATH/Mus.IGHD \
-	-outfmt '7 std qseq sseq btop' \
-	-evalue 1.0e-5 #(1.0e-10 to avoid excessive size of file and low quality matches)
-	
-	cd $CWDir
-	
-fi
-
-# continue pRESTO # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-if [ 0 ];then echo "post- igblastn processing"
-	# using the whole file (~ 1h)
-	echo "make database"
-	### here: only .fasta for file
-	MakeDb.py igblast --regions --scores -i "$OUTNAME".igb -s "$OUTNAME"_quality-pass.nr.fasta -r $IGBLASTDBPATH/Mus.IGHV.fasta $IGBLASTDBPATH/Mus.IGHJ.fasta $IGBLASTDBPATH/Mus.IGHD.fasta
-	echo "sort to remove non-functionnal sequences: only F in FUNCTIONAL column. -u = uniquly"
-	# IgBlastn
-	ParseDb.py select -d "$OUTNAME"_db-pass.tab -f FUNCTIONAL -u T --outname "$OUTNAME"-F
-	
-	IGBLAST_before=$(wc -l "$OUTNAME"_db-pass.tab | cut -d ' ' -f 1)
-	IGBLAST_after=$(wc -l "$OUTNAME"-F_parse-select.tab | cut -d ' ' -f 1)
-	echo igblast before $IGBLAST_before after $IGBLAST_after diff is $(($IGBLAST_before-$IGBLAST_after)) that being $( echo "( $IGBLAST_before - $IGBLAST_after ) / $IGBLAST_before * 100" | bc -l ) percent non-functionnal
-fi
-if [ ]; then echo "find threashold"
-	findThreshold_BCR.R "$OUTNAME"-F_parse-select.tab
-	exit
-	DISTANCE=0.20
-	DefineClones.py bygroup -d "$OUTNAME"-F_parse-select.tab --nproc $NPROC --dist $DISTANCE --outname "$OUTNAME"-F
+	DefineClones.py bygroup -d "$OUTNAME"-F_parse-select.tab --nproc $NPROC --dist $THRESHOLD --outname "$OUTNAME"-F
 	
 	CreateGermlines.py -d "$OUTNAME"-F_clone-pass.tab -r $IGBLASTDBPATH/Mus.IGHV.fasta $IGBLASTDBPATH/Mus.IGHJ.fasta $IGBLASTDBPATH/Mus.IGHD.fasta -g dmask --cloned
 fi
@@ -217,7 +226,11 @@ fi
 # > clustering acording to CDR3 distance measure
 
 ##############################################################
-# igtree # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# igtree # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+#
+# please check the germline fasta file name
+
 if [ 0 ];then echo "IgTree / ClustalW"
 
 	if [ 0 ];then echo "prepare summary"
