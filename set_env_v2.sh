@@ -227,7 +227,7 @@ cd ~/biopython ; sudo python setup.py install # install in /usr/local/lib/python
 
 pip3 install biopython
 
-#check latest update: https://bitbucket.org/kleinstein/presto/downloads/
+#---> check latest update: https://bitbucket.org/kleinstein/presto/downloads/
 cd ~ ; wget https://bitbucket.org/kleinstein/presto/downloads/presto-0.5.2.tar.gz
 
 sudo pip3 install presto-0.5.2.tar.gz
