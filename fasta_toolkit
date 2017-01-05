@@ -328,13 +328,22 @@ if __name__ == '__main__':
 			with open (args['id_file'], 'r') as f:
 				for line in f.readlines():
 					IDS.append( line.strip() )
+		if args['verbose'] > 0:
+			sys.stderr.write("%s ids to print\n"%(len(IDS)))
+			if args['verbose'] > 1:
+				sys.stderr.write(",".join(IDS) + "\n")
 		p=False
 		for line in args['in']:
 			if line[0] == '>':
-				#sys.stderr.write("%s\n"%(line.split(" ")[0]))
-				if line.split(" ")[0].split('>')[1] in IDS:
+				
+				current_ID=line.split('\n')[0].split(' ')[0].split('>')[1]
+				if current_ID in IDS:
+					if args['verbose'] > 2:
+						sys.stderr.write("id %s will be saved\n"%(current_ID))
 					p=True
 				else:
+					if args['verbose'] > 2:
+						sys.stderr.write("id %s ignored\n"%(current_ID))
 					p=False
 			if p: #if we are still on the lines following an id
 				args['out'].write(line)
