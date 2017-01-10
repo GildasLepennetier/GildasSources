@@ -171,6 +171,7 @@ if __name__ == '__main__':
 	parser.add_argument('-cmd',type=str,required=True,help="commande to execute, see description")
 	parser.add_argument('-seqCol',type=int,required=False,help='sequence column index')
 	parser.add_argument('-idCol',type=str,required=False,help='coma separated list for ids column index, see -idJoin for separator')
+	parser.add_argument('-id_list',type=str,required=False,help='coma separated list for ids')
 	parser.add_argument('-idJoin',type=str,default="_",required=False,help='If several columns for id, this will be the spacer. default: "_" ')
 	parser.add_argument('-CharPerLine',type=int,default=80,required=False,help='number of char per line, default 80')
 	parser.add_argument('-rmId',action='store_true',default=False,help='to remove fasta ids when csv conversion')
@@ -319,19 +320,21 @@ if __name__ == '__main__':
 	
 	if args['cmd'] == 'fa_extr_ids':
 		IDS=[]
-		if not args['idCol'] and not args['id_file']:
-			sys.stderr.write("Error: id missing, you need to specify ids to keep!\n")
+		if not args['id_list'] and not args['id_file']:
+			sys.stderr.write("Error: id missing, you need to specify ids to keep! : id_list or id_file options\n")
 			exit(1)
-		if args['idCol']:
-			IDS.append(args['idCol'].split(","))
+		if args['id_list']:
+			for i in args['id_list'].split(","):
+				IDS.append(i)
 		if args['id_file']:
 			with open (args['id_file'], 'r') as f:
 				for line in f.readlines():
 					IDS.append( line.strip() )
 		if args['verbose'] > 0:
-			sys.stderr.write("%s ids to print\n"%(len(IDS)))
+			sys.stderr.write("%s ids to print\n"%(len(IDS) ))
 			if args['verbose'] > 1:
-				sys.stderr.write(",".join(IDS) + "\n")
+				if len(IDS)>0:
+					sys.stderr.write(",".join(IDS) + "\n" )
 		p=False
 		for line in args['in']:
 			if line[0] == '>':
@@ -411,15 +414,15 @@ if __name__ == '__main__':
 		k=0
 		for ID in IDS_PASS:
 			k+=1
-			if k == maxi: 
+			if k == maxi:
 				exit(0)
 			else:
 				args['out'].write(">%s\n%s\n"%(ID,insert_in_string(DICO[ID],each=args['CharPerLine'])))
+				
 	
 	##########################################
 	
 	if args['cmd'] == 'fa_split':
-		
 		import os
 		DICO=Fasta_To_Dico_file(args['in'])
 		NBRECORDS=len(DICO.keys())
@@ -510,9 +513,4 @@ if __name__ == '__main__':
 			sys.stderr.write("%s record printed\n"%k_record)
 			sys.stderr.write("close %s\n"%FILENAMES[k_name])
 		myfile.close()
-				
-				
-		
-		
-		
-		
+
