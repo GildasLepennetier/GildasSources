@@ -36,20 +36,21 @@ def revCompl_DNA(seq):
         return ''.join(reverse[::-1]) #inverser
     else:
         return ""
-parser = argparse.ArgumentParser(description='Find motif (pattern) in a csv-like file. Choose -action count to have the number of match OR -action position to get the coordinate (base 1) where the motif start. Sequence will be converted to upper case.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
+parser = argparse.ArgumentParser(description='Find motif (pattern) in a csv-like file. Choose -action count to have the number of match OR -action position to get the coordinate (base 1) where the motif start.',epilog='Author: Gildas Lepennetier: gildas.lepennetier@hotmail.fr')
 parser.add_argument('-in',type=argparse.FileType('r'),default=sys.stdin, help='input file')
 parser.add_argument('-out',type=argparse.FileType('w'),default=sys.stdout, help='output file')
 parser.add_argument('-action',default="count",type=str,help='which function to use? [ count ; position ]')
 parser.add_argument('-sequence',type=int,help='column number for sequence')
 
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have a header')
-parser.add_argument('-pattern','-e',type=str,help='pattern to search for (ex: CG for CpG). Handle regular expression, exemple. A[AT]A for AAA or ATA. You can give it in coma-separated values.') #action='append', -> create a list
+parser.add_argument('-pattern','-e',type=str,help='pattern to search for (ex: CG for CpG). Handle python regular expression. A[AT]A for AAA or ATA. (ABC)|(BAG) for either ABC or BAG. You can give it in coma-separated values. Careful in terminal when using the *') #action='append', -> create a list
+parser.add_argument('-label',type=str,help='Force this name as new column name. If several patterns, will be recycled. todo: coma separated label, but waiting to have use of it') #action='append', -> create a list
 
 parser.add_argument('-seq_to_upper',default=False,action='store_true',help='convert the target sequence to upper case (avoid soft-masqued problems)')
 
 parser.add_argument('-file_pattern',type=str,help='If the pattern to search are in a file, give the path.')
 parser.add_argument('-rc',default=False,action='store_true',help='Search also the reverse complement.')
-parser.add_argument('-kd',default=True,action='store_false',help='Keep duplicate. Default behavior is to remove duplicates')
+parser.add_argument('-kd',default=True,action='store_false',help='Keep duplicated pattern when provided. Default behavior is to avoid saving two columns for the same pattern.')
 parser.add_argument('-separated',default=False,action='store_true',required=False,help='add this flag to get an output with only the result (default: add column in the file)')
 parser.add_argument('-progress',default=False,action='store_true',help='add this flag if you want to have a progress estimate. this put also one flag --verbose')
 parser.add_argument('-sep',type=str,default='\t',help='separator (default: \\t)')
@@ -106,8 +107,17 @@ seq_index=int(args['sequence'])-1
 # MAIN #
 Lines = IN.readlines()
 if args['header']:
-	FirtLineNameCol=Lines[0].split('\n')[0].split(sep)[seq_index] #get first line: extract name of the column (remove spaces)
-	COL_NAME=[ "%s_%s_%s"%(FirtLineNameCol,e,args['action']) for e in PATTERNS ]
+	FIRSTLINE=Lines[0].split('\n')[0].split(sep)
+	if seq_index > len(FIRSTLINE):
+		sys.stderr.write("Error: the index of the sequence (%s) was out of range, check the column"%args['sequence']+'\n')
+		exit(1)
+	
+	if args['label']:
+		COL_NAME=[ "%s"%(args['label']) for e in PATTERNS ]
+	else:
+		FirtLineNameCol=FIRSTLINE[seq_index] #get first line: extract name of the column (remove spaces)
+		COL_NAME=[ "%s_%s_%s"%(FirtLineNameCol,e,args['action']) for e in PATTERNS ]
+	
 	if NOTINFILE:
 		OUT.write( sep.join( COL_NAME ) + '\n' ) 
 	else:
