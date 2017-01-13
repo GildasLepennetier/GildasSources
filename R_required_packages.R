@@ -140,7 +140,7 @@ getAttributeField = function(attributes,field="gene_id",sep=" ",pattern="[[:alnu
 # reverse a string
 reverse=function(string){return(sapply(lapply(strsplit(string, NULL), rev), paste, collapse=""))}
 # complement
-complement=function(string, type="DNA"){
+complement_OLD=function(string, type="DNA"){
 	DNA=function(letter){
 		if(letter=="A") comp<-"T"
 		if(letter=="C") comp<-"G"
@@ -214,6 +214,8 @@ complement=function(string, type="DNA"){
 		tryCatch(expr = return( paste(unlist(lapply( unlist(strsplit(string,NULL)) , RNA) ),collapse="")), error = function(w){print("Error: this is not RNA")})
 		}
 }
+
+complement=function(string){return(chartr(old = "AaTtCcGgRrYySsWwKkMmBbVvDdHh",new = "TtAaGgCcYyRrWwSsMmKkVvBbHhDd",x = string))}
 # reverse complement
 reverseComplement=function(string, type="DNA"){return(complement(reverse(string),type=type))}
 # test 	reverseComplement( "ATG" ) == "CAT"
