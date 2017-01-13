@@ -1,12 +1,11 @@
 #!/bin/bash
 
-bc -i <<< "$*"
+bc <<< "$*"
 
 #awk "BEGIN { print $* }; exit"
 #python -c "print $*"
 #perl -e "print $*"
 #echo $* | bc
-#bc <<< "$*"
 
 #2.5e+2 scientific notation possible
 
