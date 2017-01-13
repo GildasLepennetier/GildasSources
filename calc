@@ -1,13 +1,2 @@
 #!/bin/bash
-
 bc <<< "$*"
-
-#awk "BEGIN { print $* }; exit"
-#python -c "print $*"
-#perl -e "print $*"
-#echo $* | bc
-
-#2.5e+2 scientific notation possible
-
-#increment
-#i=0; ((i++)) ; echo $i
