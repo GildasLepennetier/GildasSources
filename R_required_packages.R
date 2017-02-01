@@ -37,6 +37,22 @@ stars=function(p.value,limits=c(0.05,0.01,0.001),sign=2,NS=T){if(NS){star="NS"}e
 sampleRows = function(df,n,r=T){return(df[sample(nrow(df),n,replace=r),])} #sample n rows in a df, with/wo replacement
 #you can give to asymmetry two verctor of count, but not two vector of position, carefull !
 asymmetry=function(sens,anti){if(length(sens)!=length(anti)){print("Error: sens and anti should have the same length",stderr());return(NA)};s=sum(sens);a=sum(anti);if(s==0&a==0){return (0)}else{return((s-a)/(s+a))}}#take into account 0 obs in both strands, and work with vectors or integers
+
+asymmetryBatch=function(sens,anti){
+	if(length(sens)!=length(anti)){
+		print("Error: sens and anti should have the same length",stderr())
+		return(NA)
+	}
+	RETURN=c()
+	for( i in 1:length(sens)){
+		s=sens[i]
+		a=anti[i]
+		RETURN=c( RETURN, (s-a)/(s+a) )
+	}
+	return(RETURN)
+}
+
+
 motif_from_end=function(L,V){ #L=list with positionS of PA in exon - V=vector of exon size as reference
 	if(length(L)!=length(V)){write("Error, list and vector should be of same length",stderr())}
 	OUT=c()
