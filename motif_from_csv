@@ -42,6 +42,10 @@ parser.add_argument('-out',type=argparse.FileType('w'),default=sys.stdout, help=
 parser.add_argument('-action',default="count",type=str,help='which function to use? [ count ; position ]')
 parser.add_argument('-sequence',type=int,help='column number for sequence')
 
+parser.add_argument('-trim5',type=int,default=0,help='number of nt to trim from beginning of the sequence')
+parser.add_argument('-trim3',type=int,default=0,help='number of nt to trim from end of the sequence')
+
+
 parser.add_argument('-header',default=False,action='store_true',help='add this flag if you have a header')
 parser.add_argument('-pattern','-e',type=str,help='pattern to search for (ex: CG for CpG). Handle python regular expression. A[AT]A for AAA or ATA. (ABC)|(BAG) for either ABC or BAG. You can give it in coma-separated values. Careful in terminal when using the *') #action='append', -> create a list
 parser.add_argument('-label',type=str,help='Force this name as new column name. If several patterns, will be recycled. todo: coma separated label, but waiting to have use of it') #action='append', -> create a list
@@ -136,16 +140,24 @@ for line in Lines:
 	SEQ=splitLINE[seq_index]
 	if args['seq_to_upper']:
 		SEQ=SEQ.upper()
-	
+		
+		
 	OUTVALUE=[]
+	
+	if len(SEQ) > (args['trim5']+args['trim3']):
+		SEQ=SEQ[  args['trim5'] : (len(SEQ)-args['trim3'])  ]
+	else:
+		SEQ=""
+		
 	for PATTERN in PATTERNS:
 		if args['action'] == "count":
 			OUTVALUE.append( countPatternREGEXP(SEQ,PATTERN) )
 		if args['action'] == "position":
 			POSITIONS=posiStartPatternREGEXP(SEQ,PATTERN) #using only the start, but possible to search also for the end, can then return the middle etc.
 			OUTVALUE.append( ",".join([str(el) for el in POSITIONS]) ) #no need to add 1 at the coordinates: already done
+		
 	###################
 	if NOTINFILE:
-		OUT.write( sep,join( [str(e) for e in OUTVALUE ] ) + '\n')
+		OUT.write( sep.join( [str(e) for e in OUTVALUE ] ) + '\n')
 	else:
 		OUT.write( sep.join( [str(e) for e in splitLINE + OUTVALUE ] ) + '\n')
