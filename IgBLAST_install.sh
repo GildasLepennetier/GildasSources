@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 # Install # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-if [ ]; then echo "install IgBlast"
+if [ 0 ]; then echo "install IgBlast"
 	
 	cd ~
 	

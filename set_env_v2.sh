@@ -100,13 +100,23 @@ sudo apt install fastx-toolkit #BIOINFO TOOLS
 #available online = http://msa.sbc.su.se/cgi-bin/msa.cgi
 #http://msa.sbc.su.se/downloads/mumsa-1.0.tgz
 
-
 sudo apt install linuxbrew-wrapper
 sudo apt-get install build-essential
 #add /home/ga94rac/.linuxbrew/bin to path
 echo -e "\nPATH=/home/ga94rac/.linuxbrew/bin:$PATH #brew\n" >> ~/.bashrc
 brew doctor
 
+# place for packages ?? /home/ga94rac/.linuxbrew/Cellar 
+# place bor the bin /home/ga94rac/.linuxbrew/bin
+# example: mixcr , vdjtools
+
+### https://github.com/mikessh/vdjtools
+brew tap homebrew/science
+brew tap mikessh/repseq
+brew install vdjtools
+
+brew tap mikessh/repseq
+brew install migec
 
 #####################
 # system
@@ -142,6 +152,8 @@ sudo apt install python-numpy python-qt4 python-lxml python-six
 sudo -H pip install ete3
 #sudo -H pip install --upgrade ete3
 
+# json parser -- https://pypi.python.org/pypi/simplejson/ #doc is at https://simplejson.readthedocs.io/en/latest/
+sudo -H pip install simplejson
 
 #dependency for Spectratype.py from TRIgS
 sudo apt install python-tk
@@ -309,3 +321,7 @@ rm rstudio-$V.deb
 #source("http://bioconductor.org/biocLite.R")
 #biocLite("BiocUpgrade")
 
+
+
+
+#to clean the /tmp directory: careful, session files may be there. BEST is reboot. Could be fine to delete files orlder than 10 days using: find /tmp -ctime +10 -exec rm -rf {} +

@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Gildas Lepennetier script
+
+
+# Algo levenshtein from wiki and from:
 # Christopher P. Matthews
 # christophermatthews1985@gmail.com
 # Sacramento, CA, USA
