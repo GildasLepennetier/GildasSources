@@ -1,0 +1,179 @@
+#!/usr/bin/env python
+
+# Gildas Lepennetier script
+
+
+# Algo levenshtein from wiki and from:
+# Christopher P. Matthews
+# christophermatthews1985@gmail.com
+# Sacramento, CA, USA
+import sys,argparse
+
+def parse_range_and_list(string):
+	"""Used to parse a string with comas and colons to define ranges."""
+	LIST=[]
+	if string:
+		for elem1 in string.split(','):
+			RANGES=elem1.split(':')
+			if len(RANGES) == 1:
+				LIST.append(int(RANGES[0]))
+			if len(RANGES) == 2:
+				for i in range( int(RANGES[0]), int(RANGES[1])+1 ):
+					LIST.append( i )
+			if len(RANGES) == 3:
+				for i in range( int(RANGES[0]), int(RANGES[1])+1, int(RANGES[2]) ):
+					LIST.append( i )
+			if len(RANGES) > 3:
+				sys.stderr.write("Error: bad range %s"%(RANGES))
+				exit(1)
+	return (LIST)
+
+def levenshtein(s, t):
+		"""Return minimum number of single-character edits (insertions, deletions or substitutions) required to change one word into the other."""
+		if s == t: return 0
+		elif len(s) == 0: return len(t)
+		elif len(t) == 0: return len(s)
+		v0 = [None] * (len(t) + 1)
+		v1 = [None] * (len(t) + 1)
+		for i in range(len(v0)):
+			v0[i] = i
+		for i in range(len(s)):
+			v1[0] = i + 1
+			for j in range(len(t)):
+				cost = 0 if s[i] == t[j] else 1
+				v1[j + 1] = min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost)
+			for j in range(len(v0)):
+				v0[j] = v1[j]
+		return v1[len(t)]
+
+def hamming_distance(s1, s2):
+    """Return the Hamming distance between equal-length sequences - need to be of same length"""
+    if len(s1) != len(s2):
+        raise ValueError("Undefined for sequences of unequal length")
+    return sum(el1 != el2 for el1, el2 in zip(s1, s2))
+
+
+
+if __name__ == "__main__":
+	
+	parser = argparse.ArgumentParser(description="Calculate the distance between Ig sequences, typically from the output of ParseDb.py from changeo.",epilog='Author: Gildas Lepennetier')
+
+	parser.add_argument('-i',type=argparse.FileType('r'),default=sys.stdin,help='Input file (stdin)')
+	parser.add_argument('-o',type=argparse.FileType('w'),default=sys.stdout,help='Output file (stdout)')
+	
+	parser.add_argument('-FR1', type=int,default=31,help='FR1 column')
+	parser.add_argument('-FR2', type=int,default=32,help='FR2 column')
+	parser.add_argument('-FR3', type=int,default=33,help='FR3 column')
+	parser.add_argument('-FR4', type=int,default=34,help='FR4 column')
+	parser.add_argument('-CDR1', type=int,default=35,help='CDR1 column')
+	parser.add_argument('-CDR2', type=int,default=36,help='CDR2 column')
+	parser.add_argument('-CDR3', type=int,default=37,help='CDR3 column')
+	parser.add_argument('-GL', type=int,default=46,help='Germline Column')
+	
+	parser.add_argument('-extracolumns', type=str,default='',help='Print extra column in addition. from:to a,b,... ')
+	
+	#positions of FR and CDRs in sequences?
+	
+	parser.add_argument('-method', type=str,default="ham",help='Method of distance to use (ham: hamming, lev:levenshtein) (default: ham)')
+
+	parser.add_argument('-ih',action='store_true',default=False,help='input header, add if you have a header in the intput')
+	parser.add_argument('-oh',action='store_true',default=False,help='Output header, add if you want a header in the output')
+	
+	parser.add_argument('--version', action='version', version='%(prog)s 2017')#version display
+	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+	parser.add_argument('--author',action='store_true',help='Display author informations')
+	args=vars(parser.parse_args())
+		
+	if args['author']:
+		print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+		exit()
+	if args['copy']:
+		print ("Copyright 2017 LEPENNETIER Gildas")
+		exit()
+	
+	if args['method'] not in ['lev','ham']:
+		sys.stderr.write("ERROR: distance method not recognized\n")
+		exit(1)
+	
+	#parse the extra columns
+	COLS=[]
+	if args['extracolumns']:
+		COLS = parse_range_and_list(args['extracolumns'])
+	
+	linecounter=0
+	for rline in args['i'].readlines():
+		linecounter+=1
+		
+		line=rline.split('\r\n')[0].split('\n')[0].split('\t') #remove also windows eol, pRESTO output is like that
+		
+		if args['oh'] and linecounter == 1:
+			EXTRA=[]
+			if args['extracolumns']:
+				EXTRA=[ line[i-1] for i in COLS ]
+			print("\t".join([ "FR1_count","CDR1_count","FR2_count","CDR2_count","FR3_count","CDR3_count","FR4_count" ]+EXTRA))
+		
+		if args['ih'] and linecounter == 1:
+			continue
+		
+		FR1=line[ args['FR1']-1 ]
+		FR2=line[ args['FR2']-1 ]
+		FR3=line[ args['FR3']-1 ]
+		FR4=line[ args['FR4']-1 ]
+		CDR1=line[ args['CDR1']-1 ]
+		CDR2=line[ args['CDR2']-1 ]
+		CDR3=line[ args['CDR3']-1 ]
+		
+		GL=line[ args['GL']-1 ]
+		
+		if len(GL) != len(FR1)+len(FR2)+len(FR3)+len(FR4)+len(CDR1)+len(CDR2)+len(CDR3):
+			sys.stderr.write("ERROR: length of Germline do not match the sum of the length of CDRs and FRs (line %s in file %s)\n"%(linecounter,args['i'].name ))
+			continue
+		ERRORS=[]
+		if len( GL.replace(".","")) == 0:
+			ERRORS.append("Germline")
+		if len( FR1.replace(".","")) == 0:
+			ERRORS.append("FR1")
+		if len( FR2.replace(".","")) == 0:
+			ERRORS.append("FR2")
+		if len( FR3.replace(".","")) == 0:
+			ERRORS.append("FR3")
+		if len( FR4.replace(".","")) == 0:
+			ERRORS.append("FR4")
+		if len( CDR1.replace(".","")) == 0:
+			ERRORS.append("CDR1")
+		if len( CDR2.replace(".","")) == 0:
+			ERRORS.append("CDR2")
+		if len( CDR3.replace(".","")) == 0:
+			ERRORS.append("CDR3")
+		if len(ERRORS) > 0:
+			sys.stderr.write("ERROR: %s regions made only with points (line %s in file %s, regions: %s)\n"%(len(ERRORS),linecounter,args['i'].name, ",".join(ERRORS) ))
+		
+		
+		
+		OUT=[]
+		if args['method'] == "lev":
+			OUT.append( levenshtein( FR1, GL[ 0:len(FR1) ] ) )
+			OUT.append( levenshtein( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ] ) )
+			OUT.append( levenshtein( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ] ) )
+			OUT.append( levenshtein( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ] ) )
+			OUT.append( levenshtein( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] ) )
+			OUT.append( levenshtein( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] ) )
+			OUT.append( levenshtein( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] ) )
+			
+		elif args['method'] == "ham":
+			OUT.append( hamming_distance( FR1, GL[ 0:len(FR1) ] ) )
+			OUT.append( hamming_distance( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ] ) )
+			OUT.append( hamming_distance( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ] ) )
+			OUT.append( hamming_distance( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ] ) )
+			OUT.append( hamming_distance( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] ) )
+			OUT.append( hamming_distance( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] ) )
+			OUT.append( hamming_distance( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] ) )
+		
+		EXTRA=[]
+		if args['extracolumns']:
+			EXTRA=[ line[i-1] for i in COLS ]
+			
+		print( "\t".join([ str(el) for el in OUT+EXTRA ]) )
+		
+		
+		
