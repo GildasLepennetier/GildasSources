@@ -54,6 +54,8 @@ def hamming_distance(s1, s2):
 
 
 
+
+
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser(description="Calculate the distance between Ig sequences, typically from the output of ParseDb.py from changeo.",epilog='Author: Gildas Lepennetier')
@@ -68,7 +70,16 @@ if __name__ == "__main__":
 	parser.add_argument('-CDR1', type=int,default=35,help='CDR1 column')
 	parser.add_argument('-CDR2', type=int,default=36,help='CDR2 column')
 	parser.add_argument('-CDR3', type=int,default=37,help='CDR3 column')
-	parser.add_argument('-GL', type=int,default=46,help='Germline Column')
+	parser.add_argument('-GL', type=int,default=46,help='Germline column')
+	
+	parser.add_argument('-FR1_maxGapNb', type=int,default=6,help='max number of . in the FR1')
+	parser.add_argument('-FR2_maxGapNb', type=int,default=6,help='max number of . in the FR2')
+	parser.add_argument('-FR3_maxGapNb', type=int,default=6,help='max number of . in the FR3')
+	parser.add_argument('-FR4_maxGapNb', type=int,default=6,help='max number of . in the FR4')
+	parser.add_argument('-CDR1_maxGapNb', type=int,default=12,help='max number of . in the CDR1')
+	parser.add_argument('-CDR2_maxGapNb', type=int,default=12,help='max number of . in the CDR2')
+	parser.add_argument('-CDR3_maxGapNb', type=int,default=12,help='max number of . in the CDR3')
+	parser.add_argument('-GL_maxGapNb', type=int,default=24,help='max number of . in the Germline')
 	
 	parser.add_argument('-extracolumns', type=str,default='',help='Print extra column in addition. from:to a,b,... ')
 	
@@ -78,6 +89,9 @@ if __name__ == "__main__":
 
 	parser.add_argument('-ih',action='store_true',default=False,help='input header, add if you have a header in the intput')
 	parser.add_argument('-oh',action='store_true',default=False,help='Output header, add if you want a header in the output')
+	
+	parser.add_argument('-sizes',action='store_true',default=False,help='Add sizes for each region')
+	parser.add_argument('-percent',action='store_true',default=False,help='Make the percentage of mutation per region')
 	
 	parser.add_argument('--version', action='version', version='%(prog)s 2017')#version display
 	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
@@ -107,10 +121,16 @@ if __name__ == "__main__":
 		line=rline.split('\r\n')[0].split('\n')[0].split('\t') #remove also windows eol, pRESTO output is like that
 		
 		if args['oh'] and linecounter == 1:
+			FIRSTLINE=["FR1_count","CDR1_count","FR2_count","CDR2_count","FR3_count","CDR3_count","FR4_count"]
 			EXTRA=[]
 			if args['extracolumns']:
 				EXTRA=[ line[i-1] for i in COLS ]
-			print("\t".join([ "FR1_count","CDR1_count","FR2_count","CDR2_count","FR3_count","CDR3_count","FR4_count" ]+EXTRA))
+			if args['sizes']:
+				EXTRA=EXTRA+["FR1_size","CDR1_size","FR2_size","CDR2_size","FR3_size","CDR3_size","FR4_size"]
+			if args['percent']:
+				EXTRA=EXTRA+["FR1_percent","CDR1_percent","FR2_percent","CDR2_percent","FR3_percent","CDR3_percent","FR4_percent"]
+				
+			print("\t".join( FIRSTLINE + EXTRA))
 		
 		if args['ih'] and linecounter == 1:
 			continue
@@ -129,8 +149,6 @@ if __name__ == "__main__":
 			sys.stderr.write("ERROR: length of Germline do not match the sum of the length of CDRs and FRs (line %s in file %s)\n"%(linecounter,args['i'].name ))
 			continue
 		ERRORS=[]
-		if len( GL.replace(".","")) == 0:
-			ERRORS.append("Germline")
 		if len( FR1.replace(".","")) == 0:
 			ERRORS.append("FR1")
 		if len( FR2.replace(".","")) == 0:
@@ -145,35 +163,60 @@ if __name__ == "__main__":
 			ERRORS.append("CDR2")
 		if len( CDR3.replace(".","")) == 0:
 			ERRORS.append("CDR3")
+		if len( GL.replace(".","")) == 0:
+			ERRORS.append("Germline")
 		if len(ERRORS) > 0:
 			sys.stderr.write("ERROR: %s regions made only with points (line %s in file %s, regions: %s)\n"%(len(ERRORS),linecounter,args['i'].name, ",".join(ERRORS) ))
-		
-		
+			continue
+		ERRORS=[]
+		if FR1.count('.') > args['FR1_maxGapNb']:
+			 ERRORS.append('FR1')
+		if FR2.count('.') > args['FR2_maxGapNb']:
+			 ERRORS.append('FR2')
+		if FR3.count('.') > args['FR3_maxGapNb']:
+			 ERRORS.append('FR3')
+		if FR4.count('.') > args['FR4_maxGapNb']:
+			 ERRORS.append('FR4')
+		if CDR1.count('.') > args['CDR1_maxGapNb']:
+			 ERRORS.append('CDR1')
+		if CDR2.count('.') > args['CDR2_maxGapNb']:
+			 ERRORS.append('CDR2')
+		if CDR3.count('.') > args['CDR3_maxGapNb']:
+			 ERRORS.append('CDR3')
+		if GL.count('.') > args['GL_maxGapNb']:
+			 ERRORS.append('Germline')
+		if len(ERRORS) > 0:
+			sys.stderr.write("ERROR: %s regions fail the _maxGapNb test (line %s in file %s, regions: %s)\n"%(len(ERRORS),linecounter,args['i'].name, ",".join(ERRORS) ))
+			continue
 		
 		OUT=[]
 		if args['method'] == "lev":
-			OUT.append( levenshtein( FR1, GL[ 0:len(FR1) ] ) )
-			OUT.append( levenshtein( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ] ) )
-			OUT.append( levenshtein( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ] ) )
-			OUT.append( levenshtein( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ] ) )
-			OUT.append( levenshtein( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] ) )
-			OUT.append( levenshtein( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] ) )
-			OUT.append( levenshtein( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] ) )
+			FR1_mut =levenshtein( FR1, GL[ 0:len(FR1) ] )
+			CDR1_mut= levenshtein( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ] )
+			FR2_mut = levenshtein( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ] )
+			CDR2_mut= levenshtein( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ] )
+			FR3_mut = levenshtein( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] )
+			CDR3_mut= levenshtein( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] )
+			FR4_mut = levenshtein( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] )
 			
 		elif args['method'] == "ham":
-			OUT.append( hamming_distance( FR1, GL[ 0:len(FR1) ] ) )
-			OUT.append( hamming_distance( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ] ) )
-			OUT.append( hamming_distance( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ] ) )
-			OUT.append( hamming_distance( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ] ) )
-			OUT.append( hamming_distance( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] ) )
-			OUT.append( hamming_distance( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] ) )
-			OUT.append( hamming_distance( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] ) )
+			FR1_mut =hamming_distance( FR1, GL[ 0:len(FR1) ] )
+			CDR1_mut= hamming_distance( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ] )
+			FR2_mut = hamming_distance( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ] )
+			CDR2_mut= hamming_distance( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ] )
+			FR3_mut = hamming_distance( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] )
+			CDR3_mut= hamming_distance( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] )
+			FR4_mut = hamming_distance( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] )
+			
+		OUT=[ FR1_mut, CDR1_mut, FR2_mut, CDR2_mut, FR3_mut, CDR3_mut, FR4_mut]
 		
 		EXTRA=[]
 		if args['extracolumns']:
 			EXTRA=[ line[i-1] for i in COLS ]
-			
+		if args['sizes']:
+			EXTRA=EXTRA+[len(FR1),len(CDR1),len(FR2),len(CDR2),len(FR3),len(CDR3),len(FR4),]
+		if args['percent']:
+			EXTRA=EXTRA+[ float(FR1_mut)/len(FR1),float(CDR1_mut)/len(CDR1),float(FR2_mut)/len(FR2),float(CDR2_mut)/len(CDR2),float(FR3_mut)/len(FR3),float(CDR3_mut)/len(CDR3),float(FR4_mut)/len(FR4)]
+
 		print( "\t".join([ str(el) for el in OUT+EXTRA ]) )
-		
-		
 		
