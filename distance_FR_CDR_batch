@@ -7,7 +7,7 @@
 # Christopher P. Matthews
 # christophermatthews1985@gmail.com
 # Sacramento, CA, USA
-import sys,argparse
+import sys,argparse,re
 
 def parse_range_and_list(string):
 	"""Used to parse a string with comas and colons to define ranges."""
@@ -62,6 +62,7 @@ if __name__ == "__main__":
 
 	parser.add_argument('-i',type=argparse.FileType('r'),default=sys.stdin,help='Input file (stdin)')
 	parser.add_argument('-o',type=argparse.FileType('w'),default=sys.stdout,help='Output file (stdout)')
+	parser.add_argument('-e',type=argparse.FileType('w'),default=sys.stderr,help='Error (stderr)')
 	
 	parser.add_argument('-FR1', type=int,default=31,help='FR1 column')
 	parser.add_argument('-FR2', type=int,default=32,help='FR2 column')
@@ -72,16 +73,18 @@ if __name__ == "__main__":
 	parser.add_argument('-CDR3', type=int,default=37,help='CDR3 column')
 	parser.add_argument('-GL', type=int,default=46,help='Germline column')
 	
-	parser.add_argument('-FR1_maxGapNb', type=int,default=6,help='max number of . in the FR1')
-	parser.add_argument('-FR2_maxGapNb', type=int,default=6,help='max number of . in the FR2')
-	parser.add_argument('-FR3_maxGapNb', type=int,default=6,help='max number of . in the FR3')
-	parser.add_argument('-FR4_maxGapNb', type=int,default=6,help='max number of . in the FR4')
-	parser.add_argument('-CDR1_maxGapNb', type=int,default=12,help='max number of . in the CDR1')
-	parser.add_argument('-CDR2_maxGapNb', type=int,default=12,help='max number of . in the CDR2')
-	parser.add_argument('-CDR3_maxGapNb', type=int,default=12,help='max number of . in the CDR3')
+	parser.add_argument('-FR1_maxGapNb', type=int,default=6,help='max number of . in the FR1 (6)')
+	parser.add_argument('-FR2_maxGapNb', type=int,default=6,help='max number of . in the FR2 (6)')
+	parser.add_argument('-FR3_maxGapNb', type=int,default=6,help='max number of . in the FR3 (6)')
+	parser.add_argument('-FR4_maxGapNb', type=int,default=6,help='max number of . in the FR4 (6)')
+	parser.add_argument('-CDR1_maxGapNb', type=int,default=12,help='max number of . in the CDR1 (12)')
+	parser.add_argument('-CDR2_maxGapNb', type=int,default=12,help='max number of . in the CDR2 (12)')
+	parser.add_argument('-CDR3_maxGapNb', type=int,default=12,help='max number of . in the CDR3 (12)')
 	parser.add_argument('-GL_maxGapNb', type=int,default=24,help='max number of . in the Germline')
 	
 	parser.add_argument('-extracolumns', type=str,default='',help='Print extra column in addition. from:to a,b,... ')
+	
+	parser.add_argument('-include_indels',action='store_true',default=False,help='Indel are - in the sequence. They are not hypermutations. Add this option to count them as mutations')
 	
 	#positions of FR and CDRs in sequences?
 	
@@ -99,14 +102,14 @@ if __name__ == "__main__":
 	args=vars(parser.parse_args())
 		
 	if args['author']:
-		print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+		args['i'].write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
 		exit()
 	if args['copy']:
-		print ("Copyright 2017 LEPENNETIER Gildas")
+		args['i'].write("Copyright 2017 LEPENNETIER Gildas")
 		exit()
 	
 	if args['method'] not in ['lev','ham']:
-		sys.stderr.write("ERROR: distance method not recognized\n")
+		args['i'].write("ERROR: distance method not recognized\n")
 		exit(1)
 	
 	#parse the extra columns
@@ -130,7 +133,7 @@ if __name__ == "__main__":
 			if args['percent']:
 				EXTRA=EXTRA+["FR1_percent","CDR1_percent","FR2_percent","CDR2_percent","FR3_percent","CDR3_percent","FR4_percent"]
 				
-			print("\t".join( FIRSTLINE + EXTRA))
+			args['o'].write("\t".join( FIRSTLINE + EXTRA) + "\n")
 		
 		if args['ih'] and linecounter == 1:
 			continue
@@ -142,11 +145,10 @@ if __name__ == "__main__":
 		CDR1=line[ args['CDR1']-1 ]
 		CDR2=line[ args['CDR2']-1 ]
 		CDR3=line[ args['CDR3']-1 ]
-		
 		GL=line[ args['GL']-1 ]
 		
 		if len(GL) != len(FR1)+len(FR2)+len(FR3)+len(FR4)+len(CDR1)+len(CDR2)+len(CDR3):
-			sys.stderr.write("ERROR: length of Germline do not match the sum of the length of CDRs and FRs (line %s in file %s)\n"%(linecounter,args['i'].name ))
+			args['e'].write("ERROR: length of Germline do not match the sum of the length of CDRs and FRs (line %s in file %s)\n"%(linecounter,args['i'].name ))
 			continue
 		ERRORS=[]
 		if len( FR1.replace(".","")) == 0:
@@ -166,8 +168,9 @@ if __name__ == "__main__":
 		if len( GL.replace(".","")) == 0:
 			ERRORS.append("Germline")
 		if len(ERRORS) > 0:
-			sys.stderr.write("ERROR: %s regions made only with points (line %s in file %s, regions: %s)\n"%(len(ERRORS),linecounter,args['i'].name, ",".join(ERRORS) ))
+			args['e'].write("ERROR: %s regions made only with points (line %s in file %s, regions: %s)\n"%(len(ERRORS),linecounter,args['i'].name, ",".join(ERRORS) ))
 			continue
+		
 		ERRORS=[]
 		if FR1.count('.') > args['FR1_maxGapNb']:
 			 ERRORS.append('FR1')
@@ -186,7 +189,7 @@ if __name__ == "__main__":
 		if GL.count('.') > args['GL_maxGapNb']:
 			 ERRORS.append('Germline')
 		if len(ERRORS) > 0:
-			sys.stderr.write("ERROR: %s regions fail the _maxGapNb test (line %s in file %s, regions: %s)\n"%(len(ERRORS),linecounter,args['i'].name, ",".join(ERRORS) ))
+			args['e'].write("ERROR: %s regions fail the _maxGapNb test (line %s in file %s, regions: %s)\n"%(len(ERRORS),linecounter,args['i'].name, ",".join(ERRORS) ))
 			continue
 		
 		OUT=[]
@@ -207,7 +210,32 @@ if __name__ == "__main__":
 			FR3_mut = hamming_distance( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] )
 			CDR3_mut= hamming_distance( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] )
 			FR4_mut = hamming_distance( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] )
-			
+		
+		if GL.count('-') > 0:
+			args['e'].write("ERROR: Germline contain indels -> programm has to be updated\n")
+			exit(1)
+		
+		if not args['include_indels']:
+			if args['method'] == "ham":
+				#exlude the - from the count (default option: False, do not include)
+				# with hamming distance, each - is a mutation
+				FR1_mut  -= FR1.count('-')
+				CDR1_mut -= CDR1.count('-')
+				FR2_mut  -= FR2.count('-')
+				CDR2_mut -= CDR2.count('-')
+				FR3_mut  -= FR3.count('-')
+				CDR3_mut -= CDR3.count('-')
+				FR4_mut  -= FR4.count('-')
+			elif args['method'] == "lev":
+				# with levenshtein method, a gap can be composed of several ----
+				FR1_mut  -= len(re.findall("-+",FR1))
+				CDR1_mut -= len(re.findall("-+",CDR1))
+				FR2_mut  -= len(re.findall("-+",FR2))
+				CDR2_mut -= len(re.findall("-+",CDR2))
+				FR3_mut  -= len(re.findall("-+",FR3))
+				CDR3_mut -= len(re.findall("-+",CDR3))
+				FR4_mut  -= len(re.findall("-+",FR4))
+				
 		OUT=[ FR1_mut, CDR1_mut, FR2_mut, CDR2_mut, FR3_mut, CDR3_mut, FR4_mut]
 		
 		EXTRA=[]
@@ -218,5 +246,5 @@ if __name__ == "__main__":
 		if args['percent']:
 			EXTRA=EXTRA+[ float(FR1_mut)/len(FR1),float(CDR1_mut)/len(CDR1),float(FR2_mut)/len(FR2),float(CDR2_mut)/len(CDR2),float(FR3_mut)/len(FR3),float(CDR3_mut)/len(CDR3),float(FR4_mut)/len(FR4)]
 
-		print( "\t".join([ str(el) for el in OUT+EXTRA ]) )
+		args['o'].write( "\t".join([ str(el) for el in OUT+EXTRA ]) +"\n")
 		
