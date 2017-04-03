@@ -2,12 +2,8 @@
 
 # Gildas Lepennetier script
 
-
-# Algo levenshtein from wiki and from:
-# Christopher P. Matthews
-# christophermatthews1985@gmail.com
-# Sacramento, CA, USA
 import sys,argparse,re
+import string #for the pattern replacement in string
 
 def parse_range_and_list(string):
 	"""Used to parse a string with comas and colons to define ranges."""
@@ -28,33 +24,17 @@ def parse_range_and_list(string):
 				exit(1)
 	return (LIST)
 
-def levenshtein(s, t):
-		"""Return minimum number of single-character edits (insertions, deletions or substitutions) required to change one word into the other."""
-		if s == t: return 0
-		elif len(s) == 0: return len(t)
-		elif len(t) == 0: return len(s)
-		v0 = [None] * (len(t) + 1)
-		v1 = [None] * (len(t) + 1)
-		for i in range(len(v0)):
-			v0[i] = i
-		for i in range(len(s)):
-			v1[0] = i + 1
-			for j in range(len(t)):
-				cost = 0 if s[i] == t[j] else 1
-				v1[j + 1] = min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost)
-			for j in range(len(v0)):
-				v0[j] = v1[j]
-		return v1[len(t)]
-
-def hamming_distance(s1, s2):
-    """Return the Hamming distance between equal-length sequences - need to be of same length"""
-    if len(s1) != len(s2):
-        raise ValueError("Undefined for sequences of unequal length")
-    return sum(el1 != el2 for el1, el2 in zip(s1, s2))
-
-
-
-
+def mutations_positions( string, reference, add=0):
+	if len(string) != len(reference):
+		sys.tsderr.write("ERROR: not same sequence length\n")
+	POSI=[]
+	for index in range(0,len(string)):
+		if string[index] in ['.','-']: #IGNORE points and minus
+			continue
+		if string[index] != reference[index]:
+			POSI.append(index+add+1)#+1 because python indexes
+	return (POSI)
+	
 
 if __name__ == "__main__":
 	
@@ -63,6 +43,10 @@ if __name__ == "__main__":
 	parser.add_argument('-i',type=argparse.FileType('r'),default=sys.stdin,help='Input file (stdin)')
 	parser.add_argument('-o',type=argparse.FileType('w'),default=sys.stdout,help='Output file (stdout)')
 	parser.add_argument('-e',type=argparse.FileType('w'),default=sys.stderr,help='Error (stderr)')
+	
+	parser.add_argument('-ih',action='store_true',default=False,help='input header, add if you have a header in the intput')
+	parser.add_argument('-oh',action='store_true',default=False,help='Output header, add if you want a header in the output')
+	
 	
 	parser.add_argument('-FR1', type=int,default=31,help='FR1 column')
 	parser.add_argument('-FR2', type=int,default=32,help='FR2 column')
@@ -84,39 +68,29 @@ if __name__ == "__main__":
 	
 	parser.add_argument('-extracolumns', type=str,default='',help='Print extra column in addition. from:to a,b,... ')
 	
-	parser.add_argument('-include_indels',action='store_true',default=False,help='Indel are - in the sequence. They are not hypermutations. Add this option to count them as mutations')
-	
-	#positions of FR and CDRs in sequences?
-	
-	parser.add_argument('-method', type=str,default="ham",help='Method of distance to use (ham: hamming, lev:levenshtein) (default: ham)')
-
-	parser.add_argument('-ih',action='store_true',default=False,help='input header, add if you have a header in the intput')
-	parser.add_argument('-oh',action='store_true',default=False,help='Output header, add if you want a header in the output')
-	
+	# indels will be ignored for now
+	#parser.add_argument('-include_indels',action='store_true',default=False,help='Indel are - in the sequence. They are not hypermutations. Add this option to count them as mutations')
+	parser.add_argument('-mutation_nb',action='store_true',default=False,help='Add number of mutations')
 	parser.add_argument('-sizes',action='store_true',default=False,help='Add sizes for each region')
-	parser.add_argument('-percent',action='store_true',default=False,help='Make the percentage of mutation per region')
-	
+
 	parser.add_argument('--version', action='version', version='%(prog)s 2017')#version display
 	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 	parser.add_argument('--author',action='store_true',help='Display author informations')
 	args=vars(parser.parse_args())
 		
 	if args['author']:
-		args['e'].write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+		args['e'].write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr\n")
 		exit()
 	if args['copy']:
-		args['e'].write("Copyright 2017 LEPENNETIER Gildas")
+		args['e'].write("Copyright 2017 LEPENNETIER Gildas\n")
 		exit()
-	
-	if args['method'] not in ['lev','ham']:
-		args['e'].write("ERROR: distance method not recognized\n")
-		exit(1)
 	
 	#parse the extra columns
 	COLS=[]
 	if args['extracolumns']:
 		COLS = parse_range_and_list(args['extracolumns'])
-	
+
+		
 	linecounter=0
 	for rline in args['i'].readlines():
 		linecounter+=1
@@ -124,15 +98,14 @@ if __name__ == "__main__":
 		line=rline.split('\r\n')[0].split('\n')[0].split('\t') #remove also windows eol, pRESTO output is like that
 		
 		if args['oh'] and linecounter == 1:
-			FIRSTLINE=["FR1_count","CDR1_count","FR2_count","CDR2_count","FR3_count","CDR3_count","FR4_count"]
+			FIRSTLINE=["FR1_MutationsPositions","CDR1_MutationsPositions","FR2_MutationsPositions","CDR2_MutationsPositions","FR3_MutationsPositions","CDR3_MutationsPositions","FR4_MutationsPositions"]
 			EXTRA=[]
-			if args['extracolumns']:
-				EXTRA=[ line[i-1] for i in COLS ]
+			if args['mutation_nb']:
+				EXTRA=EXTRA+["FR1_mutation_nb","CDR1_mutation_nb","FR2_mutation_nb","CDR2_mutation_nb","FR3_mutation_nb","CDR3_mutation_nb","FR4_mutation_nb"]
 			if args['sizes']:
 				EXTRA=EXTRA+["FR1_size","CDR1_size","FR2_size","CDR2_size","FR3_size","CDR3_size","FR4_size"]
-			if args['percent']:
-				EXTRA=EXTRA+["FR1_percent","CDR1_percent","FR2_percent","CDR2_percent","FR3_percent","CDR3_percent","FR4_percent"]
-				
+			if args['extracolumns']:
+				EXTRA=EXTRA+[ line[i-1] for i in COLS ]
 			args['o'].write("\t".join( FIRSTLINE + EXTRA) + "\n")
 		
 		if args['ih'] and linecounter == 1:
@@ -192,59 +165,39 @@ if __name__ == "__main__":
 			args['e'].write("ERROR: %s regions fail the _maxGapNb test (line %s in file %s, regions: %s)\n"%(len(ERRORS),linecounter,args['i'].name, ",".join(ERRORS) ))
 			continue
 		
-		OUT=[]
-		if args['method'] == "lev":
-			FR1_mut =levenshtein( FR1, GL[ 0:len(FR1) ] )
-			CDR1_mut= levenshtein( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ] )
-			FR2_mut = levenshtein( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ] )
-			CDR2_mut= levenshtein( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ] )
-			FR3_mut = levenshtein( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] )
-			CDR3_mut= levenshtein( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] )
-			FR4_mut = levenshtein( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] )
-			
-		elif args['method'] == "ham":
-			FR1_mut =hamming_distance( FR1, GL[ 0:len(FR1) ] )
-			CDR1_mut= hamming_distance( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ] )
-			FR2_mut = hamming_distance( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ] )
-			CDR2_mut= hamming_distance( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ] )
-			FR3_mut = hamming_distance( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ] )
-			CDR3_mut= hamming_distance( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] )
-			FR4_mut = hamming_distance( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] )
 		
 		if GL.count('-') > 0:
 			args['e'].write("ERROR: Germline contain indels -> programm has to be updated\n")
 			exit(1)
+			
+		OUT=[]
+		# gaps: just replace several --- by one to make it count as 1 mutation
+
 		
-		if not args['include_indels']:
-			if args['method'] == "ham":
-				#exlude the - from the count (default option: False, do not include)
-				# with hamming distance, each - is a mutation
-				FR1_mut  -= FR1.count('-')
-				CDR1_mut -= CDR1.count('-')
-				FR2_mut  -= FR2.count('-')
-				CDR2_mut -= CDR2.count('-')
-				FR3_mut  -= FR3.count('-')
-				CDR3_mut -= CDR3.count('-')
-				FR4_mut  -= FR4.count('-')
-			elif args['method'] == "lev":
-				# with levenshtein method, a gap can be composed of several ----
-				FR1_mut  -= len(re.findall("-+",FR1))
-				CDR1_mut -= len(re.findall("-+",CDR1))
-				FR2_mut  -= len(re.findall("-+",FR2))
-				CDR2_mut -= len(re.findall("-+",CDR2))
-				FR3_mut  -= len(re.findall("-+",FR3))
-				CDR3_mut -= len(re.findall("-+",CDR3))
-				FR4_mut  -= len(re.findall("-+",FR4))
-				
-		OUT=[ FR1_mut, CDR1_mut, FR2_mut, CDR2_mut, FR3_mut, CDR3_mut, FR4_mut]
+		#option_gap : skip -, 2 - = 2 mutation, 2 - = 1 mutation
+		
+		FR1_mut_list = mutations_positions( FR1, GL[ 0:len(FR1) ], add=0)
+		CDR1_mut_list= mutations_positions( CDR1, GL[ len(FR1) : (len(FR1)+len(CDR1)) ], add=len(FR1) )
+		FR2_mut_list = mutations_positions( FR2, GL[ (len(FR1)+len(CDR1)) : (len(FR1)+len(CDR1)+len(FR2)) ], add=(len(FR1)+len(CDR1)))
+		CDR2_mut_list= mutations_positions( CDR2, GL[ (len(FR1)+len(CDR1)+len(FR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) ], add=(len(FR1)+len(CDR1)+len(FR2)) )
+		FR3_mut_list = mutations_positions( FR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) ], add=(len(FR1)+len(CDR1)+len(FR2)+len(CDR2)) )
+		CDR3_mut_list= mutations_positions( CDR3, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) ] , add=(len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)) )
+		FR4_mut_list = mutations_positions( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ], add=(len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) )
+		
+		OUT=[ ",".join( [ str(e) for e in FR1_mut_list]),
+				 ",".join( [ str(e) for e in CDR1_mut_list]),
+				 ",".join( [ str(e) for e in FR2_mut_list]),
+				 ",".join( [ str(e) for e in CDR2_mut_list]),
+				 ",".join( [ str(e) for e in FR3_mut_list]),
+				 ",".join( [ str(e) for e in CDR3_mut_list]),
+				 ",".join( [ str(e) for e in FR4_mut_list])]
 		
 		EXTRA=[]
-		if args['extracolumns']:
-			EXTRA=[ line[i-1] for i in COLS ]
+		if args['mutation_nb']:
+			EXTRA=EXTRA+[len(FR1_mut_list),len(CDR1_mut_list),len(FR2_mut_list),len(CDR2_mut_list),len(FR3_mut_list),len(CDR3_mut_list),len(FR4_mut_list)]
 		if args['sizes']:
-			EXTRA=EXTRA+[len(FR1),len(CDR1),len(FR2),len(CDR2),len(FR3),len(CDR3),len(FR4),]
-		if args['percent']:
-			EXTRA=EXTRA+[ float(FR1_mut)/len(FR1),float(CDR1_mut)/len(CDR1),float(FR2_mut)/len(FR2),float(CDR2_mut)/len(CDR2),float(FR3_mut)/len(FR3),float(CDR3_mut)/len(CDR3),float(FR4_mut)/len(FR4)]
-
+			EXTRA=EXTRA+[len(FR1),len(CDR1),len(FR2),len(CDR2),len(FR3),len(CDR3),len(FR4)]
+		if args['extracolumns']:
+			EXTRA=EXTRA+[ line[i-1] for i in COLS ]
 		args['o'].write( "\t".join([ str(el) for el in OUT+EXTRA ]) +"\n")
 		

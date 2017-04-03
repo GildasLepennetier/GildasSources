@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+
+# Gildas Lepennetier script
+
+
+# Algo levenshtein from wiki and from:
+# Christopher P. Matthews
+# christophermatthews1985@gmail.com
+# Sacramento, CA, USA
+import sys,argparse
+
+def parse_range_and_list(string):
+	"""Used to parse a string with comas and colons to define ranges."""
+	LIST=[]
+	if string:
+		for elem1 in string.split(','):
+			RANGES=elem1.split(':')
+			if len(RANGES) == 1:
+				LIST.append(int(RANGES[0]))
+			if len(RANGES) == 2:
+				for i in range( int(RANGES[0]), int(RANGES[1])+1 ):
+					LIST.append( i )
+			if len(RANGES) == 3:
+				for i in range( int(RANGES[0]), int(RANGES[1])+1, int(RANGES[2]) ):
+					LIST.append( i )
+			if len(RANGES) > 3:
+				sys.stderr.write("Error: bad range %s"%(RANGES))
+				exit(1)
+	return (LIST)
+
+def levenshtein(s, t):
+		"""Return minimum number of single-character edits (insertions, deletions or substitutions) required to change one word into the other."""
+		if s == t: return 0
+		elif len(s) == 0: return len(t)
+		elif len(t) == 0: return len(s)
+		v0 = [None] * (len(t) + 1)
+		v1 = [None] * (len(t) + 1)
+		for i in range(len(v0)):
+			v0[i] = i
+		for i in range(len(s)):
+			v1[0] = i + 1
+			for j in range(len(t)):
+				cost = 0 if s[i] == t[j] else 1
+				v1[j + 1] = min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost)
+			for j in range(len(v0)):
+				v0[j] = v1[j]
+		return v1[len(t)]
+
+def hamming_distance(s1, s2):
+    """Return the Hamming distance between equal-length sequences - need to be of same length"""
+    if len(s1) != len(s2):
+        raise ValueError("Undefined for sequences of unequal length")
+    return sum(el1 != el2 for el1, el2 in zip(s1, s2))
+
+
+
+if __name__ == "__main__":
+	
+	parser = argparse.ArgumentParser(description="Calculate the Levenshtein distance between sequences.",epilog='Author: Gildas Lepennetier')
+
+	parser.add_argument('-i',type=argparse.FileType('r'),default=sys.stdin,help='Input file (stdin)')
+	parser.add_argument('-o',type=argparse.FileType('w'),default=sys.stdout,help='Output file (stdout)')
+	
+	parser.add_argument('-seq1', type=int,default=1,required=False,help='Column number where to find first sequence')
+	parser.add_argument('-seq2', type=int,default=2,required=False,help='Column number where to find second sequence')
+	
+	parser.add_argument('-method', type=str,default="ham",help='Method of distance to use (ham: hamming, lev:levenshtein) (default: ham)')
+	
+	parser.add_argument('-extracolumns', type=str,default='',help='Print extra column in addition. from:to a,b,... ')
+	
+	parser.add_argument('-ih',action='store_true',default=False,help='input header, add if you have a header in the intput')
+	parser.add_argument('-oh',action='store_true',default=False,help='Output header, add if you want a header in the output')
+	
+	parser.add_argument('--rmIMGTpoints',action='store_true',help='remove points in IMGT sequences')
+	parser.add_argument('--progress',action='store_true',help='print progress on stderr')
+	
+	parser.add_argument('--onlySameLength',action='store_true',help='Ignore sequences that have different length')
+	parser.add_argument('--diff_per_letter',action='store_true',help='Calculate the difference per letter of seq1 (~ mutation per nt for sequence).')
+	
+	parser.add_argument('--length',action='store_true',help='Add sequences lengths in file')
+	parser.add_argument('--seqs',action='store_true',help='Add sequences in file')
+	
+	parser.add_argument('--version', action='version', version='%(prog)s 2017')#version display
+	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+	parser.add_argument('--author',action='store_true',help='Display author informations')
+	args=vars(parser.parse_args())
+		
+	if args['author']:
+		print ("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr")
+		exit()
+	if args['copy']:
+		print ("Copyright 2017 LEPENNETIER Gildas")
+		exit()
+	
+	if args['method'] not in ['lev','ham']:
+		sys.stderr.write("ERROR: distance method not recognized\n")
+		exit(1)
+	
+	#parse the extra columns
+	COLS=[]
+	if args['extracolumns']:
+		COLS = parse_range_and_list(args['extracolumns'])
+	
+	#sys.stderr.write("%s"%COLS)
+	#exit()
+	
+	linecounter=0
+	for rline in args['i'].readlines():
+		linecounter+=1
+		
+		line=rline.split('\r\n')[0].split('\n')[0].split('\t') #remove also windows eol, pRESTO output is like that
+		
+		#take care of the header part
+		if args['oh'] and linecounter == 1:
+			HEADER=["levenshtein"]
+			if args['diff_per_letter']:
+				HEADER.append( "diff_per_letter" )
+			if args['length']:
+				HEADER.append("seq1_length")
+				HEADER.append("seq2_length")
+			if args['seqs']:
+				HEADER.append("seq1")
+				HEADER.append("seq2")
+			if args['extracolumns'] and args['ih']:
+				for i in COLS:
+					HEADER.append( line[ i-1 ] )
+			
+			args['o'].write ( "\t".join( [ str(el) for el in HEADER ] ) +"\n" )
+		
+		if args['ih'] and linecounter == 1:
+			continue
+				
+		if args['progress']:
+			if linecounter % 25 == 0:
+				sys.stderr.write("\rsequences: %s"%linecounter)
+		
+		seq1=line[ args['seq1']-1 ] #python's index = 0
+		seq2=line[ args['seq2']-1 ]
+		if args['rmIMGTpoints']:
+			seq1=seq1.replace('.','')
+			seq2=seq2.replace('.','')
+		DIST=-1
+		if args['method'] == "lev":
+			DIST = levenshtein( seq1 , seq2 )
+		elif args['method'] == "ham":
+			DIST = hamming_distance( seq1 , seq2 )
+			
+		OUT=[ DIST ]
+		
+		if args['diff_per_letter']:
+			OUT.append( float(DIST) / len(seq1) )
+			
+		if args['length']:
+			OUT.append(len(seq1))
+			OUT.append(len(seq2))
+		if args['seqs']:
+			OUT.append(seq1)
+			OUT.append(seq2)
+		if args['extracolumns']:
+			for i in COLS:
+				OUT.append( line[ i-1 ] )
+		
+		if args['onlySameLength'] and len(seq1) != len(seq2): continue
+		
+		args['o'].write ( "\t".join( [ str(el) for el in OUT ] ) +"\n" )
+	
+	if args['progress']:
+		sys.stderr.write("\rsequences: %s in total\n"%linecounter)
+
+
