@@ -15,7 +15,9 @@ Once you did this installation step, you can call the functions from the termina
 ##UPDATE
 
 You can use the set_env.sh script to install additionnal bioinformatics tools.
+Careful! This will install several programs, I strongly recomend that you browse the file to check by yourself.
 > bash set_env.sh
+
 
 ##USAGE
 
