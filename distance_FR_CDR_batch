@@ -212,7 +212,7 @@ if __name__ == "__main__":
 			FR4_mut = hamming_distance( FR4, GL[ (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)) : (len(FR1)+len(CDR1)+len(FR2)+len(CDR2)+len(FR3)+len(CDR3)+len(FR4)) ] )
 		
 		if GL.count('-') > 0:
-			args['e'].write("ERROR: Germline contain indels -> programm has to be updated\n")
+			args['e'].write("ERROR: Germline contain indels -> programm is not designed to handle that\n")
 			exit(1)
 		
 		if not args['include_indels']:

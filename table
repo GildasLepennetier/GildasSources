@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sys,argparse
-parser = argparse.ArgumentParser(description="Take from output, count and make table: count -- element counted",epilog='Author: Gildas Lepennetier')
+parser = argparse.ArgumentParser(description="Take from input, count and make table: count -- element counted",epilog='Author: Gildas Lepennetier')
 parser.add_argument('-i', type=argparse.FileType('r'),default=sys.stdin, help='input file name, can take stdin')
 parser.add_argument('-o', type=argparse.FileType('w'),default=sys.stdout, help='output file name, or stdout')
 parser.add_argument('-noname',action='store_true',help='No column names')

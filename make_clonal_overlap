@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+
+def read_file(fi ,V,J,CDR3):
+	i=0
+	LIST=[]
+	for rline in fi.readlines():
+		i+=1
+		if i == 1: continue #skip first line
+		line = rline.split("\r\n")[0].split("\n")[0].split("\t")
+		
+		ID_V   =line[ V ]
+		ID_J   =line[ J ]
+		ID_CDR3=line[ CDR3 ]
+		ID = "%s\t%s\t%s"%(  ID_V, ID_J, ID_CDR3 )
+		if ID not in LIST:
+			LIST.append(LIST)
+	return LIST
+
+# Gildas Lepennetier script
+
+import sys,argparse
+
+if __name__ == "__main__":
+	
+	parser = argparse.ArgumentParser(description="Make the overlap of clonal groups from files describing clonals groups",epilog='Author: Gildas Lepennetier')
+
+	parser.add_argument('-file1',type=argparse.FileType('r'),required=True,help='Input file 1. both file1 and 2 are assumed to have headers')
+	parser.add_argument('-file2',type=argparse.FileType('r'),required=True,help='Input file 2')
+	
+	parser.add_argument('-o',type=argparse.FileType('w'),default=sys.stdout,help='Output file (stdout)')
+	parser.add_argument('-e',type=argparse.FileType('w'),default=sys.stderr,help='Error (stderr)')
+	parser.add_argument('--version', action='version', version='%(prog)s 2017')#version display
+	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+	parser.add_argument('--author',action='store_true',help='Display author informations')
+	
+	# column 1 was the number of sequences in the clonal group
+	parser.add_argument('-V', type=int,default=2,help='V-gene column')
+	parser.add_argument('-J', type=int,default=4,help='J-gene column')
+	parser.add_argument('-CDR3', type=int,default=5,help='column with length of CDR3')
+	#parser.add_argument('-Ids_list', type=int,default=6,help='list of IDs contained in the clonal group')
+	
+	args=vars(parser.parse_args())
+		
+	if args['author']:
+		args['e'].write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr\n")
+		exit()
+	if args['copy']:
+		args['e'].write("Copyright 2017 LEPENNETIER Gildas\n")
+		exit()
+	
+	#load file 1
+	LI_1 = read_file( args['file1'] , args['V']-1, args['J']-1, args['CDR3']-1)
+	LI_2 = read_file( args['file2'] , args['V']-1, args['J']-1, args['CDR3']-1)
+	
+	overlap1=0
+	for k1 in LI_1:
+		if k1 in LI_2:
+			overlap1+=1
+			
+	print ("%s groups overlap + file1= %s and file2= %s + file1= %s file2= %s"%( overlap1, len(LI_1), len(LI_2), args['file1'].name, args['file2'].name ))
+	

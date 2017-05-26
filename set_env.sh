@@ -402,11 +402,15 @@ read q
 if [ "$q" == "yes" ];then cd $HOME
 	
 # 	echo "1) go to https://www.zotero.org/download/"
+
+# BETTER: make a laucher, don't forget that run-zotero.sh want you to be in the surrent directory to start properly
+
 # 	echo "2) save the file (having the .tar.bz2) in $HOME and press ENTER when finished"
 # 	read q
 # 	echo "3) extracting the archive"
 # 	tar -xjf Zotero*.tar.bz2
 # 	rm -vr Zotero*.tar.bz2
+#make a 
 	
 	read -p "Do you want to add zotero to PATH? (yes)" q
 	if [ "$q" == "yes" ];then

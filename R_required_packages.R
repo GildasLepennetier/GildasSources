@@ -1,3 +1,6 @@
+
+#http://www.sr.bham.ac.uk/~ajrs/R/r-function_list.html
+
 # arrange a df arrange()
 if(!require("plyr",quietly=T)){ install.packages("plyr", dependencies=T) };library("plyr",quietly=T)
 # if error on linux: in terminal: sudo apt-get install r-cran-plyr")
@@ -52,6 +55,11 @@ asymmetryBatch=function(sens,anti){
 	return(RETURN)
 }
 
+time_string_to_minutes=function(string,Split=":"){
+	"conversion of 1:50, or 1h50 in minutes (110 here)"
+	LI=strsplit(string, split = Split)
+	return( unlist(lapply(LI, function(v){return( as.integer(v[1])*60 + as.integer(v[2]))} ) ) )
+}
 
 motif_from_end=function(L,V){ #L=list with positionS of PA in exon - V=vector of exon size as reference
 	if(length(L)!=length(V)){write("Error, list and vector should be of same length",stderr())}
@@ -255,5 +263,46 @@ pair_map=function(vect){V1=c();V2=c();for (index1 in 1:(length(vect)-1) ){for ( 
 #return map of comparisons for two vectors, without duplicated comparison
 pair_map2=function(vect1, vect2){V1=c();V2=c();for (index1 in 1:(length(vect1)-1) ){for ( index2 in ((index1):length(vect2))){V1=c(V1,vect1[ index1]);V2=c(V2,vect2[ index2]);};};return(list(index1=V1,index2=V2,names1=vect1,names2=vect2))}
 
-
+# hamming distance
 hamming=function(str1, str2){return( sum(strsplit(str1,split = "",fixed = T)[[1]] != strsplit(str2,split = "",fixed = T)[[1]]))}
+
+#normalize values 
+normalize <- function(x) {
+	# normalize values between 0 and 1
+	# with 0=min of the vector
+	# and 1=max of the vector
+	num <- x - min(x)
+	denom <- max(x) - min(x)
+	return (num/denom)
+}
+normalize_know_range <- function(x,xmin,xmax) {
+	# normalize values between 0 and 1
+	# using known range of max and min values
+	return ( (x-xmin) / (xmax-xmin) )
+}
+
+#function to sum in range (1 by 1) from 1 to N ##Leonhard Euler
+sum_serie_1_to_N=function(N){
+	return( (N * (N + 1)) /2 )
+}
+#function to sum in range (1 by 1) from N1 to N2, including or expluding those limits
+sum_serie_range_inclusively=function(from,to){
+	return( sum_serie_1_to_N(to) - sum_serie_1_to_N(from-1) )
+}
+sum_serie_range_exclusively=function(from,to){
+	return( sum_serie_1_to_N(to-1) - sum_serie_1_to_N(from) )
+}
+
+round_below=function(x, r=1){ return( floor(x) - floor(x) %% r)	}
+round_above=function(x, r=1){ return( ceiling(x) + ceiling(x) %% r) }
+factor_to_colors=function(fact, default="black"){
+	LVL=levels(fact)
+	NB=length(LVL)
+	COL_LI=rainbow(NB)
+	COL=rep(default,length(fact))
+	for(index in seq(1,NB)){
+		COL [ fact == LVL[index] ] <- COL_LI[ index ]
+	}
+	return(COL)
+}
+

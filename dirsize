@@ -1,0 +1,8 @@
+#!/bin/bash
+for folder in $*; do
+	if [ -d $folder ];then
+		echo "$(du -sh $folder)"
+	else
+		echo "$folder is not a directory"
+	fi
+done

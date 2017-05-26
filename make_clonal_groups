@@ -17,18 +17,20 @@ if __name__ == "__main__":
 	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 	parser.add_argument('--author',action='store_true',help='Display author informations')
 	
+	parser.add_argument('-ID', type=int,default=1,help='seq IDs column') #default=1,
+	parser.add_argument('-V',type=int,default=8,help='V-gene column')#8
+	parser.add_argument('-D',type=int,default=9,help='D-gene column')#9
+	parser.add_argument('-J',type=int,default=10,help='J-gene column')#10
+	parser.add_argument('-CDR3',type=int,default=37,help='CDR3 column')#37
+	
 	#8	V_CALL
 	#9	D_CALL
 	#10	J_CALL
 	#37	CDR3
 	
-	parser.add_argument('-V', type=int,default=8,help='V-gene column')
-	parser.add_argument('-D', type=int,default=9,help='D-gene column')
-	parser.add_argument('-J', type=int,default=10,help='J-gene column')
-	parser.add_argument('-CDR3', type=int,default=37,help='CDR3 column')
-	
 	args=vars(parser.parse_args())
-		
+	
+	
 	if args['author']:
 		args['e'].write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr\n")
 		exit()
@@ -44,18 +46,26 @@ if __name__ == "__main__":
 		if i == 1: continue #skip first line
 	
 		line = rline.split("\r\n")[0].split("\n")[0].split("\t")
+		
+		ID_SEQ=line[ args['ID']-1]
 		ID_V=line[ args['V']-1].split(',')[0].split("-")[0]
 		ID_D=line[ args['D']-1].split(',')[0].split("-")[0]
 		ID_J=line[ args['J']-1].split(',')[0].split("*")[0]
 		CDR3_LENGTH=len( line[ args['CDR3']-1] )
-		ID = "%s\t%s\t%s\t%s"%(  ID_V, ID_D, ID_J, CDR3_LENGTH )
+		
+		ID = "\t".join( [ str(e) for e in [   ID_V.split("*")[0], ID_J.split("*")[0], CDR3_LENGTH   ] ] )
 		
 		if ID not in DICO:
-			DICO[ID]=1
+			DICO[ID]=[   ID_SEQ   ]
 		else:
-			DICO[ID]+=1
-	print("nb_of_sequences\tV-gene\tD-gene\tJ-gene\tCDR3_length")
-	for k in DICO:
-		print( "%s\t%s"%(DICO[k], k))
+			DICO[ID].append(   ID_SEQ   )
+			
+			
+	args['o'].write( "\t".join( [ str(e) for e in ["Clone_Id","nb_of_members","V-gene","J-gene","CDR3_length"] ] ) + "\n" )
+	i=0
+	for kID in DICO:
+		i+=1
+		SPLIT=kID.split("\t")
+		args['o'].write( "\t".join(  [ str(e) for e in [  i,  len(DICO[kID]), SPLIT[0],  SPLIT[1], SPLIT[2]  ] ] ) + "\n" )
 		
 	
