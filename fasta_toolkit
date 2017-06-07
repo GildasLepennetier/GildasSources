@@ -20,12 +20,12 @@ def Fasta_To_Dico_file(file,idtag='>',eol="\n"):
 	for line in file:
 		line=line.split(eol)[0]
 		if line[0]==idtag:
-			ID=line[1:] #avoid '>' in IDs
+			ID=line[1:] #avoid '>' in IDs, include what has spaces!
 			dico[ID]=''
 		else:
 			dico[ID]+=line
 	return dico
-# LOAD FASTA BIOPYTHON ####
+# LOAD FASTA BIOPYTHON #
 def loadFasta(adresse,eol="\n"):
 	from Bio import SeqIO
 	dico={}
@@ -37,10 +37,12 @@ def loadFasta(adresse,eol="\n"):
 		else:
 			print("ERROR: %s already exist as key!"%ID)
 	return dico
-# Load fasta biopython2
+
+# Load fasta biopython2 #TODO: never used... plus carefull: remove after space
 def loadFastaBiopython(path):
 	from Bio import SeqIO
 	return { k.split(' ')[0]:seq.split('\n')[0] for k,seq in SeqIO.to_dict(SeqIO.parse(path, 'fasta')).items() }
+
 # Give the reverse complement of a DNA sequence, change also if iupac nucleotide ####
 from string import maketrans
 def revCompl_DNA(seq,intab="AaTtCcGgRrYySsWwKkMmBbVvDdHh",outtab="TtAaGgCcYyRrWwSsMmKkVvBbHhDd"):
@@ -94,7 +96,7 @@ def insert_in_string(string,insert="\n",each=80):
 if __name__ == '__main__':
 	
 	
-	COMMANDES=['rc_dna', 'csv_to_fa', 'fa_to_csv', 'fa_freq', 'fa_extr_ids', 'fa_translate', 'fa_get','count','fa_split']
+	COMMANDES=['rc_dna', 'csv_to_fa', 'fa_to_csv', 'fa_freq', 'fa_extr_ids', 'fa_rm_ids', 'fa_translate', 'fa_get','count','fa_split']
 
 
 	##########################################
@@ -127,7 +129,12 @@ if __name__ == '__main__':
 	fa_extr_ids	(extract records by name)
 	
 		-id_file <file with one id per line>
-		-id id1,id2
+		-id_list id1,id2
+	
+	---------
+	fa_rm_ids	(remove records by name)
+		-id_file <file with one id per line>
+		-id_list id1,id2
 	
 	---------
 	fa_translate	(translate dna to protein, expect only full CDS)
@@ -172,10 +179,13 @@ if __name__ == '__main__':
 	parser.add_argument('-seqCol',type=int,required=False,help='sequence column index')
 	parser.add_argument('-idCol',type=str,required=False,help='coma separated list for ids column index, see -idJoin for separator')
 	parser.add_argument('-id_list',type=str,required=False,help='coma separated list for ids')
+	parser.add_argument('-id_file',type=str,help='file with ids, one per line')
+	
 	parser.add_argument('-idJoin',type=str,default="_",required=False,help='If several columns for id, this will be the spacer. default: "_" ')
 	parser.add_argument('-CharPerLine',type=int,default=80,required=False,help='number of char per line, default 80')
 	parser.add_argument('-rmId',action='store_true',default=False,help='to remove fasta ids when csv conversion')
-	parser.add_argument('-id_file',type=str,help='file with ids, one per line')
+	parser.add_argument('-trim_after_spaces',action='store_true',default=False,help='to trim fasta ids after a space')
+	
 	parser.add_argument('-rmTxErrors',action='store_true',default=False,help='to check the translated sequence. Remove: not starting with M (ATG), premature stop in the cds (space in the sequence) or with unknown * codon')
 	parser.add_argument('-rules',type=str,required=False,help='set of rules, ex: "RANDOM=True + MIN_SEQ_LENGTH = 200"')
 	parser.add_argument('-printRules',action='store_true',help='print the rules on stderr and exit')
@@ -338,18 +348,55 @@ if __name__ == '__main__':
 		p=False
 		for line in args['in']:
 			if line[0] == '>':
-				
-				current_ID=line.split('\n')[0].split(' ')[0].split('>')[1]
+				if args['trim_after_spaces']:
+					current_ID=line.split('\n')[0].split(' ')[0].split('>')[1]
+				else:
+					current_ID=line.split('\n')[0].split('>')[1]
 				if current_ID in IDS:
 					if args['verbose'] > 2:
 						sys.stderr.write("id %s will be saved\n"%(current_ID))
 					p=True
 				else:
-					if args['verbose'] > 2:
+					if args['verbose'] > 3:
 						sys.stderr.write("id %s ignored\n"%(current_ID))
 					p=False
 			if p: #if we are still on the lines following an id
 				args['out'].write(line)
+	
+	##########################################
+	
+	if args['cmd'] == 'fa_rm_ids':
+		IDS=[]
+		if not args['id_list'] and not args['id_file']:
+			sys.stderr.write("Error: id missing, you need to specify ids to remove! : id_list or id_file options\n")
+			exit(1)
+		if args['id_list']:
+			for i in args['id_list'].split(","):
+				IDS.append(i)
+		if args['id_file']:
+			with open (args['id_file'], 'r') as f:
+				for line in f.readlines():
+					IDS.append( line.strip() )
+		if args['verbose'] > 0:
+			sys.stderr.write("%s ids to remove\n"%(len(IDS) ))
+			if args['verbose'] > 1:
+				if len(IDS)>0:
+					sys.stderr.write(",".join(IDS) + "\n" )
+		p=False
+		for line in args['in']:
+			if line[0] == '>':
+				current_ID=line.split('\n')[0].split('>')[1]
+				if current_ID in IDS:
+					if args['verbose'] > 2:
+						sys.stderr.write("id %s will be removed\n"%(current_ID))
+					p=False
+				else:
+					if args['verbose'] > 3:
+						sys.stderr.write("id %s printed\n"%(current_ID))
+					p=True
+			if p: #if we are still on the lines following an id
+				args['out'].write(line)
+	
 	
 	##########################################
 	
