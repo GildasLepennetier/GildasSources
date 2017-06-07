@@ -29,7 +29,7 @@ def mutations_positions( string, reference, add=0):
 		sys.tsderr.write("ERROR: not same sequence length\n")
 	POSI=[]
 	for index in range(0,len(string)):
-		if string[index] in ['.','-','N','n']: #IGNORE points and minus
+		if string[index] in ['.','-','N','n'] or reference[index] in ['.','-','N','n']: #IGNORE points and minus
 			continue
 		if string[index] != reference[index]:
 			POSI.append(index+add+1)#+1 because python indexes
