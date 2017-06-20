@@ -6,16 +6,27 @@ parser.add_argument('-o', type=argparse.FileType('w'),default=sys.stdout, help='
 
 
 parser.add_argument('-e', type=argparse.FileType('w'),default=sys.stderr, help='error, log file, or stderr')
-parser.add_argument('-c', type=str,default='mean_arithmetic', help='calculate using this function [mean_arithmetic]')
+parser.add_argument('-c', type=str,default='mean_arithmetic', help='calculate using this function [mean_arithmetic, min, max, median]')
 args=vars(parser.parse_args())
 
-if args['c'] not in ['mean_arithmetic']:
+if args['c'] not in ['mean_arithmetic','min','max','median']:
 	args['e'].write("ERROR function not recognized, or not available: %s\n"%(args['c']))
+	exit(1)
 
 LIST=[]
 
 def mean_arithmetic(n):
     return float(sum(n)) / max(len(n), 1)
+def median(lst):
+    lst = sorted(lst)
+    n = len(lst)
+    if n < 1:
+            return None
+    if n % 2 == 1:
+            return lst[n//2]
+    else:
+            return sum(lst[n//2-1:n//2+1])/2.0
+
 
 i=0
 for rline in args['i']:
@@ -25,5 +36,16 @@ for rline in args['i']:
 		LIST.append(float(line))
 	except ValueError:
 		args['e'].write("ERROR line %s: %s is not numerical\n"%(i,line))
+		if i == 1:
+			args['e'].write("you very probably have a header...\n")
+
+args['e'].write("%s %s=\n"%(args['i'].name,args['c']))
+
 if args['c'] == 'mean_arithmetic':
 	args['o'].write("%s\n"%( mean_arithmetic(LIST) ))
+if args['c'] == 'min':
+	args['o'].write("%s\n"%( min(LIST) ))
+if args['c'] == 'max':
+	args['o'].write("%s\n"%( max(LIST) ))
+if args['c'] == 'median':
+	args['o'].write("%s\n"%( median(LIST) ))
