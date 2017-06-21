@@ -39,7 +39,7 @@ for rline in args['i']:
 		if i == 1:
 			args['e'].write("you very probably have a header...\n")
 
-args['e'].write("%s %s=\n"%(args['i'].name,args['c']))
+#args['e'].write("%s %s=\n"%(args['i'].name,args['c']))
 
 if args['c'] == 'mean_arithmetic':
 	args['o'].write("%s\n"%( mean_arithmetic(LIST) ))
