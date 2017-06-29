@@ -1,6 +1,8 @@
 
 #http://www.sr.bham.ac.uk/~ajrs/R/r-function_list.html
 
+#violinplot : see ggplot2::geom_violin, plotrix::violin_plot, psych::densityBy, lattice::panel.violin
+
 # arrange a df arrange()
 if(!require("plyr",quietly=T)){ install.packages("plyr", dependencies=T) };library("plyr",quietly=T)
 # if error on linux: in terminal: sudo apt-get install r-cran-plyr")
