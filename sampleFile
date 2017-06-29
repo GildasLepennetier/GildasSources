@@ -1,0 +1,19 @@
+#!/bin/bash
+if [ $# -ne 2 ];then 
+	echo "usage: $(basename $1) <number of lines> <file to sample>"
+	exit 1
+else
+	if [ $1 -lt 1 ];then 
+		echo "Error: number of lines should be a positive integer > 0"
+		exit 1
+	fi
+	if [[ ! $a =~ ^-?[0-9]+$ ]]; then 
+		echo "Error: number of lines should be a positive integer > 0"
+		exit 1
+	fi
+	if [ ! -e $2 ];then 
+		echo "Error: file not found: $2"
+		exit 1
+	fi
+	sort -R $2 | head -n $1
+fi
