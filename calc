@@ -1,2 +1,3 @@
 #!/bin/bash
-bc <<< "$*"
+#use mathlib, if 0 remove after calculation, put it back
+bc -l <<< "$*" | sed 's/^\./0./'| sed 's/^-./-0./' 
