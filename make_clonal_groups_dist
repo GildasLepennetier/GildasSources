@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+
+
+
+# Gildas Lepennetier script
+
+import sys,argparse
+def parse_range_and_list(string):
+	"""Used to parse a string with comas and colons to define ranges."""
+	LIST=[]
+	if string:
+		for elem1 in string.split(','):
+			RANGES=elem1.split(':')
+			if len(RANGES) == 1:
+				LIST.append(int(RANGES[0]))
+			if len(RANGES) == 2:
+				for i in range( int(RANGES[0]), int(RANGES[1])+1 ):
+					LIST.append( i )
+			if len(RANGES) == 3:
+				for i in range( int(RANGES[0]), int(RANGES[1])+1, int(RANGES[2]) ):
+					LIST.append( i )
+			if len(RANGES) > 3:
+				sys.stderr.write("Error: bad range %s"%(RANGES))
+				exit(1)
+	return (LIST)
+
+if __name__ == "__main__":
+	
+	parser = argparse.ArgumentParser(description="Make clonal groups from changeo output (typically the *db-pass files) using V J + length(CDR3) and extract some more stuff like the sequences.",epilog='Author: Gildas Lepennetier')
+
+	parser.add_argument('-i',type=argparse.FileType('r'),default=sys.stdin,help='Input file (stdin)')
+	parser.add_argument('-o',type=argparse.FileType('w'),default=sys.stdout,help='Output file (stdout)')
+	parser.add_argument('-e',type=argparse.FileType('w'),default=sys.stderr,help='Error (stderr)')
+	parser.add_argument('--version', action='version', version='%(prog)s 2017')#version display
+	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
+	parser.add_argument('--author',action='store_true',help='Display author informations')
+	
+	parser.add_argument('-noheader',action='store_true',default=False,help='Display author informations')
+	
+	parser.add_argument('-ID', type=int,default=1,help='seq IDs column (1)')
+	parser.add_argument('-V',type=int,default=8,help='V-gene column (8)')
+	#parser.add_argument('-D',type=int,default=9,help='D-gene column (9)')
+	parser.add_argument('-J',type=int,default=10,help='J-gene column (10)')
+	
+	parser.add_argument('-extracolumns', type=str,default='',help='Print extra column in addition. from:to a,b,... ')
+	
+	#parser.add_argument('-FWR1',type=int,default=31,help='FWR1 column (31)')
+	#parser.add_argument('-FWR2',type=int,default=32,help='FWR2 column (32)')
+	#parser.add_argument('-FWR3',type=int,default=33,help='FWR3 column (33)')
+	#parser.add_argument('-FWR4',type=int,default=34,help='FWR4 column (34)')
+	#parser.add_argument('-CDR1',type=int,default=35,help='CDR1 column (35)')
+	#parser.add_argument('-CDR2',type=int,default=36,help='CDR2 column (36)')
+	
+	parser.add_argument('-CDR3',type=int,default=37,help='CDR3 column (37)')
+	
+	parser.add_argument('-germline',type=int,default=46,help='germline column (46)')
+	parser.add_argument('-seqinput',type=int,default=2,help='germline column (2)')
+	args=vars(parser.parse_args())
+	
+	if args['author']:
+		args['e'].write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr\n")
+		exit()
+	if args['copy']:
+		args['e'].write("Copyright 2017 LEPENNETIER Gildas\n")
+		exit()
+		
+	#parse the extra columns
+	COLS=[]
+	if args['extracolumns']:
+		COLS = parse_range_and_list(args['extracolumns'])
+		
+	DICO={}
+	i=0
+	for rline in args['i'].readlines():
+		i+=1
+		
+		line = rline.split("\r\n")[0].split("\n")[0].split("\t")
+		if i == 1 and not args['noheader'] : # there IS an header, but it is possible to desactivate that
+			EXTRANAMES=[]
+			if args['extracolumns']:
+				EXTRANAMES=[ line[i-1] for i in COLS ]
+			continue #skip first line if header present
+		
+		
+		
+		EXTRA=[]
+		if args['extracolumns']:
+			EXTRA=[ line[i-1] for i in COLS ]
+		
+		# make the ID
+		ID_SEQ=line[ args['ID']-1]
+		ID_V=line[ args['V']-1]#.split(',')[0].split("-")[0]
+		ID_J=line[ args['J']-1]#.split(',')[0].split("*")[0]
+		CDR3_LENGTH=len( line[ args['CDR3']-1] )
+		
+		
+		
+		GERM=line[ args['germline']-1]
+		INSEQ=line[ args['seqinput']-1]
+		
+		ID = "\t".join( [ str(e) for e in [   ID_V.split("*")[0], ID_J.split("*")[0], CDR3_LENGTH   ] ] )
+		
+		if ID not in DICO:
+			DICO[ID]=[   (ID_SEQ , EXTRA)   ]
+		else:
+			DICO[ID].append(   (ID_SEQ , EXTRA)  )
+			
+			
+	args['o'].write( "\t".join( [ str(e) for e in ["group_nb","seqID","V-gene","J-gene","CDR3_length"] + EXTRANAMES ] ) + "\n" )
+	i=0
+	for kID in DICO:
+		SPLIT=kID.split("\t")
+		i+=1
+		for ktupple in DICO[kID]:
+			# one line per sequence, printing be default V J CDR3 + seqID
+			args['o'].write( "\t".join(  [ str(e) for e in [ i, ktupple[0] ,SPLIT[0],SPLIT[1],SPLIT[2] ] + ktupple[1]  ] ) + "\n" )
+		
+	

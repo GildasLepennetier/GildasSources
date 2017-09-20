@@ -35,6 +35,11 @@ install.packages(c("devtools", "roxygen2", "testthat", "knitr", "rmarkdown", "Rc
 
 
 # functions
+before_max=function(v,pos){
+	if( pos >= 1 ){ print("Error, please give a negative number for position pos..") ; return(NA) }
+	if( abs(pos) > length(v)){ print("Error, position pos wrong, out of range.") ; return(NA) }
+	return(sort(v)[length(v)+pos])
+}
 count=function(v){return(length(na.omit(v)))}
 #from p-values, return stars
 stars=function(p.value,limits=c(0.05,0.01,0.001),sign=2,NS=T){if(NS){star="NS"}else{star=signif(p.value,sign)}; if(p.value<limits[1]){star="*"};if(p.value<limits[2]){star="**"};if(p.value<limits[3]){star="***"};return(star)}

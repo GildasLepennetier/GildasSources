@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+import sys
+FILE=sys.argv[1] #"Z3-76-CSF-IgM.SHM_2.grouped.tsv"
+
+# this function take the output of the make_clonal_groups_dist
+
+def levenshtein(s, t):
+        ''' From Wikipedia article; Iterative with two matrix rows. '''
+        if s == t: return 0
+        elif len(s) == 0: return len(t)
+        elif len(t) == 0: return len(s)
+        v0 = [None] * (len(t) + 1)
+        v1 = [None] * (len(t) + 1)
+        for i in range(len(v0)):
+            v0[i] = i
+        for i in range(len(s)):
+            v1[0] = i + 1
+            for j in range(len(t)):
+                cost = 0 if s[i] == t[j] else 1
+                v1[j + 1] = min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost)
+            for j in range(len(v0)):
+                v0[j] = v1[j]
+        return v1[len(t)]
+
+def mean(numbers):
+    return float(sum(numbers)) / max(len(numbers), 1)
+
+with open(FILE) as fi:
+	i=0
+	DICO={}
+	for rline in fi.readlines():
+		line=rline.split('\n')[0].split('\t')
+		i+=1
+		if i==1: 
+			#print(line)
+			continue
+
+		
+		grp_id=line[0]
+		#INPUT_seq=line[20]
+		if grp_id not in DICO:
+			DICO[grp_id]=[line]
+		else:
+			DICO[grp_id].append(line)
+
+#print("%s group loaded"%(len(DICO)))
+
+KEYS=DICO.keys()
+KEYS.sort()
+
+print("\t".join([ str(e) for e in [ "V_gene", "J_gene", "len(CDR3)", "group", "count_same_sequence", "total_sequences_in_grp" , "min_mutations", "mean_mutations", "max_mutations" ] ] ) )
+
+for key in KEYS:
+	
+	DIST=[]
+	LINES= DICO[key]
+	count_same=0
+	
+	list_mutation=[]
+	
+	if len(LINES) > 1:
+		for index in range(1,len(LINES)):
+			
+			if (LINES[0][20] == LINES[index][20]):
+				count_same+=1
+			else:
+				
+				mutation_count=levenshtein( LINES[0][20], LINES[index][20] )
+				
+				list_mutation.append( mutation_count )
+	
+	if len(list_mutation)>0:
+		print("\t".join([ str(e) for e in [ LINES[0][2],LINES[0][3],LINES[0][4], key, count_same, len(LINES) , min(list_mutation), mean(list_mutation), max(list_mutation) ] ] ) )
+	else:
+		print("\t".join([ str(e) for e in [ LINES[0][2],LINES[0][3],LINES[0][4], key, count_same, len(LINES) ] ] ) )
+	
+	
+	
+	
+	

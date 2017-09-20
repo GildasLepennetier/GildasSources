@@ -1,71 +1,44 @@
 #!/usr/bin/env python
 
-
-
 # Gildas Lepennetier script
-
 import sys,argparse
-
 if __name__ == "__main__":
-	
-	parser = argparse.ArgumentParser(description="Make clonal groups from changeo output (typically the *db-pass files).",epilog='Author: Gildas Lepennetier')
-
+	parser = argparse.ArgumentParser(description="Make clonal groups from changeo output (typically the *db-pass files) using V J + length(CDR3).",epilog='Author: Gildas Lepennetier')
 	parser.add_argument('-i',type=argparse.FileType('r'),default=sys.stdin,help='Input file (stdin)')
 	parser.add_argument('-o',type=argparse.FileType('w'),default=sys.stdout,help='Output file (stdout)')
 	parser.add_argument('-e',type=argparse.FileType('w'),default=sys.stderr,help='Error (stderr)')
 	parser.add_argument('--version', action='version', version='%(prog)s 2017')#version display
 	parser.add_argument('--copy',action='store_true',help='Display Copyright informations')
 	parser.add_argument('--author',action='store_true',help='Display author informations')
-	
-	parser.add_argument('-ID', type=int,default=1,help='seq IDs column') #default=1,
-	parser.add_argument('-V',type=int,default=8,help='V-gene column')#8
-	parser.add_argument('-D',type=int,default=9,help='D-gene column')#9
-	parser.add_argument('-J',type=int,default=10,help='J-gene column')#10
-	parser.add_argument('-CDR3',type=int,default=37,help='CDR3 column')#37
-	
-	#8	V_CALL
-	#9	D_CALL
-	#10	J_CALL
-	#37	CDR3
-	
+	parser.add_argument('-ID', type=int,default=1,help='seq IDs column (1)') #default=1,
+	parser.add_argument('-V',type=int,default=8,help='V-gene column (8)')#8
+	parser.add_argument('-J',type=int,default=10,help='J-gene column (10)')#10
 	args=vars(parser.parse_args())
-	
-	
 	if args['author']:
 		args['e'].write("LEPENNETIER Gildas - gildas.lepennetier@hotmail.fr\n")
 		exit()
 	if args['copy']:
 		args['e'].write("Copyright 2017 LEPENNETIER Gildas\n")
 		exit()
-	
-		
 	DICO={}
 	i=0
 	for rline in args['i'].readlines():
 		i+=1
 		if i == 1: continue #skip first line
-	
 		line = rline.split("\r\n")[0].split("\n")[0].split("\t")
-		
 		ID_SEQ=line[ args['ID']-1]
 		ID_V=line[ args['V']-1].split(',')[0].split("-")[0]
-		ID_D=line[ args['D']-1].split(',')[0].split("-")[0]
 		ID_J=line[ args['J']-1].split(',')[0].split("*")[0]
 		CDR3_LENGTH=len( line[ args['CDR3']-1] )
-		
 		ID = "\t".join( [ str(e) for e in [   ID_V.split("*")[0], ID_J.split("*")[0], CDR3_LENGTH   ] ] )
-		
 		if ID not in DICO:
 			DICO[ID]=[   ID_SEQ   ]
 		else:
 			DICO[ID].append(   ID_SEQ   )
-			
-			
 	args['o'].write( "\t".join( [ str(e) for e in ["Clone_Id","nb_of_members","V-gene","J-gene","CDR3_length"] ] ) + "\n" )
 	i=0
 	for kID in DICO:
 		i+=1
 		SPLIT=kID.split("\t")
 		args['o'].write( "\t".join(  [ str(e) for e in [  i,  len(DICO[kID]), SPLIT[0],  SPLIT[1], SPLIT[2]  ] ] ) + "\n" )
-		
 	
