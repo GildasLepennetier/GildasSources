@@ -6,10 +6,10 @@ parser.add_argument('-o', type=argparse.FileType('w'),default=sys.stdout, help='
 
 
 parser.add_argument('-e', type=argparse.FileType('w'),default=sys.stderr, help='error, log file, or stderr')
-parser.add_argument('-c', type=str,default='mean_arithmetic', help='calculate using this function [mean_arithmetic, min, max, median]')
+parser.add_argument('-c', type=str,default='mean_arithmetic', help='calculate using this function [min, max, median, sum, mean_arithmetic(default), mean_geometric ]')
 args=vars(parser.parse_args())
 
-if args['c'] not in ['mean_arithmetic','min','max','median']:
+if args['c'] not in ['min','max','median','sum','mean_arithmetic','mean_geometric']:
 	args['e'].write("ERROR function not recognized, or not available: %s\n"%(args['c']))
 	exit(1)
 
@@ -26,7 +26,13 @@ def median(lst):
             return lst[n//2]
     else:
             return sum(lst[n//2-1:n//2+1])/2.0
-
+def geometric_mean(nums):
+    ''' 
+        Return the geometric average of nums
+        @param    list    nums    List of nums to avg
+        @return   float   Geometric avg of nums 
+    '''
+    return (reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
 
 i=0
 for rline in args['i']:
@@ -43,9 +49,18 @@ for rline in args['i']:
 
 if args['c'] == 'mean_arithmetic':
 	args['o'].write("%s\n"%( mean_arithmetic(LIST) ))
+	
+if args['c'] == 'mean_geometric':
+	args['o'].write("%s\n"%( geometric_mean(LIST) ))
+	
 if args['c'] == 'min':
 	args['o'].write("%s\n"%( min(LIST) ))
+	
 if args['c'] == 'max':
 	args['o'].write("%s\n"%( max(LIST) ))
+	
 if args['c'] == 'median':
 	args['o'].write("%s\n"%( median(LIST) ))
+	
+if args['c'] == 'sum':
+	args['o'].write("%s\n"%( sum(LIST) ))
