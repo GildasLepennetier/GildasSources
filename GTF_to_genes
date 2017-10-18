@@ -8,7 +8,7 @@ parser.add_argument('-element',type=str,default='exon',required=False,help='name
 parser.add_argument('-isoIDpattern',type=str,default=".*transcript_id \"([\w\.-]*)\";.*",required=False,help='pattern for the isoform ID (default:Ensembl) .*transcript_id \"([\w.-]*)\";.*')
 parser.add_argument('-geneIDpattern',type=str,default=".*gene_id \"([\w\.-]*)\";.*",required=False,help='pattern for the gene ID (default:Ensembl) .*gene_id \"([\w.-]*)\";.*')
 
-parser.add_argument('-keepChrIds',type=str,required=False,help='give the list of chromosome ids to keep, coma separated')
+parser.add_argument('-keepChrIds',type=str,default="all",required=False,help='give the list of chromosome ids to keep, coma separated')
 
 parser.add_argument('-sep',type=str,default='\t',nargs='?',help='separator (default: \\t)')
 parser.add_argument('--version', action='version', version='%(prog)s v04-03-2014')#version display
