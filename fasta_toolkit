@@ -38,7 +38,7 @@ def loadFasta(adresse,eol="\n"):
 			print("ERROR: %s already exist as key!"%ID)
 	return dico
 
-# Load fasta biopython2 #TODO: never used... plus carefull: remove after space
+# Load fasta biopython2 #TODO: never used... plus carefull: remove after space, which is bullshit
 def loadFastaBiopython(path):
 	from Bio import SeqIO
 	return { k.split(' ')[0]:seq.split('\n')[0] for k,seq in SeqIO.to_dict(SeqIO.parse(path, 'fasta')).items() }
